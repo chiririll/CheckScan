@@ -319,7 +319,7 @@ abstract class AppLocalizations {
   /// No description provided for @unknownBody.
   ///
   /// In ru, this message translates to:
-  /// **'Этот QR не похож на чек. Ничего не сохранили.'**
+  /// **'Этот QR не похож на чек.'**
   String get unknownBody;
 
   /// No description provided for @gotIt.

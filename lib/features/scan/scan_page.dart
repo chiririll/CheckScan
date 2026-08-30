@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -20,13 +18,18 @@ class ScanPage extends StatefulWidget {
 }
 
 class _ScanPageState extends State<ScanPage> {
+  /// Ceiling only: CameraX falls back to the closest size the device supports.
+  static const _analysisResolutionCeiling = Size(3840, 2160);
+
   final _controller = MobileScannerController(
-    detectionSpeed: DetectionSpeed.noDuplicates,
-    returnImage: true,
+    detectionSpeed: DetectionSpeed.normal,
+    detectionTimeoutMs: 75,
+    formats: const [BarcodeFormat.qrCode],
+    cameraResolution: _analysisResolutionCeiling,
+    lensType: CameraLensType.normal,
   );
   bool _busy = false;
   bool _frozen = false;
-  Uint8List? _frozenFrame;
   String? _progress;
   bool _torch = false;
 
@@ -86,7 +89,6 @@ class _ScanPageState extends State<ScanPage> {
     setState(() {
       _busy = false;
       _frozen = false;
-      _frozenFrame = null;
       _progress = null;
     });
     await _controller.start();
@@ -97,6 +99,7 @@ class _ScanPageState extends State<ScanPage> {
     if (file == null || !mounted) return;
     final barcodes = await _controller.analyzeImage(file.path);
     final raw = barcodes?.barcodes
+        .where((b) => b.format == BarcodeFormat.qrCode)
         .map((b) => b.rawValue)
         .whereType<String>()
         .firstWhere((v) => v.isNotEmpty, orElse: () => '');
@@ -146,24 +149,25 @@ class _ScanPageState extends State<ScanPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final frameSide = (MediaQuery.sizeOf(context).width - 40).clamp(160.0, 480.0);
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
           MobileScanner(
             controller: _controller,
+            tapToFocus: true,
             onDetect: (capture) {
               if (_busy) return;
-              final raw = capture.barcodes.map((b) => b.rawValue).whereType<String>().where((v) => v.isNotEmpty);
+              final raw = capture.barcodes
+                  .where((b) => b.format == BarcodeFormat.qrCode)
+                  .map((b) => b.rawValue)
+                  .whereType<String>()
+                  .where((v) => v.isNotEmpty);
               if (raw.isEmpty) return;
-              setState(() => _frozenFrame = capture.image);
               _handleRaw(raw.first);
             },
           ),
-          if (_frozenFrame != null)
-            Positioned.fill(
-              child: Image.memory(_frozenFrame!, fit: BoxFit.cover),
-            ),
           if (_frozen) Container(color: Colors.black.withValues(alpha: 0.35)),
           SafeArea(
             child: Column(
@@ -181,10 +185,10 @@ class _ScanPageState extends State<ScanPage> {
                 ),
                 const Spacer(),
                 SizedBox(
-                  width: 188,
-                  height: 188,
+                  width: frameSide,
+                  height: frameSide,
                   child: CustomPaint(
-                    painter: _FramePainter(color: Colors.white),
+                    painter: _CornerFramePainter(color: Colors.white),
                     child: _frozen
                         ? const Center(
                             child: SizedBox(
@@ -234,19 +238,60 @@ class _ScanPageState extends State<ScanPage> {
   }
 }
 
-class _FramePainter extends CustomPainter {
-  _FramePainter({required this.color});
+class _CornerFramePainter extends CustomPainter {
+  _CornerFramePainter({required this.color});
   final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
+    const radius = 20.0;
+    final arm = size.shortestSide * 0.16;
     final paint = Paint()
       ..color = color
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-    canvas.drawRRect(RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(10)), paint);
+      ..strokeWidth = 4
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final w = size.width;
+    final h = size.height;
+    const r = Radius.circular(radius);
+
+    canvas
+      ..drawPath(
+        Path()
+          ..moveTo(0, arm)
+          ..lineTo(0, radius)
+          ..arcToPoint(const Offset(radius, 0), radius: r)
+          ..lineTo(arm, 0),
+        paint,
+      )
+      ..drawPath(
+        Path()
+          ..moveTo(w - arm, 0)
+          ..lineTo(w - radius, 0)
+          ..arcToPoint(Offset(w, radius), radius: r)
+          ..lineTo(w, arm),
+        paint,
+      )
+      ..drawPath(
+        Path()
+          ..moveTo(w, h - arm)
+          ..lineTo(w, h - radius)
+          ..arcToPoint(Offset(w - radius, h), radius: r)
+          ..lineTo(w - arm, h),
+        paint,
+      )
+      ..drawPath(
+        Path()
+          ..moveTo(arm, h)
+          ..lineTo(radius, h)
+          ..arcToPoint(Offset(0, h - radius), radius: r)
+          ..lineTo(0, h - arm),
+        paint,
+      );
   }
 
   @override
-  bool shouldRepaint(covariant _FramePainter oldDelegate) => oldDelegate.color != color;
+  bool shouldRepaint(covariant _CornerFramePainter oldDelegate) => oldDelegate.color != color;
 }

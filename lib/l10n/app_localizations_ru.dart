@@ -140,7 +140,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get unknownTitle => 'Формат не поддерживается';
 
   @override
-  String get unknownBody => 'Этот QR не похож на чек. Ничего не сохранили.';
+  String get unknownBody => 'Этот QR не похож на чек.';
 
   @override
   String get gotIt => 'Понятно';
