@@ -1,0 +1,98 @@
+import 'dart:io';
+
+import 'package:adapter_core/adapter_core.dart';
+import 'package:checkscan/core/models/receipt_record.dart';
+import 'package:checkscan/core/scan/adapter_registry.dart';
+import 'package:checkscan/core/scan/scan_session.dart';
+import 'package:checkscan/core/storage/receipt_repository.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+int _dbSeq = 0;
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
+
+  late ReceiptRepository repository;
+  late ScanSession session;
+
+  setUp(() {
+    _dbSeq += 1;
+    final path = p.join(Directory.systemTemp.path, 'checkscan_session_$_dbSeq.db');
+    final file = File(path);
+    if (file.existsSync()) file.deleteSync();
+    repository = ReceiptRepository(resolveDbPath: () async => path);
+    session = ScanSession(repository: repository);
+  });
+
+  const fns = 't=20260828T1842&s=1247.00&fn=8710000100905518&i=12&fp=4135164163&n=1';
+  const eqJson =
+      '{"eq_version":"1.0.0","receipt":{"id":"550e8400-e29b-41d4-a716-446655440000","issued_at":"2026-08-28T18:42:00+03:00","currency":"RUB","receipt_type":"sale","merchant":{"name":"Пятёрочка"},"items":[{"description":"Молоко 1 л","quantity":2,"unit_price":89,"total_price":178}],"totals":{"grand_total":1247}}}';
+
+  test('unknown format is not saved', () async {
+    final result = await session.process('not-a-receipt');
+    expect(result.unknown, isTrue);
+    expect(await repository.listAll(), isEmpty);
+  });
+
+  test('eQ scan saves items as ok', () async {
+    final result = await session.process(eqJson);
+    expect(result.unknown, isFalse);
+    expect(result.record!.status, ReceiptStatus.ok);
+    expect(result.record!.itemCount, 1);
+    expect(result.record!.merchantName, 'Пятёрочка');
+  });
+
+  test('FNS scan without items is incomplete', () async {
+    final result = await session.process(fns);
+    expect(result.record!.status, ReceiptStatus.incomplete);
+    expect(result.record!.grandTotal, 1247);
+    expect(result.record!.itemCount, 0);
+    expect(result.record!.qrHash, 'ru_fns:8710000100905518|12|4135164163');
+  });
+
+  test('duplicate hash opens existing row without a second insert', () async {
+    final first = await session.process(fns);
+    final second = await session.process(fns);
+    expect(second.record!.id, first.record!.id);
+    expect(await repository.listAll(), hasLength(1));
+  });
+
+  test('parse error still inserts status=error', () async {
+    session = ScanSession(
+      repository: repository,
+      chain: AdapterChain([const _ThrowingAdapter()]),
+    );
+    final result = await session.process('boom');
+    expect(result.unknown, isFalse);
+    expect(result.record!.status, ReceiptStatus.error);
+    expect(result.record!.qrHash, 'boom:h');
+  });
+
+  test('refresh updates an incomplete receipt', () async {
+    final saved = await session.process(fns);
+    expect(saved.record!.status, ReceiptStatus.incomplete);
+    final updated = await session.refresh(saved.record!);
+    expect(updated!.status, ReceiptStatus.incomplete);
+    expect(updated.grandTotal, 1247);
+    expect(await repository.listAll(), hasLength(1));
+  });
+}
+
+class _ThrowingAdapter implements ReceiptAdapter {
+  const _ThrowingAdapter();
+
+  @override
+  String get id => 'boom';
+
+  @override
+  String? canHandle(String rawQr) => rawQr == 'boom' ? 'h' : null;
+
+  @override
+  Future<EqReceipt> parse(String rawQr, {void Function(String status)? onStatus}) {
+    throw const AdapterParseException('boom', 'fail');
+  }
+}

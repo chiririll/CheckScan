@@ -1,0 +1,10 @@
+name: adapter_core
+description: CheckScan adapter contract and eQ models.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  crypto: ^3.0.6

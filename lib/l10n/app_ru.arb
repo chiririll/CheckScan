@@ -1,0 +1,82 @@
+{
+  "@@locale": "ru",
+  "appTitle": "CheckScan",
+  "tabHome": "Главная",
+  "tabHistory": "История",
+  "scan": "Скан",
+  "onboard1Title": "Чеки всегда под рукой",
+  "onboard1Body": "Сканируйте QR на чеке — сохраним покупки и список товаров.",
+  "onboard2Title": "Статистика по покупкам",
+  "onboard2Body": "По отсканированным чекам видно, на что уходят деньги, что покупаете чаще и где дешевле.",
+  "onboard3Title": "Нужен доступ к камере",
+  "onboard3Body": "Камера используется только чтобы считать QR на чеке.",
+  "next": "Далее",
+  "allowCamera": "Разрешить камеру",
+  "notNow": "Не сейчас",
+  "homeTitle": "Главная",
+  "historyTitle": "История",
+  "settingsTitle": "Настройки",
+  "receiptTitle": "Чек",
+  "emptyHomeTitle": "Пока нет статистики",
+  "emptyHomeBody": "Отсканируйте первый чек — появятся траты, топ покупок и сравнение магазинов.",
+  "emptyHistoryTitle": "Пока нет чеков",
+  "emptyHistoryBody": "Нажмите круглую кнопку внизу и наведите камеру на QR.",
+  "spent": "Потрачено",
+  "receiptCount": "Чеков",
+  "mostOften": "Чаще всего",
+  "cheaperWhere": "Где дешевле {item}",
+  "@cheaperWhere": {
+    "placeholders": {
+      "item": { "type": "String" }
+    }
+  },
+  "timesCount": "{count} раз",
+  "@timesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "itemsCount": "{count, plural, one{{count} товар} few{{count} товара} many{{count} товаров} other{{count} товара}}",
+  "@itemsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "integrations": "Интеграции",
+  "soon": "Скоро",
+  "integration1c": "1С",
+  "integrationExport": "Экспорт eQ",
+  "integrationCloud": "Облако",
+  "aimQr": "Наведите на QR-код чека",
+  "progressRu": "Получаем данные российского чека",
+  "progressEq": "Читаем электронный чек",
+  "progressGeneric": "Ищем формат чека",
+  "unknownTitle": "Формат не поддерживается",
+  "unknownBody": "Этот QR не похож на чек. Ничего не сохранили.",
+  "gotIt": "Понятно",
+  "parseErrorTitle": "Не удалось прочитать чек",
+  "parseErrorBody": "Данные чека сейчас недоступны. Можно повторить.",
+  "close": "Закрыть",
+  "retry": "Повторить",
+  "retryItems": "Обновить состав",
+  "noItemsBanner": "Список покупок пока не пришёл",
+  "galleryNoQr": "На фото не удалось найти QR-код чека.",
+  "openSettings": "Открыть настройки",
+  "cameraDenied": "Нет доступа к камере. Разрешите её в настройках системы.",
+  "itemsSection": "Товары",
+  "qtyPrice": "{qty} × {price}",
+  "@qtyPrice": {
+    "placeholders": {
+      "qty": { "type": "String" },
+      "price": { "type": "String" }
+    }
+  },
+  "providerRu": "RU",
+  "providerEq": "eQ",
+  "amount": "{value} ₽",
+  "@amount": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  }
+}
