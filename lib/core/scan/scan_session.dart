@@ -1,6 +1,6 @@
 import '../models/receipt_record.dart';
 import '../storage/receipt_repository.dart';
-import 'adapter_registry.dart';
+import 'providers_backend.dart';
 
 class ScanResult {
   const ScanResult({this.record, this.unknown = false});
@@ -15,56 +15,55 @@ class ScanResult {
 class ScanSession {
   ScanSession({
     required this.repository,
-    AdapterChain? chain,
-  }) : chain = chain ?? AdapterChain();
+    required this.backend,
+  });
 
   final ReceiptRepository repository;
-  final AdapterChain chain;
+  final ProvidersBackend backend;
 
   Future<ScanResult> process(
     String rawQr, {
-    void Function(String status)? onStatus,
+    void Function(String adapterId)? onMatched,
   }) async {
-    final match = chain.match(rawQr);
+    final match = await backend.match(rawQr);
     if (match == null) return ScanResult.unknownFormat();
+    onMatched?.call(match.adapterId);
 
     final existing = await repository.findByHash(match.storageKey);
     if (existing != null) return ScanResult.found(existing);
 
     try {
-      final receipt = await match.adapter.parse(rawQr, onStatus: onStatus);
-      final status = receipt.items.isEmpty ? ReceiptStatus.incomplete : ReceiptStatus.ok;
+      final resolved = await backend.resolve(rawQr, hint: match.adapterId);
+      final status = resolved.receipt.items.isEmpty ? ReceiptStatus.incomplete : ReceiptStatus.ok;
       final saved = await repository.insertParsed(
         qrHash: match.storageKey,
-        adapterId: match.adapter.id,
+        adapterId: match.adapterId,
         rawQr: rawQr,
-        receipt: receipt,
+        receipt: resolved.receipt,
         status: status,
       );
       return ScanResult.found(saved);
     } on Object {
       final saved = await repository.insertError(
         qrHash: match.storageKey,
-        adapterId: match.adapter.id,
+        adapterId: match.adapterId,
         rawQr: rawQr,
       );
       return ScanResult.found(saved);
     }
   }
 
-  Future<ReceiptRecord?> refresh(ReceiptRecord record, {void Function(String status)? onStatus}) async {
-    final adapter = chain.byId(record.adapterId);
-    if (adapter == null) return null;
-    final receipt = await adapter.parse(record.rawQr, onStatus: onStatus);
-    final status = receipt.items.isEmpty ? ReceiptStatus.incomplete : ReceiptStatus.ok;
+  Future<ReceiptRecord?> refresh(ReceiptRecord record) async {
+    final resolved = await backend.resolve(record.rawQr, hint: record.adapterId);
+    final status = resolved.receipt.items.isEmpty ? ReceiptStatus.incomplete : ReceiptStatus.ok;
     final updated = record.copyWith(
       status: status,
-      issuedAt: receipt.issuedAt,
-      merchantName: receipt.merchantName,
-      grandTotal: receipt.grandTotal,
-      currency: receipt.currency,
-      itemCount: receipt.items.length,
-      payload: receipt.encode(),
+      issuedAt: resolved.receipt.issuedAt,
+      merchantName: resolved.receipt.merchantName,
+      grandTotal: resolved.receipt.grandTotal,
+      currency: resolved.receipt.currency,
+      itemCount: resolved.receipt.items.length,
+      payload: resolved.receipt.encode(),
     );
     await repository.replace(updated);
     return updated;

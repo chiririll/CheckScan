@@ -1,4 +1,4 @@
-import 'package:adapter_core/adapter_core.dart';
+import 'package:eq_models/eq_models.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';

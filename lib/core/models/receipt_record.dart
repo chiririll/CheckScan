@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:adapter_core/adapter_core.dart';
+import 'package:eq_models/eq_models.dart';
 
 enum ReceiptStatus { ok, error, incomplete }
 

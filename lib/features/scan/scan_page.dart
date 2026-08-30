@@ -50,12 +50,12 @@ class _ScanPageState extends State<ScanPage> {
     await _controller.stop();
     final result = await widget.state.session.process(
       raw,
-      onStatus: (status) {
+      onMatched: (adapterId) {
         if (!mounted) return;
         setState(() {
-          _progress = switch (status) {
-            'ru_fns_loading' => l10n.progressRu,
-            'eq_reading' => l10n.progressEq,
+          _progress = switch (adapterId) {
+            'ru_fns' => l10n.progressRu,
+            'eq_payload' => l10n.progressEq,
             _ => l10n.progressGeneric,
           };
         });

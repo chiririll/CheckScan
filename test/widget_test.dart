@@ -1,9 +1,11 @@
-import 'package:adapter_core/adapter_core.dart';
 import 'package:checkscan/app.dart';
 import 'package:checkscan/core/app_state.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
 import 'package:checkscan/core/scan/scan_session.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
+import 'package:eq_models/eq_models.dart';
+
+import 'scan/fake_providers_backend.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -11,7 +13,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 AppState _state({bool onboardingDone = false, List<ReceiptRecord> receipts = const []}) {
   final repository = ReceiptRepository(resolveDbPath: () async => 'unused.db');
-  return AppState(repository: repository, session: ScanSession(repository: repository))
+  return AppState(
+    repository: repository,
+    session: ScanSession(repository: repository, backend: FakeProvidersBackend()),
+  )
     ..ready = true
     ..onboardingDone = onboardingDone
     ..receipts = receipts;

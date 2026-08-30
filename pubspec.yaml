@@ -12,13 +12,10 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  adapter_core:
-    path: packages/adapter_core
-  adapter_eq_payload:
-    path: packages/adapter_eq_payload
-  adapter_ru_fns:
-    path: packages/adapter_ru_fns
-  crypto: ^3.0.7
+  eq_models:
+    path: packages/eq_models
+  providers_native:
+    path: packages/providers_native
   image_picker: ^1.2.3
   intl: ^0.20.2
   mobile_scanner: ^7.4.0

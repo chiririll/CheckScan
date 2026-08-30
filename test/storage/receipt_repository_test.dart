@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:adapter_core/adapter_core.dart';
+import 'package:eq_models/eq_models.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
 import 'package:flutter_test/flutter_test.dart';

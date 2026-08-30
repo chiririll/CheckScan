@@ -21,6 +21,10 @@ build/
 **/android/key.properties
 *.jks
 
+# Native providers (.so is built by scripts/build_android_native.ps1)
+**/jniLibs/**/*.so
+**/jniLibs/**/*.h
+
 # Misc
 *.class
 *.log
