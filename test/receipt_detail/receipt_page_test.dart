@@ -96,16 +96,23 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
   }
 
-  testWidgets('delete icon asks for confirmation and cancel keeps the receipt', (tester) async {
-    await openReceipt(tester);
+  Future<void> openActions(WidgetTester tester) async {
+    await tester.tap(find.byTooltip('Ещё'));
+    await tester.pumpAndSettle();
+  }
 
-    await tester.tap(find.byTooltip('Удалить'));
-    await tester.pump();
+  testWidgets('overflow delete asks for confirmation and cancel keeps the receipt', (tester) async {
+    await openReceipt(tester);
+    expect(find.text('История'), findsOneWidget);
+
+    await openActions(tester);
+    await tester.tap(find.text('Удалить').last);
+    await tester.pumpAndSettle();
     expect(find.text('Удалить чек?'), findsOneWidget);
     expect(find.text('Чек исчезнет из истории и статистики.'), findsOneWidget);
 
     await tester.tap(find.text('Отмена'));
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.text('Молоко 1 л'), findsOneWidget);
     expect(repository.deletedId, isNull);
     expect(state.receipts, isNotEmpty);
@@ -114,9 +121,10 @@ void main() {
   testWidgets('confirming delete removes the receipt and leaves the page', (tester) async {
     await openReceipt(tester);
 
-    await tester.tap(find.byTooltip('Удалить'));
-    await tester.pump();
-    await tester.tap(find.widgetWithText(FilledButton, 'Удалить'));
+    await openActions(tester);
+    await tester.tap(find.text('Удалить').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, 'Удалить'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
 
@@ -124,6 +132,37 @@ void main() {
     expect(find.text('Молоко 1 л'), findsNothing);
     expect(repository.deletedId, 'r1');
     expect(state.receipts, isEmpty);
+  });
+
+  testWidgets('receipt without items is shown as a successful empty list', (tester) async {
+    final empty = EqReceipt(
+      id: 'r1',
+      issuedAt: DateTime(2026, 8, 28, 18, 42),
+      currency: 'RSD',
+      receiptType: 'sale',
+      grandTotal: 1749,
+      extensions: const {itemsUnavailableExtension: true},
+    );
+    state.receipts = [
+      ReceiptRecord(
+        id: 'r1',
+        qrHash: 'rs_purs:h',
+        adapterId: 'rs_purs',
+        status: ReceiptStatus.ok,
+        issuedAt: empty.issuedAt,
+        merchantName: empty.merchantName,
+        grandTotal: empty.grandTotal,
+        currency: empty.currency,
+        itemCount: 0,
+        payload: empty.encode(),
+        scannedAt: DateTime(2026, 8, 28, 18, 50),
+        rawQr: 'https://suf.purs.gov.rs/v/?vl=x',
+      ),
+    ];
+    await openReceipt(tester);
+    expect(find.text('В чеке нет товаров'), findsOneWidget);
+    expect(find.text('Список покупок пока не пришёл'), findsNothing);
+    expect(find.text('Обновить состав'), findsNothing);
   });
 
   testWidgets('metadata stays collapsed until the spoiler is opened', (tester) async {

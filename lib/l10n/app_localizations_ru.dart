@@ -183,6 +183,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get retryItems => 'Обновить состав';
 
   @override
+  String get refreshReceipt => 'Обновить данные';
+
+  @override
+  String get receiptActions => 'Ещё';
+
+  @override
   String get refreshPending => 'Догрузить состав';
 
   @override
@@ -192,7 +198,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get missingItemsHint => 'Нет состава с сервера';
 
   @override
-  String get noItemsBanner => 'Список покупок пока не пришёл';
+  String get noItemsBanner => 'В чеке нет товаров';
 
   @override
   String get galleryNoQr => 'На фото не удалось найти QR-код чека.';

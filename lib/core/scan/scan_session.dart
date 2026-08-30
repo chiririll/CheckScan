@@ -3,6 +3,7 @@ import 'package:eq_models/eq_models.dart';
 import '../models/receipt_record.dart';
 import '../storage/receipt_repository.dart';
 import 'providers_backend.dart';
+import 'receipt_richness.dart';
 
 class ScanResult {
   const ScanResult({this.record, this.unknown = false});
@@ -38,13 +39,12 @@ class ScanSession {
       final resolved = await backend.resolve(rawQr, hint: match.adapterId, remote: true);
       final label = resolved.label.isNotEmpty ? resolved.label : match.label;
       final receipt = withProviderLabel(resolved.receipt, label);
-      final status = receipt.items.isEmpty ? ReceiptStatus.incomplete : ReceiptStatus.ok;
       final saved = await repository.insertParsed(
         qrHash: match.storageKey,
         adapterId: match.adapterId,
         rawQr: rawQr,
         receipt: receipt,
-        status: status,
+        status: statusFromReceipt(receipt),
       );
       return ScanResult.found(saved);
     } on Object {
@@ -71,9 +71,11 @@ class ScanSession {
   Future<ReceiptRecord?> refresh(ReceiptRecord record) async {
     final resolved = await backend.resolve(record.rawQr, hint: record.adapterId, remote: true, wait: true);
     final receipt = withProviderLabel(resolved.receipt, resolved.label);
-    final status = receipt.items.isEmpty ? ReceiptStatus.incomplete : ReceiptStatus.ok;
+    if (!isSignificantlyRicher(receipt, record.receipt)) {
+      return record;
+    }
     final updated = record.copyWith(
-      status: status,
+      status: statusFromReceipt(receipt),
       issuedAt: receipt.issuedAt,
       merchantName: receipt.merchantName,
       grandTotal: receipt.grandTotal,

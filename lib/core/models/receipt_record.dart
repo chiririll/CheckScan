@@ -6,6 +6,19 @@ enum ReceiptStatus { ok, error, incomplete }
 
 const providerLabelExtension = 'checkscan.provider_label';
 const rateLimitedExtension = 'checkscan.rate_limited';
+const itemsUnavailableExtension = 'checkscan.items_unavailable';
+
+bool _extensionFlag(EqReceipt receipt, String key) {
+  final value = receipt.extensions[key];
+  return value == true || value == 'true';
+}
+
+ReceiptStatus statusFromReceipt(EqReceipt receipt) {
+  if (receipt.items.isNotEmpty) return ReceiptStatus.ok;
+  if (_extensionFlag(receipt, rateLimitedExtension)) return ReceiptStatus.incomplete;
+  if (_extensionFlag(receipt, itemsUnavailableExtension)) return ReceiptStatus.ok;
+  return ReceiptStatus.incomplete;
+}
 
 EqReceipt withProviderLabel(EqReceipt receipt, String label) {
   if (label.isEmpty) return receipt;
@@ -55,10 +68,9 @@ class ReceiptRecord {
 
   bool get missingRemoteItems => canRetry && itemCount == 0;
 
-  bool get rateLimited {
-    final value = receipt.extensions[rateLimitedExtension];
-    return value == true || value == 'true';
-  }
+  bool get rateLimited => _extensionFlag(receipt, rateLimitedExtension);
+
+  bool get itemsUnavailable => _extensionFlag(receipt, itemsUnavailableExtension);
 
   ReceiptRecord copyWith({
     ReceiptStatus? status,

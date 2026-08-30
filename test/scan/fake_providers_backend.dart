@@ -2,9 +2,10 @@ import 'package:checkscan/core/scan/providers_backend.dart';
 import 'package:eq_models/eq_models.dart';
 
 class FakeProvidersBackend implements ProvidersBackend {
-  FakeProvidersBackend({this.throwOnResolve = false});
+  FakeProvidersBackend({this.throwOnResolve = false, this.nextReceipt});
 
   final bool throwOnResolve;
+  EqReceipt? nextReceipt;
 
   static const fnsQuery = 't=20260828T1842&s=1247.00&fn=8710000100905518&i=12&fp=4135164163&n=1';
   static const fnsHash = '8710000100905518|12|4135164163';
@@ -32,6 +33,14 @@ class FakeProvidersBackend implements ProvidersBackend {
     final matched = await match(rawQr, hint: hint);
     if (matched == null) {
       throw const UnknownReceiptFormat();
+    }
+    if (nextReceipt != null) {
+      return ResolveResult(
+        adapterId: matched.adapterId,
+        hash: matched.hash,
+        label: matched.label,
+        receipt: nextReceipt!,
+      );
     }
     if (matched.adapterId == 'ru_fns') {
       return ResolveResult(

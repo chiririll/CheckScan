@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:checkscan/core/models/receipt_record.dart';
 import 'package:checkscan/core/scan/scan_session.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
+import 'package:eq_models/eq_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -45,7 +46,7 @@ void main() {
     expect(result.record!.merchantName, 'Пятёрочка');
   });
 
-  test('FNS scan without items is incomplete', () async {
+  test('FNS scan without items is incomplete until the provider says otherwise', () async {
     final result = await session.process(FakeProvidersBackend.fnsQuery);
     expect(result.record!.status, ReceiptStatus.incomplete);
     expect(result.record!.grandTotal, 1247);
@@ -71,17 +72,41 @@ void main() {
     expect(result.record!.qrHash, 'boom:h');
   });
 
-  test('refresh updates an incomplete receipt', () async {
+  test('refresh keeps the stored receipt when the new payload is not richer', () async {
     final saved = await session.process(FakeProvidersBackend.fnsQuery);
-    expect(saved.record!.status, ReceiptStatus.incomplete);
+    final payload = saved.record!.payload;
     final updated = await session.refresh(saved.record!);
-    expect(updated!.status, ReceiptStatus.incomplete);
-    expect(updated.grandTotal, 1247);
+    expect(updated!.payload, payload);
+    expect(updated.status, ReceiptStatus.incomplete);
     expect(await repository.listAll(), hasLength(1));
   });
 
-  test('refreshPending walks incomplete receipts', () async {
-    await session.process(FakeProvidersBackend.fnsQuery);
+  test('refresh replaces the receipt when the new payload is richer', () async {
+    final backend = FakeProvidersBackend();
+    session = ScanSession(repository: repository, backend: backend);
+    final saved = await session.process(FakeProvidersBackend.fnsQuery);
+    backend.nextReceipt = EqReceipt(
+      id: 'ru-rich',
+      issuedAt: DateTime(2026, 8, 28, 18, 42),
+      currency: 'RUB',
+      receiptType: 'sale',
+      merchantName: 'Пятёрочка',
+      grandTotal: 1247,
+      items: const [EqItem(description: 'Хлеб', quantity: 1, unitPrice: 1247, totalPrice: 1247)],
+    );
+    final updated = await session.refresh(saved.record!);
+    expect(updated!.itemCount, 1);
+    expect(updated.merchantName, 'Пятёрочка');
+    expect(updated.status, ReceiptStatus.ok);
+  });
+
+  test('refreshPending walks error receipts', () async {
+    session = ScanSession(
+      repository: repository,
+      backend: FakeProvidersBackend(throwOnResolve: true),
+    );
+    await session.process('boom');
+    session = ScanSession(repository: repository, backend: FakeProvidersBackend());
     final n = await session.refreshPending();
     expect(n, 1);
     expect(await repository.listAll(), hasLength(1));

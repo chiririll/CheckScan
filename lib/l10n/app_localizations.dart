@@ -400,6 +400,18 @@ abstract class AppLocalizations {
   /// **'Обновить состав'**
   String get retryItems;
 
+  /// No description provided for @refreshReceipt.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обновить данные'**
+  String get refreshReceipt;
+
+  /// No description provided for @receiptActions.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ещё'**
+  String get receiptActions;
+
   /// No description provided for @refreshPending.
   ///
   /// In ru, this message translates to:
@@ -421,7 +433,7 @@ abstract class AppLocalizations {
   /// No description provided for @noItemsBanner.
   ///
   /// In ru, this message translates to:
-  /// **'Список покупок пока не пришёл'**
+  /// **'В чеке нет товаров'**
   String get noItemsBanner;
 
   /// No description provided for @galleryNoQr.

@@ -29,9 +29,17 @@ class _ReceiptPageState extends State<ReceiptPage> {
       builder: (context) => AlertDialog(
         title: Text(l10n.deleteReceiptTitle),
         content: Text(l10n.deleteReceiptBody),
+        actionsAlignment: MainAxisAlignment.spaceBetween,
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.deleteReceipt)),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFFC62828)),
+            child: Text(l10n.deleteReceipt),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
         ],
       ),
     );
@@ -74,87 +82,127 @@ class _ReceiptPageState extends State<ReceiptPage> {
         return Scaffold(
           appBar: AppBar(
             leading: const BackButton(),
-            title: Text(l10n.receiptTitle),
+            title: _ReceiptCrumbs(l10n: l10n),
             actions: [
-              IconButton(
-                onPressed: _busy ? null : _confirmDelete,
-                tooltip: l10n.deleteReceipt,
-                icon: const Icon(Icons.delete_outline),
+              PopupMenuButton<String>(
+                enabled: !_busy,
+                tooltip: l10n.receiptActions,
+                onSelected: (value) {
+                  if (value == 'refresh') _refresh();
+                  if (value == 'delete') _confirmDelete();
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(value: 'refresh', child: Text(l10n.refreshReceipt)),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Text(l10n.deleteReceipt, style: const TextStyle(color: Color(0xFFC62828))),
+                  ),
+                ],
               ),
             ],
           ),
-          body: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          body: Column(
             children: [
-          Row(
-            children: [
-              Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18))),
-              if (record.providerLabel.isNotEmpty) _Chip(record.providerLabel),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(formatDateTime(when), style: TextStyle(color: Colors.grey.shade600)),
-          const SizedBox(height: 8),
-          Text(
-            formatMoney(record.grandTotal, record.currency),
-            maxLines: 1,
-            softWrap: false,
-            overflow: TextOverflow.fade,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
-          ),
-          if (record.canRetry) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: const Color(0xFFE8EEED), borderRadius: BorderRadius.circular(8)),
-              child: Text(
-                record.status == ReceiptStatus.error ? l10n.parseErrorBody : l10n.noItemsBanner,
-              ),
-            ),
-            const SizedBox(height: 8),
-            FilledButton(
-              onPressed: _busy ? null : _refresh,
-              child: _busy
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(record.status == ReceiptStatus.error ? l10n.retry : l10n.retryItems),
-            ),
-          ],
-          if (receipt.items.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            const Divider(),
-            Text(l10n.itemsSection, style: const TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            ...receipt.items.map((item) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              if (_busy) const LinearProgressIndicator(minHeight: 2),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(item.description),
-                          Text(
-                            l10n.qtyPrice(formatQty(item.quantity), formatMoney(item.unitPrice, record.currency)),
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                          ),
-                        ],
-                      ),
+                    Row(
+                      children: [
+                        Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18))),
+                        if (record.providerLabel.isNotEmpty) _Chip(record.providerLabel),
+                      ],
                     ),
-                    Text(formatMoney(item.totalPrice, record.currency), style: const TextStyle(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 4),
+                    Text(formatDateTime(when), style: TextStyle(color: Colors.grey.shade600)),
+                    const SizedBox(height: 8),
+                    Text(
+                      formatMoney(record.grandTotal, record.currency),
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.fade,
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+                    ),
+                    if (record.status == ReceiptStatus.error) ...[
+                      const SizedBox(height: 12),
+                      Text(l10n.parseErrorBody, style: TextStyle(color: Colors.grey.shade700)),
+                    ] else if (receipt.items.isEmpty) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        record.itemsUnavailable || record.status == ReceiptStatus.ok
+                            ? l10n.noItemsBanner
+                            : l10n.missingItemsHint,
+                        style: TextStyle(color: Colors.grey.shade700),
+                      ),
+                    ],
+                    if (receipt.items.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      const Divider(),
+                      Text(l10n.itemsSection, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 8),
+                      ...receipt.items.map((item) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(item.description),
+                                    Text(
+                                      l10n.qtyPrice(formatQty(item.quantity), formatMoney(item.unitPrice, record.currency)),
+                                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Text(formatMoney(item.totalPrice, record.currency), style: const TextStyle(fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                    const SizedBox(height: 8),
+                    const Divider(),
+                    ReceiptMetadataTile(record: record),
                   ],
                 ),
-              );
-            }),
-          ],
-          const SizedBox(height: 8),
-          const Divider(),
-          ReceiptMetadataTile(record: record),
+              ),
             ],
           ),
         );
       },
+    );
+  }
+}
+
+class _ReceiptCrumbs extends StatelessWidget {
+  const _ReceiptCrumbs({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final muted = TextStyle(color: Colors.grey.shade600, fontSize: 16, fontWeight: FontWeight.w400);
+    return Row(
+      children: [
+        Flexible(
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).maybePop(),
+            child: Text(l10n.historyTitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: muted),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Icon(Icons.chevron_right, size: 18, color: Colors.grey.shade500),
+        ),
+        Flexible(
+          child: Text(l10n.receiptTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
+      ],
     );
   }
 }
