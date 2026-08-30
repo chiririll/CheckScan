@@ -35,5 +35,6 @@ QR formats and provider IDs live in the Go submodule. Do not add Dart-side adapt
 
 - Android first. UI is Russian only (`ru`). Strings: [lib/l10n/app_ru.arb](lib/l10n/app_ru.arb); gen config: [l10n.yaml](l10n.yaml).
 - `services/providers` is a separate repo (submodule). Change it there ([AGENTS.md](services/providers/AGENTS.md)); rebuild the `.so` after.
+- `ru_fns` fetches items from proverkacheka.com. Token is a native build ldflag (`PROVERKACHEKA_TOKEN` or `proverkacheka.token` in `android/local.properties`). Do not commit the token.
 - New code needs tests. Dart: [test/](test/) (`flutter test`; scan path uses [fake_providers_backend.dart](test/scan/fake_providers_backend.dart)).
 - Keep files small. Split growing files into modules; split a module when it starts doing more than one job.

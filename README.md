@@ -21,4 +21,6 @@ flutter run
 
 Needs Go 1.22+ and an Android NDK (`ANDROID_NDK_HOME` or `ndk.dir` in `android/local.properties`).
 
+Russian item lists come from [proverkacheka.com](https://proverkacheka.com/). Pass the API token at native build time via `PROVERKACHEKA_TOKEN` or `proverkacheka.token` in `android/local.properties` (gitignored). Without it, `ru_fns` still matches the QR but leaves the receipt incomplete.
+
 Android first. UI is Russian (`ru` only in v1).
