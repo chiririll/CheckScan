@@ -25,7 +25,7 @@ class FakeProvidersBackend implements ProvidersBackend {
   }
 
   @override
-  Future<ResolveResult> resolve(String rawQr, {String? hint}) async {
+  Future<ResolveResult> resolve(String rawQr, {String? hint, bool remote = false, bool wait = false}) async {
     if (throwOnResolve || rawQr == 'boom') {
       throw const ProviderParseException('boom', 'fail');
     }

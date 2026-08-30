@@ -35,7 +35,7 @@ class ScanSession {
     if (existing != null) return ScanResult.found(existing);
 
     try {
-      final resolved = await backend.resolve(rawQr, hint: match.adapterId);
+      final resolved = await backend.resolve(rawQr, hint: match.adapterId, remote: true);
       final label = resolved.label.isNotEmpty ? resolved.label : match.label;
       final receipt = withProviderLabel(resolved.receipt, label);
       final status = receipt.items.isEmpty ? ReceiptStatus.incomplete : ReceiptStatus.ok;
@@ -69,7 +69,7 @@ class ScanSession {
   }
 
   Future<ReceiptRecord?> refresh(ReceiptRecord record) async {
-    final resolved = await backend.resolve(record.rawQr, hint: record.adapterId);
+    final resolved = await backend.resolve(record.rawQr, hint: record.adapterId, remote: true, wait: true);
     final receipt = withProviderLabel(resolved.receipt, resolved.label);
     final status = receipt.items.isEmpty ? ReceiptStatus.incomplete : ReceiptStatus.ok;
     final updated = record.copyWith(
@@ -83,5 +83,25 @@ class ScanSession {
     );
     await repository.replace(updated);
     return updated;
+  }
+
+  Future<int> refreshPending({
+    void Function(int done, int total)? onProgress,
+  }) async {
+    final pending = (await repository.listAll()).where((row) => row.canRetry).toList();
+    var done = 0;
+    for (final record in pending) {
+      onProgress?.call(done, pending.length);
+      try {
+        final updated = await refresh(record);
+        done += 1;
+        if (updated?.rateLimited == true) {
+          break;
+        }
+      } catch (_) {
+        done += 1;
+      }
+    }
+    return done;
   }
 }

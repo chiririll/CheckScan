@@ -80,6 +80,13 @@ void main() {
     expect(await repository.listAll(), hasLength(1));
   });
 
+  test('refreshPending walks incomplete receipts', () async {
+    await session.process(FakeProvidersBackend.fnsQuery);
+    final n = await session.refreshPending();
+    expect(n, 1);
+    expect(await repository.listAll(), hasLength(1));
+  });
+
   test('stores provider label from the backend', () async {
     final result = await session.process(FakeProvidersBackend.fnsQuery);
     expect(result.record!.providerLabel, 'RU');

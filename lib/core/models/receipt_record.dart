@@ -5,6 +5,7 @@ import 'package:eq_models/eq_models.dart';
 enum ReceiptStatus { ok, error, incomplete }
 
 const providerLabelExtension = 'checkscan.provider_label';
+const rateLimitedExtension = 'checkscan.rate_limited';
 
 EqReceipt withProviderLabel(EqReceipt receipt, String label) {
   if (label.isEmpty) return receipt;
@@ -51,6 +52,13 @@ class ReceiptRecord {
   }
 
   bool get canRetry => status == ReceiptStatus.error || status == ReceiptStatus.incomplete;
+
+  bool get missingRemoteItems => canRetry && itemCount == 0;
+
+  bool get rateLimited {
+    final value = receipt.extensions[rateLimitedExtension];
+    return value == true || value == 'true';
+  }
 
   ReceiptRecord copyWith({
     ReceiptStatus? status,

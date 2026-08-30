@@ -183,6 +183,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get retryItems => 'Обновить состав';
 
   @override
+  String get refreshPending => 'Догрузить состав';
+
+  @override
+  String get refreshPendingDone => 'Состав обновлён';
+
+  @override
+  String get missingItemsHint => 'Нет состава с сервера';
+
+  @override
   String get noItemsBanner => 'Список покупок пока не пришёл';
 
   @override

@@ -21,6 +21,8 @@ flutter run
 
 Needs Go 1.22+ and an Android NDK (`ANDROID_NDK_HOME` or `ndk.dir` in `android/local.properties`).
 
-Russian item lists come from [proverkacheka.com](https://proverkacheka.com/). Pass the API token at native build time via `PROVERKACHEKA_TOKEN` or `proverkacheka.token` in `android/local.properties` (gitignored). Without it, `ru_fns` still matches the QR but leaves the receipt incomplete.
+Scan fetches items immediately when the provider API answers. If it returns 403/429/503 (or `Retry-After`), the native library pauses further calls to that host and keeps the local total. History → **Догрузить состав** retries receipts that still have no items.
+
+Pass the proverkacheka token at native build time via `PROVERKACHEKA_TOKEN` or `proverkacheka.token` in `android/local.properties` (gitignored).
 
 Android first. UI is Russian (`ru` only in v1).

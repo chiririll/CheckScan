@@ -400,6 +400,24 @@ abstract class AppLocalizations {
   /// **'Обновить состав'**
   String get retryItems;
 
+  /// No description provided for @refreshPending.
+  ///
+  /// In ru, this message translates to:
+  /// **'Догрузить состав'**
+  String get refreshPending;
+
+  /// No description provided for @refreshPendingDone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Состав обновлён'**
+  String get refreshPendingDone;
+
+  /// No description provided for @missingItemsHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет состава с сервера'**
+  String get missingItemsHint;
+
   /// No description provided for @noItemsBanner.
   ///
   /// In ru, this message translates to:

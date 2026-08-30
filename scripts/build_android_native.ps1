@@ -113,6 +113,11 @@ foreach ($abi in $Abis) {
         if ($LASTEXITCODE -ne 0) { throw "go build failed for $abi" }
     } finally {
         Pop-Location
+        Remove-Item Env:GOOS -ErrorAction SilentlyContinue
+        Remove-Item Env:GOARCH -ErrorAction SilentlyContinue
+        Remove-Item Env:CGO_ENABLED -ErrorAction SilentlyContinue
+        Remove-Item Env:CC -ErrorAction SilentlyContinue
+        Remove-Item Env:CGO_LDFLAGS -ErrorAction SilentlyContinue
     }
     $generatedH = [System.IO.Path]::ChangeExtension($outSo, ".h")
     if (Test-Path $generatedH) { Remove-Item $generatedH }
