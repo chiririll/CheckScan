@@ -84,6 +84,18 @@ class AppLocalizationsRu extends AppLocalizations {
   String get receiptCount => 'Чеков';
 
   @override
+  String get previousPeriod => 'Предыдущий период';
+
+  @override
+  String get nextPeriod => 'Следующий период';
+
+  @override
+  String get emptyPeriodTitle => 'Нет чеков за этот месяц';
+
+  @override
+  String get emptyPeriodBody => 'Смените период или отсканируйте чек.';
+
+  @override
   String get mostOften => 'Чаще всего';
 
   @override

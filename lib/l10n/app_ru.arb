@@ -23,6 +23,10 @@
   "emptyHistoryBody": "Нажмите круглую кнопку внизу и наведите камеру на QR.",
   "spent": "Потрачено",
   "receiptCount": "Чеков",
+  "previousPeriod": "Предыдущий период",
+  "nextPeriod": "Следующий период",
+  "emptyPeriodTitle": "Нет чеков за этот месяц",
+  "emptyPeriodBody": "Смените период или отсканируйте чек.",
   "mostOften": "Чаще всего",
   "cheaperWhere": "Где дешевле {item}",
   "@cheaperWhere": {

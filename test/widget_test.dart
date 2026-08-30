@@ -1,8 +1,10 @@
 import 'package:checkscan/app.dart';
 import 'package:checkscan/core/app_state.dart';
+import 'package:checkscan/core/format.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
 import 'package:checkscan/core/scan/scan_session.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
+import 'package:checkscan/features/home/home_stats.dart';
 import 'package:eq_models/eq_models.dart';
 
 import 'scan/fake_providers_backend.dart';
@@ -101,5 +103,59 @@ void main() {
     await tester.pump();
     expect(find.text('Пятёрочка'), findsOneWidget);
     expect(find.text('1 товар'), findsOneWidget);
+  });
+
+  testWidgets('home splits stats by currency tabs and keeps period shared', (tester) async {
+    final now = DateTime.now();
+    final issued = DateTime(now.year, now.month, 10, 12);
+    final rub = _sampleReceipt().copyWith(issuedAt: issued);
+    final rsdReceipt = EqReceipt(
+      id: 'r2',
+      issuedAt: issued,
+      currency: 'RSD',
+      receiptType: 'sale',
+      merchantName: 'Maxi',
+      grandTotal: 500,
+      items: const [EqItem(description: 'Hleb', quantity: 1, unitPrice: 500, totalPrice: 500)],
+    );
+    final rsd = ReceiptRecord(
+      id: 'r2',
+      qrHash: 'eq_payload:r2',
+      adapterId: 'eq_payload',
+      status: ReceiptStatus.ok,
+      issuedAt: issued,
+      merchantName: rsdReceipt.merchantName,
+      grandTotal: rsdReceipt.grandTotal,
+      currency: rsdReceipt.currency,
+      itemCount: rsdReceipt.items.length,
+      payload: rsdReceipt.encode(),
+      scannedAt: issued,
+      rawQr: '{}',
+    );
+
+    await tester.pumpWidget(CheckScanApp(state: _state(onboardingDone: true, receipts: [rub, rsd])));
+    await tester.pump();
+
+    expect(find.text('₽'), findsOneWidget);
+    expect(find.text('дин.'), findsOneWidget);
+    expect(find.text(formatMoney(1247, 'RUB')), findsOneWidget);
+    expect(find.text('Молоко 1 л'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Предыдущий период'));
+    await tester.pump();
+    final previousLabel = formatMonthYear(HomePeriod.current(now).previous.asDate);
+    expect(find.text(previousLabel), findsOneWidget);
+    expect(find.text('Нет чеков за этот месяц'), findsWidgets);
+
+    await tester.tap(find.text('дин.'));
+    await tester.pumpAndSettle();
+    expect(find.text(previousLabel), findsOneWidget);
+    expect(find.text('Нет чеков за этот месяц'), findsWidgets);
+
+    await tester.tap(find.byTooltip('Следующий период'));
+    await tester.pumpAndSettle();
+    expect(find.text(formatMonthYear(HomePeriod.current(now).asDate)), findsOneWidget);
+    expect(find.text(formatMoney(500, 'RSD')), findsWidgets);
+    expect(find.text('Hleb'), findsOneWidget);
   });
 }

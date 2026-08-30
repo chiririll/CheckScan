@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 final _money = NumberFormat.decimalPattern('ru');
 final _day = DateFormat('d MMMM', 'ru');
 final _dayYear = DateFormat('d MMMM y', 'ru');
+final _monthYear = DateFormat('LLLL y', 'ru');
 final _dateTime = DateFormat('d MMMM y, HH:mm', 'ru');
 final _time = DateFormat('HH:mm');
 
@@ -11,6 +12,18 @@ String formatMoney(double value, [String currency = 'RUB']) {
   if (currency == 'RUB') return '$amount ₽';
   if (currency == 'RSD') return '$amount дин.';
   return '$amount $currency';
+}
+
+String formatCurrencyLabel(String currency) {
+  if (currency == 'RUB') return '₽';
+  if (currency == 'RSD') return 'дин.';
+  return currency;
+}
+
+String formatMonthYear(DateTime date) {
+  final raw = _monthYear.format(date);
+  if (raw.isEmpty) return raw;
+  return '${raw[0].toUpperCase()}${raw.substring(1)}';
 }
 
 String formatDayHeader(DateTime date) => _dayYear.format(date);

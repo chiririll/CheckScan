@@ -232,6 +232,30 @@ abstract class AppLocalizations {
   /// **'Чеков'**
   String get receiptCount;
 
+  /// No description provided for @previousPeriod.
+  ///
+  /// In ru, this message translates to:
+  /// **'Предыдущий период'**
+  String get previousPeriod;
+
+  /// No description provided for @nextPeriod.
+  ///
+  /// In ru, this message translates to:
+  /// **'Следующий период'**
+  String get nextPeriod;
+
+  /// No description provided for @emptyPeriodTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет чеков за этот месяц'**
+  String get emptyPeriodTitle;
+
+  /// No description provided for @emptyPeriodBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Смените период или отсканируйте чек.'**
+  String get emptyPeriodBody;
+
   /// No description provided for @mostOften.
   ///
   /// In ru, this message translates to:
