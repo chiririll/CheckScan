@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 
 import 'package:eq_models/eq_models.dart';
 import 'package:providers_native/providers_native.dart';
@@ -55,7 +56,9 @@ class NativeProvidersBackend implements ProvidersBackend {
 
   @override
   Future<ProviderMatch?> match(String rawQr, {String? hint}) async {
-    final decoded = _decode(await _lib.match(rawQr, hint: hint ?? ''));
+    final raw = await _lib.match(rawQr, hint: hint ?? '');
+    _trace('match hint=${hint ?? ''} qr=${_preview(rawQr)} -> ${_preview(raw)}');
+    final decoded = _decode(raw);
     if (_errorCode(decoded) == 'unknown_format') return null;
     _throwIfError(decoded, adapterId: hint);
     return ProviderMatch(
@@ -67,7 +70,9 @@ class NativeProvidersBackend implements ProvidersBackend {
 
   @override
   Future<ResolveResult> resolve(String rawQr, {String? hint, bool remote = false, bool wait = false}) async {
-    final decoded = _decode(await _lib.resolve(rawQr, hint: hint ?? '', remote: remote, wait: wait));
+    final raw = await _lib.resolve(rawQr, hint: hint ?? '', remote: remote, wait: wait);
+    _trace('resolve remote=$remote wait=$wait hint=${hint ?? ''} qr=${_preview(rawQr)} -> ${_preview(raw)}');
+    final decoded = _decode(raw);
     _throwIfError(decoded, adapterId: hint);
     final adapterId = '${decoded['adapter_id']}';
     return ResolveResult(
@@ -99,5 +104,15 @@ class NativeProvidersBackend implements ProvidersBackend {
       throw const UnknownReceiptFormat();
     }
     throw ProviderParseException(adapterId ?? '', message);
+  }
+
+  void _trace(String message) {
+    developer.log(message, name: 'checkscan');
+  }
+
+  String _preview(String raw, [int max = 240]) {
+    final text = raw.replaceAll('\n', r'\n');
+    if (text.length <= max) return text;
+    return '${text.substring(0, max)}…(${text.length})';
   }
 }

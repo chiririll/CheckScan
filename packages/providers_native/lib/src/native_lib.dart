@@ -4,6 +4,8 @@ import 'dart:isolate';
 
 import 'package:ffi/ffi.dart';
 
+import 'native_log.dart';
+
 typedef _CStrFn = Pointer<Utf8> Function();
 typedef _CStr2Fn = Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>);
 typedef _CStr3Fn = Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>);
@@ -83,7 +85,9 @@ class NativeProvidersLib {
 }
 
 class IsolatedNativeProviders {
-  IsolatedNativeProviders();
+  IsolatedNativeProviders() {
+    NativeHostLog.instance.attach();
+  }
 
   Future<String> match(String rawQr, {String hint = ''}) {
     return Isolate.run(() => NativeProvidersLib.open().match(rawQr, hint: hint));
