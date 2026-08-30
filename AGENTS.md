@@ -24,7 +24,7 @@ Lint: [analysis_options.yaml](analysis_options.yaml).
 1. Wire-up: [lib/main.dart](lib/main.dart)
 2. Scan pipeline (match → dedupe → resolve → persist): [lib/core/scan/scan_session.dart](lib/core/scan/scan_session.dart)
 3. Native JSON bridge: [lib/core/scan/providers_backend.dart](lib/core/scan/providers_backend.dart)
-4. FFI: [packages/providers_native/lib/src/native_lib.dart](packages/providers_native/lib/src/native_lib.dart). Host attaches `checkscan_set_log` → `developer.log` name `checkscan`.
+4. FFI: [packages/providers_native/lib/src/native_lib.dart](packages/providers_native/lib/src/native_lib.dart). Host attaches `checkscan_set_log` and [prints](packages/providers_native/lib/src/native_log.dart) `[checkscan]` lines.
 5. Providers: [services/providers/AGENTS.md](services/providers/AGENTS.md)
 6. Local DB: [lib/core/storage/receipt_repository.dart](lib/core/storage/receipt_repository.dart), [lib/core/models/receipt_record.dart](lib/core/models/receipt_record.dart)
 7. UI shell: [lib/app.dart](lib/app.dart), [lib/features/shell/app_shell.dart](lib/features/shell/app_shell.dart)

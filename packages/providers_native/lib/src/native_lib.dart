@@ -85,21 +85,29 @@ class NativeProvidersLib {
 }
 
 class IsolatedNativeProviders {
-  IsolatedNativeProviders() {
-    NativeHostLog.instance.attach();
-  }
+  IsolatedNativeProviders();
 
   Future<String> match(String rawQr, {String hint = ''}) {
-    return Isolate.run(() => NativeProvidersLib.open().match(rawQr, hint: hint));
+    return Isolate.run(() => _withLog((lib) => lib.match(rawQr, hint: hint)));
   }
 
   Future<String> resolve(String rawQr, {String hint = '', bool remote = false, bool wait = false}) {
     return Isolate.run(
-      () => NativeProvidersLib.open().resolve(rawQr, hint: hint, remote: remote, wait: wait),
+      () => _withLog((lib) => lib.resolve(rawQr, hint: hint, remote: remote, wait: wait)),
     );
   }
 
   Future<String> providers() {
-    return Isolate.run(() => NativeProvidersLib.open().providers());
+    return Isolate.run(() => _withLog((lib) => lib.providers()));
+  }
+
+  static T _withLog<T>(T Function(NativeProvidersLib lib) body) {
+    final lib = NativeProvidersLib.open();
+    final log = NativeHostLog.attach();
+    try {
+      return body(lib);
+    } finally {
+      log?.close();
+    }
   }
 }

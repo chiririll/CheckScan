@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
 
 import 'package:eq_models/eq_models.dart';
 import 'package:providers_native/providers_native.dart';
@@ -107,7 +106,7 @@ class NativeProvidersBackend implements ProvidersBackend {
   }
 
   void _trace(String message) {
-    developer.log(message, name: 'checkscan');
+    print('[checkscan] $message');
   }
 
   String _preview(String raw, [int max = 240]) {

@@ -1,4 +1,3 @@
-import 'dart:developer' as developer;
 import 'dart:ffi';
 import 'dart:io';
 
@@ -8,41 +7,38 @@ typedef _CLogNative = Void Function(Int32, Pointer<Utf8>);
 typedef _CSetLogNative = Void Function(Pointer<NativeFunction<_CLogNative>>);
 typedef _CFreeFn = Void Function(Pointer<Utf8>);
 
-/// Host adapter: library calls [checkscan_set_log], Flutter prints the line.
+/// Host adapter for one isolate: library calls [checkscan_set_log], we [print].
 final class NativeHostLog {
-  NativeHostLog._();
+  NativeHostLog._(this._setLog, this._callable, this._free);
 
-  static final NativeHostLog instance = NativeHostLog._();
+  final void Function(Pointer<NativeFunction<_CLogNative>>) _setLog;
+  final NativeCallable<_CLogNative> _callable;
+  final void Function(Pointer<Utf8>) _free;
 
-  NativeCallable<_CLogNative>? _callable;
-  void Function(Pointer<Utf8>)? _free;
-
-  void attach() {
-    if (_callable != null) return;
-    if (!Platform.isAndroid) return;
+  static NativeHostLog? attach() {
+    if (!Platform.isAndroid) return null;
     final lib = DynamicLibrary.open('libcheckscan.so');
     final setLog = lib.lookupFunction<_CSetLogNative, void Function(Pointer<NativeFunction<_CLogNative>>)>(
       'checkscan_set_log',
     );
-    _free = lib.lookupFunction<_CFreeFn, void Function(Pointer<Utf8>)>('checkscan_free');
-    _callable = NativeCallable<_CLogNative>.listener(_onLog);
-    setLog(_callable!.nativeFunction);
-  }
-
-  void _onLog(int level, Pointer<Utf8> message) {
-    try {
-      developer.log(message.toDartString(), name: 'checkscan', level: _dartLevel(level));
-    } finally {
-      _free?.call(message);
+    final free = lib.lookupFunction<_CFreeFn, void Function(Pointer<Utf8>)>('checkscan_free');
+    late final NativeHostLog host;
+    void onLog(int _, Pointer<Utf8> message) {
+      try {
+        print('[checkscan] ${message.toDartString()}');
+      } finally {
+        host._free(message);
+      }
     }
+
+    final callable = NativeCallable<_CLogNative>.isolateLocal(onLog);
+    host = NativeHostLog._(setLog, callable, free);
+    setLog(callable.nativeFunction);
+    return host;
   }
 
-  static int _dartLevel(int native) {
-    return switch (native) {
-      3 => 500,
-      5 => 900,
-      6 => 1000,
-      _ => 800,
-    };
+  void close() {
+    _setLog(nullptr);
+    _callable.close();
   }
 }
