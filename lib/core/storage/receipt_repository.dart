@@ -115,6 +115,11 @@ class ReceiptRepository {
 
   Future<void> replace(ReceiptRecord record) => _upsert(record);
 
+  Future<void> deleteById(String id) async {
+    final db = await _database;
+    await db.delete('receipts', where: 'id = ?', whereArgs: [id]);
+  }
+
   Future<void> _upsert(ReceiptRecord record) async {
     final db = await _database;
     await db.insert(

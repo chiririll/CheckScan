@@ -165,6 +165,18 @@ class AppLocalizationsRu extends AppLocalizations {
   String get close => 'Закрыть';
 
   @override
+  String get cancel => 'Отмена';
+
+  @override
+  String get deleteReceipt => 'Удалить';
+
+  @override
+  String get deleteReceiptTitle => 'Удалить чек?';
+
+  @override
+  String get deleteReceiptBody => 'Чек исчезнет из истории и статистики.';
+
+  @override
   String get retry => 'Повторить';
 
   @override

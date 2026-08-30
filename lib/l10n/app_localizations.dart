@@ -364,6 +364,30 @@ abstract class AppLocalizations {
   /// **'Закрыть'**
   String get close;
 
+  /// No description provided for @cancel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отмена'**
+  String get cancel;
+
+  /// No description provided for @deleteReceipt.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить'**
+  String get deleteReceipt;
+
+  /// No description provided for @deleteReceiptTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить чек?'**
+  String get deleteReceiptTitle;
+
+  /// No description provided for @deleteReceiptBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Чек исчезнет из истории и статистики.'**
+  String get deleteReceiptBody;
+
   /// No description provided for @retry.
   ///
   /// In ru, this message translates to:

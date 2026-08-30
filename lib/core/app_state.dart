@@ -46,4 +46,10 @@ class AppState extends ChangeNotifier {
     }
     return null;
   }
+
+  Future<void> deleteReceipt(String id) async {
+    await repository.deleteById(id);
+    receipts = receipts.where((receipt) => receipt.id != id).toList();
+    notifyListeners();
+  }
 }

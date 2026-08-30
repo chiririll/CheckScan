@@ -80,4 +80,25 @@ void main() {
     final list = await repository.listAll();
     expect(list.map((e) => e.id), ['new', 'old']);
   });
+
+  test('deleteById removes the receipt', () async {
+    await repository.insertParsed(
+      qrHash: 'a:1',
+      adapterId: 'eq_payload',
+      rawQr: '1',
+      receipt: EqReceipt(
+        id: 'gone',
+        issuedAt: DateTime(2026, 8, 28),
+        currency: 'RUB',
+        receiptType: 'sale',
+        grandTotal: 10,
+      ),
+      status: ReceiptStatus.ok,
+    );
+
+    await repository.deleteById('gone');
+
+    expect(await repository.findById('gone'), isNull);
+    expect(await repository.listAll(), isEmpty);
+  });
 }

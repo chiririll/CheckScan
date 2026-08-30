@@ -21,6 +21,24 @@ class _ReceiptPageState extends State<ReceiptPage> {
 
   ReceiptRecord? get _record => widget.state.byId(widget.receiptId);
 
+  Future<void> _confirmDelete() async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.deleteReceiptTitle),
+        content: Text(l10n.deleteReceiptBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.deleteReceipt)),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await widget.state.deleteReceipt(widget.receiptId);
+    if (mounted) Navigator.of(context).pop();
+  }
+
   Future<void> _refresh() async {
     final current = _record;
     if (current == null) return;
@@ -53,7 +71,17 @@ class _ReceiptPageState extends State<ReceiptPage> {
         final when = record.issuedAt ?? record.scannedAt;
 
         return Scaffold(
-          appBar: AppBar(leading: const BackButton(), title: Text(l10n.receiptTitle)),
+          appBar: AppBar(
+            leading: const BackButton(),
+            title: Text(l10n.receiptTitle),
+            actions: [
+              IconButton(
+                onPressed: _busy ? null : _confirmDelete,
+                tooltip: l10n.deleteReceipt,
+                icon: const Icon(Icons.delete_outline),
+              ),
+            ],
+          ),
           body: ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             children: [
