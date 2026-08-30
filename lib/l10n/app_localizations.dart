@@ -292,29 +292,17 @@ abstract class AppLocalizations {
   /// **'Наведите на QR-код чека'**
   String get aimQr;
 
-  /// No description provided for @progressRu.
-  ///
-  /// In ru, this message translates to:
-  /// **'Получаем данные российского чека'**
-  String get progressRu;
-
-  /// No description provided for @progressRs.
-  ///
-  /// In ru, this message translates to:
-  /// **'Получаем данные сербского чека'**
-  String get progressRs;
-
-  /// No description provided for @progressEq.
-  ///
-  /// In ru, this message translates to:
-  /// **'Читаем электронный чек'**
-  String get progressEq;
-
   /// No description provided for @progressGeneric.
   ///
   /// In ru, this message translates to:
   /// **'Ищем формат чека'**
   String get progressGeneric;
+
+  /// No description provided for @progressLoading.
+  ///
+  /// In ru, this message translates to:
+  /// **'Получаем данные чека'**
+  String get progressLoading;
 
   /// No description provided for @unknownTitle.
   ///
@@ -399,18 +387,6 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'{qty} × {price}'**
   String qtyPrice(String qty, String price);
-
-  /// No description provided for @providerRu.
-  ///
-  /// In ru, this message translates to:
-  /// **'RU'**
-  String get providerRu;
-
-  /// No description provided for @providerEq.
-  ///
-  /// In ru, this message translates to:
-  /// **'eQ'**
-  String get providerEq;
 
   /// No description provided for @amount.
   ///

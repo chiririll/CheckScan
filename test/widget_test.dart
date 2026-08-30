@@ -32,6 +32,7 @@ ReceiptRecord _sampleReceipt() {
     grandTotal: 1247,
     items: const [EqItem(description: 'Молоко 1 л', quantity: 2, unitPrice: 89, totalPrice: 178)],
   );
+  final labeled = withProviderLabel(receipt, 'EQ');
   return ReceiptRecord(
     id: 'r1',
     qrHash: 'eq_payload:r1',
@@ -42,7 +43,7 @@ ReceiptRecord _sampleReceipt() {
     grandTotal: receipt.grandTotal,
     currency: receipt.currency,
     itemCount: receipt.items.length,
-    payload: receipt.encode(),
+    payload: labeled.encode(),
     scannedAt: DateTime(2026, 8, 28, 18, 50),
     rawQr: '{}',
   );

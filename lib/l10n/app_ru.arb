@@ -48,10 +48,8 @@
   "integrationExport": "Экспорт eQ",
   "integrationCloud": "Облако",
   "aimQr": "Наведите на QR-код чека",
-  "progressRu": "Получаем данные российского чека",
-  "progressRs": "Получаем данные сербского чека",
-  "progressEq": "Читаем электронный чек",
   "progressGeneric": "Ищем формат чека",
+  "progressLoading": "Получаем данные чека",
   "unknownTitle": "Формат не поддерживается",
   "unknownBody": "Этот QR не похож на чек.",
   "gotIt": "Понятно",
@@ -72,8 +70,6 @@
       "price": { "type": "String" }
     }
   },
-  "providerRu": "RU",
-  "providerEq": "eQ",
   "amount": "{value} ₽",
   "@amount": {
     "placeholders": {

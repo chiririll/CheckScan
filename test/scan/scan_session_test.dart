@@ -80,9 +80,14 @@ void main() {
     expect(await repository.listAll(), hasLength(1));
   });
 
-  test('onMatched receives adapter id', () async {
-    String? seen;
-    await session.process(FakeProvidersBackend.fnsQuery, onMatched: (id) => seen = id);
-    expect(seen, 'ru_fns');
+  test('stores provider label from the backend', () async {
+    final result = await session.process(FakeProvidersBackend.fnsQuery);
+    expect(result.record!.providerLabel, 'RU');
+  });
+
+  test('onMatched fires after a format is recognized', () async {
+    var called = false;
+    await session.process(FakeProvidersBackend.fnsQuery, onMatched: () => called = true);
+    expect(called, isTrue);
   });
 }

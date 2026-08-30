@@ -128,16 +128,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get aimQr => 'Наведите на QR-код чека';
 
   @override
-  String get progressRu => 'Получаем данные российского чека';
-
-  @override
-  String get progressRs => 'Получаем данные сербского чека';
-
-  @override
-  String get progressEq => 'Читаем электронный чек';
-
-  @override
   String get progressGeneric => 'Ищем формат чека';
+
+  @override
+  String get progressLoading => 'Получаем данные чека';
 
   @override
   String get unknownTitle => 'Формат не поддерживается';
@@ -184,12 +178,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String qtyPrice(String qty, String price) {
     return '$qty × $price';
   }
-
-  @override
-  String get providerRu => 'RU';
-
-  @override
-  String get providerEq => 'eQ';
 
   @override
   String amount(String value) {

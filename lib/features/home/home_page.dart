@@ -52,7 +52,8 @@ class _Stats extends StatelessWidget {
     for (final record in receipts) {
       for (final item in record.receipt.items) {
         counts[item.description] = (counts[item.description] ?? 0) + 1;
-        final store = record.merchantName ?? record.providerLabel;
+        final store = record.merchantName ??
+            (record.providerLabel.isNotEmpty ? record.providerLabel : l10n.receiptTitle);
         final byStore = prices.putIfAbsent(item.description, () => {});
         final current = byStore[store];
         if (current == null || item.unitPrice < current) {

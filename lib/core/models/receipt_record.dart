@@ -4,6 +4,15 @@ import 'package:eq_models/eq_models.dart';
 
 enum ReceiptStatus { ok, error, incomplete }
 
+const providerLabelExtension = 'checkscan.provider_label';
+
+EqReceipt withProviderLabel(EqReceipt receipt, String label) {
+  if (label.isEmpty) return receipt;
+  return receipt.copyWith(
+    extensions: {...receipt.extensions, providerLabelExtension: label},
+  );
+}
+
 class ReceiptRecord {
   const ReceiptRecord({
     required this.id,
@@ -36,16 +45,9 @@ class ReceiptRecord {
   EqReceipt get receipt => EqReceipt.fromJson(jsonDecode(payload) as Map<String, dynamic>);
 
   String get providerLabel {
-    switch (adapterId) {
-      case 'ru_fns':
-        return 'RU';
-      case 'rs_purs':
-        return 'RS';
-      case 'eq_payload':
-        return 'eQ';
-      default:
-        return adapterId;
-    }
+    final label = receipt.extensions[providerLabelExtension];
+    if (label is String && label.isNotEmpty) return label;
+    return '';
   }
 
   bool get canRetry => status == ReceiptStatus.error || status == ReceiptStatus.incomplete;

@@ -60,7 +60,7 @@ class _ReceiptPageState extends State<ReceiptPage> {
           Row(
             children: [
               Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18))),
-              _Chip(record.providerLabel),
+              if (record.providerLabel.isNotEmpty) _Chip(record.providerLabel),
             ],
           ),
           const SizedBox(height: 4),

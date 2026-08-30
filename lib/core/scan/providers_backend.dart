@@ -4,10 +4,11 @@ import 'package:eq_models/eq_models.dart';
 import 'package:providers_native/providers_native.dart';
 
 class ProviderMatch {
-  const ProviderMatch({required this.adapterId, required this.hash});
+  const ProviderMatch({required this.adapterId, required this.hash, this.label = ''});
 
   final String adapterId;
   final String hash;
+  final String label;
 
   String get storageKey => '$adapterId:$hash';
 }
@@ -17,10 +18,12 @@ class ResolveResult {
     required this.adapterId,
     required this.hash,
     required this.receipt,
+    this.label = '',
   });
 
   final String adapterId;
   final String hash;
+  final String label;
   final EqReceipt receipt;
 
   String get storageKey => '$adapterId:$hash';
@@ -58,6 +61,7 @@ class NativeProvidersBackend implements ProvidersBackend {
     return ProviderMatch(
       adapterId: '${decoded['adapter_id']}',
       hash: '${decoded['hash']}',
+      label: '${decoded['label'] ?? ''}',
     );
   }
 
@@ -69,6 +73,7 @@ class NativeProvidersBackend implements ProvidersBackend {
     return ResolveResult(
       adapterId: adapterId,
       hash: '${decoded['hash']}',
+      label: '${decoded['label'] ?? ''}',
       receipt: EqReceipt.fromJson(decoded),
     );
   }

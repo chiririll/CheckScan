@@ -13,13 +13,13 @@ class FakeProvidersBackend implements ProvidersBackend {
   @override
   Future<ProviderMatch?> match(String rawQr, {String? hint}) async {
     if (rawQr == 'boom') {
-      return const ProviderMatch(adapterId: 'boom', hash: 'h');
+      return const ProviderMatch(adapterId: 'boom', hash: 'h', label: 'X');
     }
     if (rawQr.contains('fn=8710000100905518')) {
-      return const ProviderMatch(adapterId: 'ru_fns', hash: fnsHash);
+      return const ProviderMatch(adapterId: 'ru_fns', hash: fnsHash, label: 'RU');
     }
     if (rawQr.contains(eqId)) {
-      return const ProviderMatch(adapterId: 'eq_payload', hash: eqId);
+      return const ProviderMatch(adapterId: 'eq_payload', hash: eqId, label: 'EQ');
     }
     return null;
   }
@@ -37,6 +37,7 @@ class FakeProvidersBackend implements ProvidersBackend {
       return ResolveResult(
         adapterId: matched.adapterId,
         hash: matched.hash,
+        label: matched.label,
         receipt: EqReceipt(
           id: 'ru-$fnsHash',
           issuedAt: DateTime(2026, 8, 28, 18, 42),
@@ -49,6 +50,7 @@ class FakeProvidersBackend implements ProvidersBackend {
     return ResolveResult(
       adapterId: matched.adapterId,
       hash: matched.hash,
+      label: matched.label,
       receipt: EqReceipt(
         id: eqId,
         issuedAt: DateTime(2026, 8, 28, 18, 42),
