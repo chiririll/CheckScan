@@ -1,3 +1,6 @@
+// `android {}` is BaseAppModuleExtension while Flutter requires android.newDsl=false.
+@file:Suppress("DEPRECATION")
+
 plugins {
     id("com.android.application")
     id("dev.flutter.flutter-gradle-plugin")
