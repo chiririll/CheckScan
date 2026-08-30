@@ -74,6 +74,15 @@
   "openSettings": "Открыть настройки",
   "cameraDenied": "Нет доступа к камере. Разрешите её в настройках системы.",
   "itemsSection": "Товары",
+  "metadataSection": "Метаданные",
+  "metaTaxId": "ИНН",
+  "metaReceiptType": "Тип",
+  "metaReceiptId": "ID",
+  "metaQr": "QR",
+  "metaReceiptTypeSale": "Покупка",
+  "metaReceiptTypeRefund": "Возврат",
+  "metaYes": "Да",
+  "metaNo": "Нет",
   "qtyPrice": "{qty} × {price}",
   "@qtyPrice": {
     "placeholders": {

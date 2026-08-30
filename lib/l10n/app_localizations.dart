@@ -448,6 +448,60 @@ abstract class AppLocalizations {
   /// **'Товары'**
   String get itemsSection;
 
+  /// No description provided for @metadataSection.
+  ///
+  /// In ru, this message translates to:
+  /// **'Метаданные'**
+  String get metadataSection;
+
+  /// No description provided for @metaTaxId.
+  ///
+  /// In ru, this message translates to:
+  /// **'ИНН'**
+  String get metaTaxId;
+
+  /// No description provided for @metaReceiptType.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тип'**
+  String get metaReceiptType;
+
+  /// No description provided for @metaReceiptId.
+  ///
+  /// In ru, this message translates to:
+  /// **'ID'**
+  String get metaReceiptId;
+
+  /// No description provided for @metaQr.
+  ///
+  /// In ru, this message translates to:
+  /// **'QR'**
+  String get metaQr;
+
+  /// No description provided for @metaReceiptTypeSale.
+  ///
+  /// In ru, this message translates to:
+  /// **'Покупка'**
+  String get metaReceiptTypeSale;
+
+  /// No description provided for @metaReceiptTypeRefund.
+  ///
+  /// In ru, this message translates to:
+  /// **'Возврат'**
+  String get metaReceiptTypeRefund;
+
+  /// No description provided for @metaYes.
+  ///
+  /// In ru, this message translates to:
+  /// **'Да'**
+  String get metaYes;
+
+  /// No description provided for @metaNo.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет'**
+  String get metaNo;
+
   /// No description provided for @qtyPrice.
   ///
   /// In ru, this message translates to:

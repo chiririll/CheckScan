@@ -5,6 +5,7 @@ import '../../core/format.dart';
 import '../../core/models/receipt_record.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
+import 'receipt_metadata.dart';
 
 class ReceiptPage extends StatefulWidget {
   const ReceiptPage({super.key, required this.state, required this.receiptId});
@@ -147,6 +148,9 @@ class _ReceiptPageState extends State<ReceiptPage> {
               );
             }),
           ],
+          const SizedBox(height: 8),
+          const Divider(),
+          ReceiptMetadataTile(record: record),
             ],
           ),
         );

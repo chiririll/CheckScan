@@ -25,15 +25,17 @@ class _FakeRepository extends ReceiptRepository {
   Future<List<ReceiptRecord>> listAll() async => const [];
 }
 
-ReceiptRecord _sample() {
+ReceiptRecord _sample({Map<String, dynamic>? extensions}) {
   final receipt = EqReceipt(
     id: 'r1',
     issuedAt: DateTime(2026, 8, 28, 18, 42),
     currency: 'RUB',
     receiptType: 'sale',
     merchantName: 'Пятёрочка',
+    taxId: '7707083893',
     grandTotal: 1247,
     items: const [EqItem(description: 'Молоко 1 л', quantity: 2, unitPrice: 89, totalPrice: 178)],
+    extensions: extensions ?? const {},
   );
   return ReceiptRecord(
     id: 'r1',
@@ -122,5 +124,28 @@ void main() {
     expect(find.text('Молоко 1 л'), findsNothing);
     expect(repository.deletedId, 'r1');
     expect(state.receipts, isEmpty);
+  });
+
+  testWidgets('metadata stays collapsed until the spoiler is opened', (tester) async {
+    state.receipts = [
+      _sample(
+        extensions: {
+          'extra': {'fn': '8710000100905518'},
+        },
+      ),
+    ];
+    await openReceipt(tester);
+
+    expect(find.text('Метаданные'), findsOneWidget);
+    expect(find.text('fn'), findsNothing);
+    expect(find.text('8710000100905518'), findsNothing);
+
+    await tester.tap(find.text('Метаданные'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('fn'), findsOneWidget);
+    expect(find.text('8710000100905518'), findsOneWidget);
+    expect(find.text('ИНН'), findsOneWidget);
+    expect(find.text('7707083893'), findsOneWidget);
   });
 }

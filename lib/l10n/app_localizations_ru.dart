@@ -208,6 +208,33 @@ class AppLocalizationsRu extends AppLocalizations {
   String get itemsSection => 'Товары';
 
   @override
+  String get metadataSection => 'Метаданные';
+
+  @override
+  String get metaTaxId => 'ИНН';
+
+  @override
+  String get metaReceiptType => 'Тип';
+
+  @override
+  String get metaReceiptId => 'ID';
+
+  @override
+  String get metaQr => 'QR';
+
+  @override
+  String get metaReceiptTypeSale => 'Покупка';
+
+  @override
+  String get metaReceiptTypeRefund => 'Возврат';
+
+  @override
+  String get metaYes => 'Да';
+
+  @override
+  String get metaNo => 'Нет';
+
+  @override
   String qtyPrice(String qty, String price) {
     return '$qty × $price';
   }
