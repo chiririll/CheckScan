@@ -45,7 +45,7 @@ class ProviderParseException implements Exception {
 
 abstract class ProvidersBackend {
   Future<ProviderMatch?> match(String rawQr, {String? hint});
-  Future<ResolveResult> resolve(String rawQr, {String? hint, bool remote = false, bool wait = false});
+  Future<ResolveResult> resolve(String rawQr, {String? hint, bool remote = false, bool wait = false, String? current});
 }
 
 class NativeProvidersBackend implements ProvidersBackend {
@@ -68,8 +68,20 @@ class NativeProvidersBackend implements ProvidersBackend {
   }
 
   @override
-  Future<ResolveResult> resolve(String rawQr, {String? hint, bool remote = false, bool wait = false}) async {
-    final raw = await _lib.resolve(rawQr, hint: hint ?? '', remote: remote, wait: wait);
+  Future<ResolveResult> resolve(
+    String rawQr, {
+    String? hint,
+    bool remote = false,
+    bool wait = false,
+    String? current,
+  }) async {
+    final raw = await _lib.resolve(
+      rawQr,
+      hint: hint ?? '',
+      remote: remote,
+      wait: wait,
+      current: current ?? '',
+    );
     _trace('resolve remote=$remote wait=$wait hint=${hint ?? ''} qr=${_preview(rawQr)} -> ${_preview(raw)}');
     final decoded = _decode(raw);
     _throwIfError(decoded, adapterId: hint);

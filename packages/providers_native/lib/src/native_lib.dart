@@ -8,17 +8,17 @@ import 'native_log.dart';
 
 typedef _CStrFn = Pointer<Utf8> Function();
 typedef _CStr2Fn = Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>);
-typedef _CStr3Fn = Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>);
+typedef _CStr4Fn = Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>);
 typedef _CFreeFn = Void Function(Pointer<Utf8>);
 
 class NativeProvidersLib {
   NativeProvidersLib._(DynamicLibrary lib)
       : _match = lib.lookupFunction<_CStr2Fn, _CStr2Fn>('checkscan_match'),
-        _resolve = lib.lookupFunction<_CStr3Fn, _CStr3Fn>('checkscan_resolve'),
+        _resolve = lib.lookupFunction<_CStr4Fn, _CStr4Fn>('checkscan_resolve'),
         _providers = lib.lookupFunction<_CStrFn, _CStrFn>('checkscan_providers'),
         _free = lib.lookupFunction<_CFreeFn, void Function(Pointer<Utf8>)>('checkscan_free');
   final _CStr2Fn _match;
-  final _CStr3Fn _resolve;
+  final _CStr4Fn _resolve;
   final _CStrFn _providers;
   final void Function(Pointer<Utf8>) _free;
 
@@ -31,9 +31,9 @@ class NativeProvidersLib {
 
   String match(String rawQr, {String hint = ''}) => _call2(_match, rawQr, hint);
 
-  String resolve(String rawQr, {String hint = '', bool remote = false, bool wait = false}) {
+  String resolve(String rawQr, {String hint = '', bool remote = false, bool wait = false, String current = ''}) {
     final mode = wait ? 'wait' : (remote ? 'remote' : '');
-    return _call3(_resolve, rawQr, hint, mode);
+    return _call4(_resolve, rawQr, hint, mode, current);
   }
 
   String providers() {
@@ -59,16 +59,18 @@ class NativeProvidersLib {
     }
   }
 
-  String _call3(_CStr3Fn fn, String rawQr, String hint, String mode) {
+  String _call4(_CStr4Fn fn, String rawQr, String hint, String mode, String current) {
     final rawPtr = rawQr.toNativeUtf8();
     final hintPtr = hint.toNativeUtf8();
     final modePtr = mode.toNativeUtf8();
+    final currentPtr = current.toNativeUtf8();
     try {
-      return _read(fn(rawPtr, hintPtr, modePtr));
+      return _read(fn(rawPtr, hintPtr, modePtr, currentPtr));
     } finally {
       malloc.free(rawPtr);
       malloc.free(hintPtr);
       malloc.free(modePtr);
+      malloc.free(currentPtr);
     }
   }
 
@@ -91,9 +93,15 @@ class IsolatedNativeProviders {
     return Isolate.run(() => _withLog((lib) => lib.match(rawQr, hint: hint)));
   }
 
-  Future<String> resolve(String rawQr, {String hint = '', bool remote = false, bool wait = false}) {
+  Future<String> resolve(
+    String rawQr, {
+    String hint = '',
+    bool remote = false,
+    bool wait = false,
+    String current = '',
+  }) {
     return Isolate.run(
-      () => _withLog((lib) => lib.resolve(rawQr, hint: hint, remote: remote, wait: wait)),
+      () => _withLog((lib) => lib.resolve(rawQr, hint: hint, remote: remote, wait: wait, current: current)),
     );
   }
 

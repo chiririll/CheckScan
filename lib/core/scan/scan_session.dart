@@ -3,7 +3,6 @@ import 'package:eq_models/eq_models.dart';
 import '../models/receipt_record.dart';
 import '../storage/receipt_repository.dart';
 import 'providers_backend.dart';
-import 'receipt_richness.dart';
 
 class ScanResult {
   const ScanResult({this.record, this.unknown = false});
@@ -69,11 +68,14 @@ class ScanSession {
   }
 
   Future<ReceiptRecord?> refresh(ReceiptRecord record) async {
-    final resolved = await backend.resolve(record.rawQr, hint: record.adapterId, remote: true, wait: true);
+    final resolved = await backend.resolve(
+      record.rawQr,
+      hint: record.adapterId,
+      remote: true,
+      wait: true,
+      current: record.payload,
+    );
     final receipt = withProviderLabel(resolved.receipt, resolved.label);
-    if (!isSignificantlyRicher(receipt, record.receipt)) {
-      return record;
-    }
     final updated = record.copyWith(
       status: statusFromReceipt(receipt),
       issuedAt: receipt.issuedAt,

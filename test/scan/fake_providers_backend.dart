@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:checkscan/core/scan/providers_backend.dart';
 import 'package:eq_models/eq_models.dart';
 
@@ -26,7 +28,13 @@ class FakeProvidersBackend implements ProvidersBackend {
   }
 
   @override
-  Future<ResolveResult> resolve(String rawQr, {String? hint, bool remote = false, bool wait = false}) async {
+  Future<ResolveResult> resolve(
+    String rawQr, {
+    String? hint,
+    bool remote = false,
+    bool wait = false,
+    String? current,
+  }) async {
     if (throwOnResolve || rawQr == 'boom') {
       throw const ProviderParseException('boom', 'fail');
     }
@@ -40,6 +48,14 @@ class FakeProvidersBackend implements ProvidersBackend {
         hash: matched.hash,
         label: matched.label,
         receipt: nextReceipt!,
+      );
+    }
+    if (current != null && current.isNotEmpty) {
+      return ResolveResult(
+        adapterId: matched.adapterId,
+        hash: matched.hash,
+        label: matched.label,
+        receipt: EqReceipt.fromJson(jsonDecode(current) as Map<String, dynamic>),
       );
     }
     if (matched.adapterId == 'ru_fns') {
