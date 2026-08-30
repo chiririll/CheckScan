@@ -7,7 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../models/receipt_record.dart';
 
 class ReceiptRepository {
-  ReceiptRepository({Future<String> Function()? resolveDbPath}) : _resolveDbPath = resolveDbPath;
+  ReceiptRepository({this._resolveDbPath});
 
   final Future<String> Function()? _resolveDbPath;
   Database? _db;
