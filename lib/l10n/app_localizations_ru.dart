@@ -131,6 +131,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get progressRu => 'Получаем данные российского чека';
 
   @override
+  String get progressRs => 'Получаем данные сербского чека';
+
+  @override
   String get progressEq => 'Читаем электронный чек';
 
   @override

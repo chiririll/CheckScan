@@ -9,6 +9,7 @@ final _time = DateFormat('HH:mm');
 String formatMoney(double value, [String currency = 'RUB']) {
   final amount = _money.format(value);
   if (currency == 'RUB') return '$amount ₽';
+  if (currency == 'RSD') return '$amount дин.';
   return '$amount $currency';
 }
 

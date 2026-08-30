@@ -298,6 +298,12 @@ abstract class AppLocalizations {
   /// **'Получаем данные российского чека'**
   String get progressRu;
 
+  /// No description provided for @progressRs.
+  ///
+  /// In ru, this message translates to:
+  /// **'Получаем данные сербского чека'**
+  String get progressRs;
+
   /// No description provided for @progressEq.
   ///
   /// In ru, this message translates to:

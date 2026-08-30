@@ -39,6 +39,8 @@ class ReceiptRecord {
     switch (adapterId) {
       case 'ru_fns':
         return 'RU';
+      case 'rs_purs':
+        return 'RS';
       case 'eq_payload':
         return 'eQ';
       default:

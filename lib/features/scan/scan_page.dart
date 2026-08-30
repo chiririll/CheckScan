@@ -55,6 +55,7 @@ class _ScanPageState extends State<ScanPage> {
         setState(() {
           _progress = switch (adapterId) {
             'ru_fns' => l10n.progressRu,
+            'rs_purs' => l10n.progressRs,
             'eq_payload' => l10n.progressEq,
             _ => l10n.progressGeneric,
           };
