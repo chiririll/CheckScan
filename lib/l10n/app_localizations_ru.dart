@@ -174,6 +174,31 @@ class AppLocalizationsRu extends AppLocalizations {
       'Данные чека сейчас недоступны. Можно повторить.';
 
   @override
+  String get loadErrorBody =>
+      'Не удалось загрузить данные. Перезапустите приложение.';
+
+  @override
+  String get unavailableTitle => 'Сервис недоступен';
+
+  @override
+  String get unavailableBody =>
+      'Не удалось получить чек. Можно повторить позже.';
+
+  @override
+  String get rateLimitedTitle => 'Слишком много запросов';
+
+  @override
+  String get rateLimitedBody =>
+      'Провайдер временно ограничил доступ. Чек сохранён, состав подгрузим позже.';
+
+  @override
+  String get needsSecretTitle => 'Нужен токен';
+
+  @override
+  String get needsSecretBody =>
+      'Чтобы подгрузить состав, укажите токен в настройках.';
+
+  @override
   String get close => 'Закрыть';
 
   @override

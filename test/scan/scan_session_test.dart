@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-import 'fake_providers_backend.dart';
+import 'fake_native_adapter.dart';
 
 int _dbSeq = 0;
 
@@ -26,7 +26,11 @@ void main() {
     final file = File(path);
     if (file.existsSync()) file.deleteSync();
     repository = ReceiptRepository(resolveDbPath: () async => path);
-    session = ScanSession(repository: repository, backend: FakeProvidersBackend());
+    session = ScanSession(repository: repository, adapter: FakeNativeAdapter());
+  });
+
+  tearDown(() async {
+    await repository.close();
   });
 
   const eqJson =
@@ -40,52 +44,60 @@ void main() {
 
   test('eQ scan saves items as ok', () async {
     final result = await session.process(eqJson);
-    expect(result.unknown, isFalse);
     expect(result.record!.status, ReceiptStatus.ok);
     expect(result.record!.itemCount, 1);
-    expect(result.record!.merchantName, 'Пятёрочка');
+    expect(result.record!.lastStatus, statusOk);
   });
 
-  test('FNS scan without items is incomplete until the provider says otherwise', () async {
-    final result = await session.process(FakeProvidersBackend.fnsQuery);
+  test('FNS scan without items is incomplete', () async {
+    final result = await session.process(FakeNativeAdapter.fnsQuery);
     expect(result.record!.status, ReceiptStatus.incomplete);
     expect(result.record!.grandTotal, 1247);
-    expect(result.record!.itemCount, 0);
-    expect(result.record!.qrHash, 'ru_fns:${FakeProvidersBackend.fnsHash}');
+    expect(result.record!.lastStatus, statusIncomplete);
   });
 
-  test('duplicate hash opens existing row without a second insert', () async {
-    final first = await session.process(FakeProvidersBackend.fnsQuery);
-    final second = await session.process(FakeProvidersBackend.fnsQuery);
+  test('duplicate complete hash opens existing without resolve overwrite', () async {
+    final first = await session.process(eqJson);
+    final second = await session.process(eqJson);
     expect(second.record!.id, first.record!.id);
     expect(await repository.listAll(), hasLength(1));
   });
 
-  test('parse error still inserts status=error', () async {
+  test('resolve failure does not insert a stub', () async {
     session = ScanSession(
       repository: repository,
-      backend: FakeProvidersBackend(throwOnResolve: true),
+      adapter: FakeNativeAdapter(failResolve: true),
     );
     final result = await session.process('boom');
-    expect(result.unknown, isFalse);
-    expect(result.record!.status, ReceiptStatus.error);
-    expect(result.record!.qrHash, 'boom:h');
+    expect(result.record, isNull);
+    expect(result.status, statusParseError);
+    expect(await repository.listAll(), isEmpty);
   });
 
-  test('refresh keeps the stored receipt when the new payload is not richer', () async {
-    final saved = await session.process(FakeProvidersBackend.fnsQuery);
-    final payload = saved.record!.payload;
-    final updated = await session.refresh(saved.record!);
-    expect(updated!.payload, payload);
-    expect(updated.status, ReceiptStatus.incomplete);
-    expect(await repository.listAll(), hasLength(1));
+  test('re-scan retries incomplete receipt', () async {
+    final first = await session.process(FakeNativeAdapter.fnsQuery);
+    final adapter = FakeNativeAdapter();
+    adapter.nextReceipt = EqReceipt(
+      id: 'ru-rich',
+      issuedAt: DateTime(2026, 8, 28, 18, 42),
+      currency: 'RUB',
+      receiptType: 'sale',
+      merchantName: 'Пятёрочка',
+      grandTotal: 1247,
+      items: const [EqItem(description: 'Хлеб', quantity: 1, unitPrice: 1247, totalPrice: 1247)],
+    );
+    session = ScanSession(repository: repository, adapter: adapter);
+    final second = await session.process(FakeNativeAdapter.fnsQuery);
+    expect(second.record!.id, first.record!.id);
+    expect(second.record!.itemCount, 1);
+    expect(second.record!.status, ReceiptStatus.ok);
   });
 
-  test('refresh replaces the receipt when the new payload is richer', () async {
-    final backend = FakeProvidersBackend();
-    session = ScanSession(repository: repository, backend: backend);
-    final saved = await session.process(FakeProvidersBackend.fnsQuery);
-    backend.nextReceipt = EqReceipt(
+  test('refresh replaces when adapter returns a richer receipt', () async {
+    final adapter = FakeNativeAdapter();
+    session = ScanSession(repository: repository, adapter: adapter);
+    final saved = await session.process(FakeNativeAdapter.fnsQuery);
+    adapter.nextReceipt = EqReceipt(
       id: 'ru-rich',
       issuedAt: DateTime(2026, 8, 28, 18, 42),
       currency: 'RUB',
@@ -96,30 +108,32 @@ void main() {
     );
     final updated = await session.refresh(saved.record!);
     expect(updated!.itemCount, 1);
-    expect(updated.merchantName, 'Пятёрочка');
     expect(updated.status, ReceiptStatus.ok);
   });
 
-  test('refreshPending walks error receipts', () async {
-    session = ScanSession(
-      repository: repository,
-      backend: FakeProvidersBackend(throwOnResolve: true),
+  test('refreshPending walks retryable receipts', () async {
+    await session.process(FakeNativeAdapter.fnsQuery);
+    final adapter = FakeNativeAdapter();
+    adapter.nextReceipt = EqReceipt(
+      id: 'ru-rich',
+      issuedAt: DateTime(2026, 8, 28),
+      currency: 'RUB',
+      receiptType: 'sale',
+      grandTotal: 1247,
+      items: const [EqItem(description: 'Хлеб', quantity: 1, unitPrice: 1247, totalPrice: 1247)],
     );
-    await session.process('boom');
-    session = ScanSession(repository: repository, backend: FakeProvidersBackend());
-    final n = await session.refreshPending();
-    expect(n, 1);
-    expect(await repository.listAll(), hasLength(1));
+    session = ScanSession(repository: repository, adapter: adapter);
+    expect(await session.refreshPending(), 1);
   });
 
-  test('stores provider label from the backend', () async {
-    final result = await session.process(FakeProvidersBackend.fnsQuery);
+  test('stores provider label from the adapter', () async {
+    final result = await session.process(FakeNativeAdapter.fnsQuery);
     expect(result.record!.providerLabel, 'RU');
   });
 
   test('onMatched fires after a format is recognized', () async {
     var called = false;
-    await session.process(FakeProvidersBackend.fnsQuery, onMatched: () => called = true);
+    await session.process(FakeNativeAdapter.fnsQuery, onMatched: () => called = true);
     expect(called, isTrue);
   });
 }

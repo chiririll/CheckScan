@@ -20,7 +20,7 @@ class ReceiptRepository {
         : p.join((await getApplicationDocumentsDirectory()).path, 'checkscan.db');
     _db = await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE receipts (
@@ -35,13 +35,25 @@ class ReceiptRepository {
             item_count INTEGER NOT NULL,
             payload TEXT NOT NULL,
             scanned_at TEXT NOT NULL,
-            raw_qr TEXT NOT NULL
+            raw_qr TEXT NOT NULL,
+            last_status INTEGER NOT NULL DEFAULT 200
           )
         ''');
         await db.execute('CREATE UNIQUE INDEX idx_receipts_qr_hash ON receipts(qr_hash)');
       },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('ALTER TABLE receipts ADD COLUMN last_status INTEGER NOT NULL DEFAULT 200');
+        }
+      },
     );
     return _db!;
+  }
+
+  Future<void> close() async {
+    final db = _db;
+    _db = null;
+    if (db != null) await db.close();
   }
 
   Future<ReceiptRecord?> findByHash(String qrHash) async {
@@ -64,53 +76,33 @@ class ReceiptRepository {
     return rows.map(_fromRow).toList();
   }
 
-  Future<ReceiptRecord> insertParsed({
+  Future<ReceiptRecord> upsertParsed({
+    String? id,
     required String qrHash,
     required String adapterId,
     required String rawQr,
     required EqReceipt receipt,
-    required ReceiptStatus status,
+    required int lastStatus,
+    DateTime? scannedAt,
   }) async {
+    final existing = await findByHash(qrHash);
     final record = ReceiptRecord(
-      id: receipt.id.isNotEmpty ? receipt.id : const Uuid().v4(),
+      id: existing?.id ?? id ?? const Uuid().v4(),
       qrHash: qrHash,
       adapterId: adapterId,
-      status: status,
+      status: receiptStatusFromNative(lastStatus),
       issuedAt: receipt.issuedAt,
       merchantName: receipt.merchantName,
       grandTotal: receipt.grandTotal,
       currency: receipt.currency,
       itemCount: receipt.items.length,
       payload: receipt.encode(),
-      scannedAt: DateTime.now(),
+      scannedAt: existing?.scannedAt ?? scannedAt ?? DateTime.now(),
       rawQr: rawQr,
+      lastStatus: lastStatus,
     );
     await _upsert(record);
     return record;
-  }
-
-  Future<ReceiptRecord> insertError({
-    required String qrHash,
-    required String adapterId,
-    required String rawQr,
-    EqReceipt? partial,
-  }) async {
-    final fallback = partial ??
-        EqReceipt(
-          id: const Uuid().v4(),
-          issuedAt: DateTime.now(),
-          currency: 'RUB',
-          receiptType: 'sale',
-          grandTotal: 0,
-          extensions: {'checkscan.qr_raw': rawQr},
-        );
-    return insertParsed(
-      qrHash: qrHash,
-      adapterId: adapterId,
-      rawQr: rawQr,
-      receipt: fallback,
-      status: ReceiptStatus.error,
-    );
   }
 
   Future<void> replace(ReceiptRecord record) => _upsert(record);
@@ -137,25 +129,31 @@ class ReceiptRepository {
         'payload': record.payload,
         'scanned_at': record.scannedAt.toIso8601String(),
         'raw_qr': record.rawQr,
+        'last_status': record.lastStatus,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
   ReceiptRecord _fromRow(Map<String, Object?> row) {
+    final statusName = '${row['status']}';
+    final status = ReceiptStatus.values.asNameMap()[statusName] ?? ReceiptStatus.incomplete;
+    final lastStatus = (row['last_status'] as num?)?.toInt() ??
+        (status == ReceiptStatus.ok ? statusOk : statusIncomplete);
     return ReceiptRecord(
-      id: row['id'] as String,
-      qrHash: row['qr_hash'] as String,
-      adapterId: row['adapter_id'] as String,
-      status: ReceiptStatus.values.byName(row['status'] as String),
+      id: '${row['id']}',
+      qrHash: '${row['qr_hash']}',
+      adapterId: '${row['adapter_id']}',
+      status: status == ReceiptStatus.error ? ReceiptStatus.incomplete : status,
       issuedAt: DateTime.tryParse('${row['issued_at']}'),
       merchantName: row['merchant_name'] as String?,
-      grandTotal: (row['grand_total'] as num).toDouble(),
-      currency: row['currency'] as String,
-      itemCount: row['item_count'] as int,
-      payload: row['payload'] as String,
-      scannedAt: DateTime.parse(row['scanned_at'] as String),
-      rawQr: row['raw_qr'] as String,
+      grandTotal: (row['grand_total'] as num?)?.toDouble() ?? 0,
+      currency: '${row['currency'] ?? ''}',
+      itemCount: (row['item_count'] as num?)?.toInt() ?? 0,
+      payload: '${row['payload'] ?? ''}',
+      scannedAt: DateTime.tryParse('${row['scanned_at']}') ?? DateTime.fromMillisecondsSinceEpoch(0),
+      rawQr: '${row['raw_qr'] ?? ''}',
+      lastStatus: lastStatus,
     );
   }
 }

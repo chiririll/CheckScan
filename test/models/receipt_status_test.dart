@@ -1,38 +1,18 @@
-import 'package:checkscan/core/models/receipt_record.dart';
-import 'package:eq_models/eq_models.dart';
+import 'package:checkscan/core/models/receipt_status.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-EqReceipt _receipt({
-  List<EqItem> items = const [],
-  Map<String, dynamic> extensions = const {},
-}) {
-  return EqReceipt(
-    id: 'r',
-    issuedAt: DateTime(2026, 8, 28),
-    currency: 'RSD',
-    receiptType: 'sale',
-    grandTotal: 10,
-    items: items,
-    extensions: extensions,
-  );
-}
-
 void main() {
-  test('empty items without a provider flag stay incomplete', () {
-    expect(statusFromReceipt(_receipt()), ReceiptStatus.incomplete);
+  test('native 200 is ok, everything else with receipt is incomplete', () {
+    expect(receiptStatusFromNative(statusOk), ReceiptStatus.ok);
+    expect(receiptStatusFromNative(statusIncomplete), ReceiptStatus.incomplete);
+    expect(receiptStatusFromNative(statusUnavailable), ReceiptStatus.incomplete);
   });
 
-  test('provider can mark success without items', () {
-    expect(
-      statusFromReceipt(_receipt(extensions: const {itemsUnavailableExtension: true})),
-      ReceiptStatus.ok,
-    );
-  });
-
-  test('rate limit stays incomplete even without items', () {
-    expect(
-      statusFromReceipt(_receipt(extensions: const {rateLimitedExtension: true})),
-      ReceiptStatus.incomplete,
-    );
+  test('retry is 206 or 5xx, not 200/401/429', () {
+    expect(canRetryStatus(statusIncomplete), isTrue);
+    expect(canRetryStatus(statusUnavailable), isTrue);
+    expect(canRetryStatus(statusOk), isFalse);
+    expect(canRetryStatus(statusNeedsSecret), isFalse);
+    expect(canRetryStatus(statusRateLimited), isFalse);
   });
 }

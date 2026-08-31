@@ -1,92 +1,80 @@
-import 'package:eq_models/eq_models.dart';
-
 import '../models/receipt_record.dart';
 import '../storage/receipt_repository.dart';
-import 'providers_backend.dart';
-
-class ScanResult {
-  const ScanResult({this.record, this.unknown = false});
-
-  final ReceiptRecord? record;
-  final bool unknown;
-
-  factory ScanResult.found(ReceiptRecord record) => ScanResult(record: record);
-  factory ScanResult.unknownFormat() => const ScanResult(unknown: true);
-}
+import 'native_adapter.dart';
+import 'scan_outcome.dart';
 
 class ScanSession {
   ScanSession({
     required this.repository,
-    required this.backend,
+    required this.adapter,
   });
 
   final ReceiptRepository repository;
-  final ProvidersBackend backend;
+  final NativeAdapter adapter;
 
-  Future<ScanResult> process(
+  Future<ScanOutcome> process(
     String rawQr, {
     void Function()? onMatched,
   }) async {
-    final match = await backend.match(rawQr);
-    if (match == null) return ScanResult.unknownFormat();
+    final matched = await adapter.match(rawQr);
+    if (matched.status == statusUnknownFormat) {
+      return ScanOutcome.unknownFormat(message: matched.message);
+    }
+    if (matched.data == null) {
+      return ScanOutcome.failed(matched.status, matched.message);
+    }
     onMatched?.call();
 
-    final existing = await repository.findByHash(match.storageKey);
-    if (existing != null) return ScanResult.found(existing);
-
-    try {
-      final resolved = await backend.resolve(rawQr, hint: match.adapterId, remote: true);
-      final label = resolved.label.isNotEmpty ? resolved.label : match.label;
-      final receipt = withProviderLabel(resolved.receipt, label);
-      final saved = await repository.insertParsed(
-        qrHash: match.storageKey,
-        adapterId: match.adapterId,
-        rawQr: rawQr,
-        receipt: receipt,
-        status: statusFromReceipt(receipt),
-      );
-      return ScanResult.found(saved);
-    } on Object {
-      final saved = await repository.insertError(
-        qrHash: match.storageKey,
-        adapterId: match.adapterId,
-        rawQr: rawQr,
-        partial: withProviderLabel(
-          EqReceipt(
-            id: '',
-            issuedAt: DateTime.now(),
-            currency: 'RUB',
-            receiptType: 'sale',
-            grandTotal: 0,
-            extensions: {'checkscan.qr_raw': rawQr},
-          ),
-          match.label,
-        ),
-      );
-      return ScanResult.found(saved);
+    final existing = await repository.findByHash(matched.data!.storageKey);
+    if (existing != null && !existing.canRetry) {
+      return ScanOutcome.found(existing);
     }
+
+    final resolved = await adapter.resolve(
+      rawQr,
+      hint: matched.data!.adapterId,
+      remote: true,
+      current: existing?.payload,
+    );
+    final payload = resolved.data;
+    if (payload == null) {
+      return ScanOutcome.failed(resolved.status, resolved.message);
+    }
+    final label = payload.label.isNotEmpty ? payload.label : matched.data!.label;
+    final receipt = withProviderLabel(payload.receipt, label);
+    final saved = await repository.upsertParsed(
+      id: existing?.id,
+      qrHash: matched.data!.storageKey,
+      adapterId: matched.data!.adapterId,
+      rawQr: rawQr,
+      receipt: receipt,
+      lastStatus: resolved.status,
+      scannedAt: existing?.scannedAt,
+    );
+    return ScanOutcome.found(saved);
   }
 
   Future<ReceiptRecord?> refresh(ReceiptRecord record) async {
-    final resolved = await backend.resolve(
+    if (!record.canRetry) return record;
+    final resolved = await adapter.resolve(
       record.rawQr,
       hint: record.adapterId,
       remote: true,
       wait: true,
       current: record.payload,
     );
-    final receipt = withProviderLabel(resolved.receipt, resolved.label);
-    final updated = record.copyWith(
-      status: statusFromReceipt(receipt),
-      issuedAt: receipt.issuedAt,
-      merchantName: receipt.merchantName,
-      grandTotal: receipt.grandTotal,
-      currency: receipt.currency,
-      itemCount: receipt.items.length,
-      payload: receipt.encode(),
+    final payload = resolved.data;
+    if (payload == null) return null;
+    final receipt = withProviderLabel(payload.receipt, payload.label);
+    return repository.upsertParsed(
+      id: record.id,
+      qrHash: record.qrHash,
+      adapterId: record.adapterId,
+      rawQr: record.rawQr,
+      receipt: receipt,
+      lastStatus: resolved.status,
+      scannedAt: record.scannedAt,
     );
-    await repository.replace(updated);
-    return updated;
   }
 
   Future<int> refreshPending({
@@ -95,16 +83,16 @@ class ScanSession {
     final pending = (await repository.listAll()).where((row) => row.canRetry).toList();
     var done = 0;
     for (final record in pending) {
-      onProgress?.call(done, pending.length);
       try {
         final updated = await refresh(record);
-        done += 1;
-        if (updated?.rateLimited == true) {
-          break;
+        if (updated != null) {
+          done += 1;
+          onProgress?.call(done, pending.length);
+          if (updated.lastStatus == statusRateLimited) {
+            break;
+          }
         }
-      } catch (_) {
-        done += 1;
-      }
+      } catch (_) {}
     }
     return done;
   }

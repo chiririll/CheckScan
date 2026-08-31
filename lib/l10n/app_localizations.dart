@@ -376,6 +376,48 @@ abstract class AppLocalizations {
   /// **'Данные чека сейчас недоступны. Можно повторить.'**
   String get parseErrorBody;
 
+  /// No description provided for @loadErrorBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить данные. Перезапустите приложение.'**
+  String get loadErrorBody;
+
+  /// No description provided for @unavailableTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сервис недоступен'**
+  String get unavailableTitle;
+
+  /// No description provided for @unavailableBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось получить чек. Можно повторить позже.'**
+  String get unavailableBody;
+
+  /// No description provided for @rateLimitedTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Слишком много запросов'**
+  String get rateLimitedTitle;
+
+  /// No description provided for @rateLimitedBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Провайдер временно ограничил доступ. Чек сохранён, состав подгрузим позже.'**
+  String get rateLimitedBody;
+
+  /// No description provided for @needsSecretTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужен токен'**
+  String get needsSecretTitle;
+
+  /// No description provided for @needsSecretBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Чтобы подгрузить состав, укажите токен в настройках.'**
+  String get needsSecretBody;
+
   /// No description provided for @close.
   ///
   /// In ru, this message translates to:

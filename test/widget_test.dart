@@ -2,13 +2,12 @@ import 'package:checkscan/app.dart';
 import 'package:checkscan/core/app_state.dart';
 import 'package:checkscan/core/format.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
-import 'package:checkscan/core/scan/providers_backend.dart';
-import 'package:checkscan/core/scan/scan_session.dart';
+import 'package:checkscan/core/scan/native_adapter.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
 import 'package:checkscan/features/home/home_stats.dart';
 import 'package:eq_models/eq_models.dart';
 
-import 'scan/fake_providers_backend.dart';
+import 'scan/fake_native_adapter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -18,7 +17,7 @@ AppState _state({bool onboardingDone = false, List<ReceiptRecord> receipts = con
   final repository = ReceiptRepository(resolveDbPath: () async => 'unused.db');
   return AppState(
     repository: repository,
-    session: ScanSession(repository: repository, backend: FakeProvidersBackend()),
+    adapter: FakeNativeAdapter(),
   )
     ..ready = true
     ..onboardingDone = onboardingDone
@@ -94,7 +93,7 @@ void main() {
   testWidgets('settings shows provider token from schema label', (tester) async {
     SharedPreferences.setMockInitialValues({});
     final state = _state(onboardingDone: true);
-    state.secretSpecs = const [ProviderSecretSpec(key: 'ru_fns.token', label: 'RU')];
+    state.settingFields = const [SettingField(key: 'ru_fns.token', type: 'secret', label: 'RU')];
     await tester.pumpWidget(CheckScanApp(state: state));
     await tester.pump();
     await tester.tap(find.byIcon(Icons.settings_outlined));

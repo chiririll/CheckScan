@@ -26,8 +26,7 @@ class _HistoryPageState extends State<HistoryPage> {
     if (_busy) return;
     setState(() => _busy = true);
     try {
-      await state.session.refreshPending();
-      await state.reload();
+      await state.refreshPending();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppLocalizations.of(context).refreshPendingDone)),

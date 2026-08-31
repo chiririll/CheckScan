@@ -1,6 +1,5 @@
 import 'package:checkscan/core/app_state.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
-import 'package:checkscan/core/scan/scan_session.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
 import 'package:checkscan/features/receipt_detail/receipt_page.dart';
 import 'package:checkscan/l10n/app_localizations.dart';
@@ -9,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import '../scan/fake_providers_backend.dart';
+import '../scan/fake_native_adapter.dart';
 
 class _FakeRepository extends ReceiptRepository {
   _FakeRepository() : super(resolveDbPath: () async => 'unused.db');
@@ -65,7 +64,7 @@ void main() {
     repository = _FakeRepository();
     state = AppState(
       repository: repository,
-      session: ScanSession(repository: repository, backend: FakeProvidersBackend()),
+      adapter: FakeNativeAdapter(),
     )..receipts = [_sample()];
   });
 

@@ -53,8 +53,7 @@ class _ReceiptPageState extends State<ReceiptPage> {
     if (current == null) return;
     setState(() => _busy = true);
     try {
-      await widget.state.session.refresh(current);
-      await widget.state.reload();
+      await widget.state.refreshReceipt(current);
     } catch (_) {
       if (mounted) {
         final l10n = AppLocalizations.of(context);

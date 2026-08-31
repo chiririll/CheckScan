@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../core/app_state.dart';
-import '../../core/scan/providers_backend.dart';
+import '../../core/scan/native_adapter.dart';
+import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -23,13 +23,13 @@ class SettingsPage extends StatelessWidget {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              if (state.secretSpecs.isNotEmpty) ...[
+              if (state.settingFields.isNotEmpty) ...[
                 Text(l10n.providerSecrets, style: TextStyle(color: Colors.grey.shade600)),
                 const SizedBox(height: 8),
                 Text(l10n.providerTokenHint, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
                 const SizedBox(height: 12),
-                for (final spec in state.secretSpecs)
-                  _SecretField(state: state, spec: spec, title: l10n.providerToken(spec.label)),
+                for (final field in state.settingFields)
+                  _SecretField(state: state, field: field, title: l10n.providerToken(field.label)),
                 const SizedBox(height: 16),
               ],
               Text(l10n.integrations, style: TextStyle(color: Colors.grey.shade600)),
@@ -64,10 +64,10 @@ class SettingsPage extends StatelessWidget {
 }
 
 class _SecretField extends StatefulWidget {
-  const _SecretField({required this.state, required this.spec, required this.title});
+  const _SecretField({required this.state, required this.field, required this.title});
 
   final AppState state;
-  final ProviderSecretSpec spec;
+  final SettingField field;
   final String title;
 
   @override
@@ -81,17 +81,18 @@ class _SecretFieldState extends State<_SecretField> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.state.secrets.values[widget.spec.key] ?? '');
+    _controller = TextEditingController(text: widget.state.settings.values[widget.field.key] ?? '');
   }
 
   @override
   void dispose() {
+    _save();
     _controller.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
-    await widget.state.setSecret(widget.spec.key, _controller.text);
+    await widget.state.setSetting(widget.field.key, _controller.text);
   }
 
   @override

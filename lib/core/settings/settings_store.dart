@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ProviderSecrets {
+class SettingsStore {
   static const _prefsKey = 'provider_secrets';
 
   Map<String, String> values = {};
+
+  Map<String, String> snapshot() => Map<String, String>.from(values);
 
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
@@ -14,15 +16,20 @@ class ProviderSecrets {
       values = {};
       return;
     }
-    final decoded = jsonDecode(raw);
-    if (decoded is! Map) {
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) {
+        values = {};
+        return;
+      }
+      values = {
+        for (final entry in decoded.entries)
+          if (entry.value is String && (entry.value as String).trim().isNotEmpty)
+            entry.key.toString(): (entry.value as String).trim(),
+      };
+    } catch (_) {
       values = {};
-      return;
     }
-    values = {
-      for (final entry in decoded.entries)
-        if (entry.value is String && (entry.value as String).trim().isNotEmpty) entry.key.toString(): (entry.value as String).trim(),
-    };
   }
 
   Future<void> set(String key, String value) async {

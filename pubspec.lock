@@ -544,11 +544,11 @@ packages:
     dependency: "direct main"
     description:
       path: flutter
-      ref: "v0.1.1"
-      resolved-ref: dcfbf583d8e9111ddabc957b7c8979c8daa204ac
+      ref: "v0.2.0"
+      resolved-ref: b43fe86e567d84487f3d144d9fc783ac4c9b7318
       url: "git@github.com:chiririll/CheckScanProviders.git"
     source: git
-    version: "0.1.1"
+    version: "0.2.0"
   pub_semver:
     dependency: transitive
     description:

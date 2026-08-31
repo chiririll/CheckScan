@@ -2,33 +2,12 @@ import 'dart:convert';
 
 import 'package:eq_models/eq_models.dart';
 
-enum ReceiptStatus { ok, error, incomplete }
+import 'receipt_status.dart';
 
-const providerLabelExtension = 'checkscan.provider_label';
-const rateLimitedExtension = 'checkscan.rate_limited';
-const itemsUnavailableExtension = 'checkscan.items_unavailable';
-
-bool _extensionFlag(EqReceipt receipt, String key) {
-  final value = receipt.extensions[key];
-  return value == true || value == 'true';
-}
-
-ReceiptStatus statusFromReceipt(EqReceipt receipt) {
-  if (receipt.items.isNotEmpty) return ReceiptStatus.ok;
-  if (_extensionFlag(receipt, rateLimitedExtension)) return ReceiptStatus.incomplete;
-  if (_extensionFlag(receipt, itemsUnavailableExtension)) return ReceiptStatus.ok;
-  return ReceiptStatus.incomplete;
-}
-
-EqReceipt withProviderLabel(EqReceipt receipt, String label) {
-  if (label.isEmpty) return receipt;
-  return receipt.copyWith(
-    extensions: {...receipt.extensions, providerLabelExtension: label},
-  );
-}
+export 'receipt_status.dart';
 
 class ReceiptRecord {
-  const ReceiptRecord({
+  ReceiptRecord({
     required this.id,
     required this.qrHash,
     required this.adapterId,
@@ -41,6 +20,7 @@ class ReceiptRecord {
     required this.payload,
     required this.scannedAt,
     required this.rawQr,
+    this.lastStatus = statusOk,
   });
 
   final String id;
@@ -55,8 +35,31 @@ class ReceiptRecord {
   final String payload;
   final DateTime scannedAt;
   final String rawQr;
+  final int lastStatus;
 
-  EqReceipt get receipt => EqReceipt.fromJson(jsonDecode(payload) as Map<String, dynamic>);
+  EqReceipt? _cached;
+
+  EqReceipt get receipt {
+    final cached = _cached;
+    if (cached != null) return cached;
+    try {
+      final decoded = jsonDecode(payload);
+      if (decoded is Map<String, dynamic>) {
+        return _cached = EqReceipt.fromJson(decoded);
+      }
+      if (decoded is Map) {
+        return _cached = EqReceipt.fromJson(Map<String, dynamic>.from(decoded));
+      }
+    } catch (_) {}
+    return _cached = EqReceipt(
+      id: id,
+      issuedAt: issuedAt ?? scannedAt,
+      currency: currency.isEmpty ? 'RUB' : currency,
+      receiptType: 'sale',
+      grandTotal: grandTotal,
+      merchantName: merchantName,
+    );
+  }
 
   String get providerLabel {
     final label = receipt.extensions[providerLabelExtension];
@@ -64,13 +67,15 @@ class ReceiptRecord {
     return '';
   }
 
-  bool get canRetry => status == ReceiptStatus.error || status == ReceiptStatus.incomplete;
+  bool get canRetry => canRetryStatus(lastStatus);
 
-  bool get missingRemoteItems => canRetry && itemCount == 0;
+  bool get missingRemoteItems => status != ReceiptStatus.ok && itemCount == 0;
 
-  bool get rateLimited => _extensionFlag(receipt, rateLimitedExtension);
+  bool get rateLimited => lastStatus == statusRateLimited || receiptFlag(receipt, rateLimitedExtension);
 
-  bool get itemsUnavailable => _extensionFlag(receipt, itemsUnavailableExtension);
+  bool get needsSecret => lastStatus == statusNeedsSecret;
+
+  bool get itemsUnavailable => receiptFlag(receipt, itemsUnavailableExtension);
 
   ReceiptRecord copyWith({
     ReceiptStatus? status,
@@ -80,6 +85,7 @@ class ReceiptRecord {
     String? currency,
     int? itemCount,
     String? payload,
+    int? lastStatus,
   }) {
     return ReceiptRecord(
       id: id,
@@ -94,6 +100,7 @@ class ReceiptRecord {
       payload: payload ?? this.payload,
       scannedAt: scannedAt,
       rawQr: rawQr,
+      lastStatus: lastStatus ?? this.lastStatus,
     );
   }
 }
