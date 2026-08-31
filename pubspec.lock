@@ -543,12 +543,12 @@ packages:
   providers_native:
     dependency: "direct main"
     description:
-      path: flutter
-      ref: "v0.2.0"
-      resolved-ref: b43fe86e567d84487f3d144d9fc783ac4c9b7318
+      path: "adapters/flutter"
+      ref: "v0.2.3"
+      resolved-ref: "017a2d75a122cdc641185dc6db5c2a9df925bf20"
       url: "git@github.com:chiririll/CheckScanProviders.git"
     source: git
-    version: "0.2.0"
+    version: "0.2.3"
   pub_semver:
     dependency: transitive
     description:

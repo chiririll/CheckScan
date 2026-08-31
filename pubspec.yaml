@@ -18,7 +18,7 @@ dependencies:
     git:
       url: git@github.com:chiririll/CheckScanProviders.git
       path: adapters/flutter
-      ref: v0.2.2
+      ref: v0.2.3
   image_picker: ^1.2.3
   intl: ^0.20.2
   mobile_scanner: ^7.4.0
