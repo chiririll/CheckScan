@@ -21,7 +21,7 @@ Providers and FFI: [CheckScanProviders](https://github.com/chiririll/CheckScanPr
 1. Wire-up: [lib/main.dart](lib/main.dart)
 2. Scan pipeline (match → dedupe → resolve → persist): [lib/core/scan/scan_session.dart](lib/core/scan/scan_session.dart)
 3. Native adapter: [lib/core/scan/native_adapter.dart](lib/core/scan/native_adapter.dart)
-4. FFI: CheckScanProviders `flutter/` plugin. Host attaches `checkscan_set_log` and prints `[checkscan]` lines.
+4. FFI: CheckScanProviders `adapters/flutter/` plugin. Host attaches `checkscan_set_log` and prints `[checkscan]` lines.
 5. Local DB: [lib/core/storage/receipt_repository.dart](lib/core/storage/receipt_repository.dart), [lib/core/models/receipt_record.dart](lib/core/models/receipt_record.dart)
 6. UI shell: [lib/app.dart](lib/app.dart), [lib/features/shell/app_shell.dart](lib/features/shell/app_shell.dart)
 
