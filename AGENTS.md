@@ -31,6 +31,6 @@ QR formats and provider IDs live in CheckScanProviders. Do not add Dart-side ada
 
 - Android first. UI is Russian only (`ru`). Strings: [lib/l10n/app_ru.arb](lib/l10n/app_ru.arb); gen config: [l10n.yaml](l10n.yaml).
 - Provider changes go in CheckScanProviders. Bump the `providers_native` git `ref` here after a release.
-- `ru_fns` fetches items from proverkacheka.com. The published `.so` bakes in the CheckScanProviders `PROVERKACHEKA_TOKEN` secret. Do not commit the token.
+- Provider secrets come from CheckScanProviders `checkscan_providers` schema and are stored locally. Settings renders opaque keys plus the provider label. Do not hardcode API names or tokens in the app.
 - New code needs tests. Dart: [test/](test/) (`flutter test`; scan path uses [fake_providers_backend.dart](test/scan/fake_providers_backend.dart)).
 - Keep files small. Split growing files into modules; split a module when it starts doing more than one job.

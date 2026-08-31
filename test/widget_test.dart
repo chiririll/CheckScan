@@ -2,6 +2,7 @@ import 'package:checkscan/app.dart';
 import 'package:checkscan/core/app_state.dart';
 import 'package:checkscan/core/format.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
+import 'package:checkscan/core/scan/providers_backend.dart';
 import 'package:checkscan/core/scan/scan_session.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
 import 'package:checkscan/features/home/home_stats.dart';
@@ -88,6 +89,19 @@ void main() {
     expect(find.text('Экспорт eQ'), findsOneWidget);
     expect(find.text('Облако'), findsOneWidget);
     expect(find.text('Скоро'), findsNWidgets(3));
+  });
+
+  testWidgets('settings shows provider token from schema label', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final state = _state(onboardingDone: true);
+    state.secretSpecs = const [ProviderSecretSpec(key: 'ru_fns.token', label: 'RU')];
+    await tester.pumpWidget(CheckScanApp(state: state));
+    await tester.pump();
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.text('Токен (RU)'), findsOneWidget);
+    expect(find.textContaining('proverkacheka'), findsNothing);
   });
 
   testWidgets('home and history show receipt numbers', (tester) async {

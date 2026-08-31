@@ -46,6 +46,14 @@
       "count": { "type": "int" }
     }
   },
+  "providerSecrets": "Провайдеры",
+  "providerToken": "Токен ({label})",
+  "@providerToken": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
+  "providerTokenHint": "Нужен, чтобы подгружать состав чека. Без него сохранится только сумма из QR.",
   "integrations": "Интеграции",
   "soon": "Скоро",
   "integration1c": "1С",

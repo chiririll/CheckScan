@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models/receipt_record.dart';
+import 'scan/provider_secrets.dart';
+import 'scan/providers_backend.dart';
 import 'scan/scan_session.dart';
 import 'storage/receipt_repository.dart';
 
@@ -9,22 +11,32 @@ class AppState extends ChangeNotifier {
   AppState({
     required this.repository,
     required this.session,
-  });
+    ProviderSecrets? secrets,
+  }) : secrets = secrets ?? ProviderSecrets();
 
   final ReceiptRepository repository;
   final ScanSession session;
+  final ProviderSecrets secrets;
 
   static const _onboardingKey = 'onboarding_done';
 
   bool onboardingDone = false;
   List<ReceiptRecord> receipts = const [];
+  List<ProviderSecretSpec> secretSpecs = const [];
   bool ready = false;
 
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
     onboardingDone = prefs.getBool(_onboardingKey) ?? false;
+    await secrets.load();
+    secretSpecs = await session.backend.secretSpecs();
     receipts = await repository.listAll();
     ready = true;
+    notifyListeners();
+  }
+
+  Future<void> setSecret(String key, String value) async {
+    await secrets.set(key, value);
     notifyListeners();
   }
 

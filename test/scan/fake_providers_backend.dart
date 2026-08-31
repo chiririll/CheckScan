@@ -14,6 +14,9 @@ class FakeProvidersBackend implements ProvidersBackend {
   static const eqId = '550e8400-e29b-41d4-a716-446655440000';
 
   @override
+  Future<List<ProviderSecretSpec>> secretSpecs() async => const [];
+
+  @override
   Future<ProviderMatch?> match(String rawQr, {String? hint}) async {
     if (rawQr == 'boom') {
       return const ProviderMatch(adapterId: 'boom', hash: 'h', label: 'X');

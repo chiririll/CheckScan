@@ -122,6 +122,18 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String get providerSecrets => 'Провайдеры';
+
+  @override
+  String providerToken(String label) {
+    return 'Токен ($label)';
+  }
+
+  @override
+  String get providerTokenHint =>
+      'Нужен, чтобы подгружать состав чека. Без него сохранится только сумма из QR.';
+
+  @override
   String get integrations => 'Интеграции';
 
   @override

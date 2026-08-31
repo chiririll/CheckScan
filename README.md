@@ -16,6 +16,6 @@ flutter run
 
 Scan fetches items immediately when the provider API answers. If it returns 403/429/503 (or `Retry-After`), the native library pauses further calls to that host and keeps the local total. History → **Догрузить состав** retries receipts that still have no items.
 
-The prebuilt Release bakes in `PROVERKACHEKA_TOKEN` from the CheckScanProviders repo secret. Do not commit the token.
+Provider tokens are not baked into the native library. Set them in **Настройки** if you need line items from a remote API. The screen lists whatever secrets CheckScanProviders advertises; the app does not hardcode provider APIs.
 
 Android first. UI is Russian (`ru` only in v1).

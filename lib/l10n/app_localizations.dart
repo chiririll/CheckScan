@@ -280,6 +280,24 @@ abstract class AppLocalizations {
   /// **'{count, plural, one{{count} товар} few{{count} товара} many{{count} товаров} other{{count} товара}}'**
   String itemsCount(int count);
 
+  /// No description provided for @providerSecrets.
+  ///
+  /// In ru, this message translates to:
+  /// **'Провайдеры'**
+  String get providerSecrets;
+
+  /// No description provided for @providerToken.
+  ///
+  /// In ru, this message translates to:
+  /// **'Токен ({label})'**
+  String providerToken(String label);
+
+  /// No description provided for @providerTokenHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужен, чтобы подгружать состав чека. Без него сохранится только сумма из QR.'**
+  String get providerTokenHint;
+
   /// No description provided for @integrations.
   ///
   /// In ru, this message translates to:

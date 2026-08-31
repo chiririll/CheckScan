@@ -43,13 +43,42 @@ class ProviderParseException implements Exception {
   String toString() => 'ProviderParseException($adapterId): $message';
 }
 
+class ProviderSecretSpec {
+  const ProviderSecretSpec({required this.key, required this.label});
+
+  final String key;
+  final String label;
+}
+
+List<ProviderSecretSpec> secretSpecsFromProvidersJson(String raw) {
+  final value = jsonDecode(raw);
+  if (value is! List) return const [];
+  final specs = <ProviderSecretSpec>[];
+  for (final item in value) {
+    if (item is! Map) continue;
+    final id = '${item['id'] ?? ''}';
+    final label = '${item['label'] ?? id}';
+    final secrets = item['secrets'];
+    if (secrets is! List) continue;
+    for (final secret in secrets) {
+      if (secret is! Map) continue;
+      final secretId = '${secret['id'] ?? ''}';
+      if (id.isEmpty || secretId.isEmpty) continue;
+      specs.add(ProviderSecretSpec(key: '$id.$secretId', label: label));
+    }
+  }
+  return specs;
+}
+
 abstract class ProvidersBackend {
   Future<ProviderMatch?> match(String rawQr, {String? hint});
   Future<ResolveResult> resolve(String rawQr, {String? hint, bool remote = false, bool wait = false, String? current});
+  Future<List<ProviderSecretSpec>> secretSpecs() async => const [];
 }
 
 class NativeProvidersBackend implements ProvidersBackend {
-  NativeProvidersBackend({IsolatedNativeProviders? lib}) : _lib = lib ?? IsolatedNativeProviders();
+  NativeProvidersBackend({IsolatedNativeProviders? lib, Map<String, String> Function()? config})
+    : _lib = lib ?? IsolatedNativeProviders(config: config);
 
   final IsolatedNativeProviders _lib;
 
@@ -92,6 +121,11 @@ class NativeProvidersBackend implements ProvidersBackend {
       label: '${decoded['label'] ?? ''}',
       receipt: EqReceipt.fromJson(decoded),
     );
+  }
+
+  @override
+  Future<List<ProviderSecretSpec>> secretSpecs() async {
+    return secretSpecsFromProvidersJson(await _lib.providers());
   }
 
   Map<String, dynamic> _decode(String raw) {
