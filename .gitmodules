@@ -1,3 +1,0 @@
-[submodule "services/providers"]
-	path = services/providers
-	url = git@github.com:chiririll/CheckScanProviders.git

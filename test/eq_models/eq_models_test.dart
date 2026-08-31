@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 
 void main() {
-  final testdata = p.join('services', 'providers', 'testdata');
+  final testdata = p.join('test', 'eq_models', 'fixtures');
 
   test('parses eQ fixture from CheckScanProviders', () {
     final raw = File(p.join(testdata, 'eq_with_id.json')).readAsStringSync();
