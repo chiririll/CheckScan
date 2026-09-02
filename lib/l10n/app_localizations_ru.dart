@@ -146,6 +146,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get integrationExport => 'Экспорт eQ';
 
   @override
+  String get exportEmpty => 'Нет чеков для экспорта';
+
+  @override
+  String get exportFailed => 'Не удалось экспортировать';
+
+  @override
+  String get exportShareSubject => 'Чеки CheckScan';
+
+  @override
   String get integrationCloud => 'Облако';
 
   @override

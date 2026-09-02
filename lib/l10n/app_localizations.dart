@@ -322,6 +322,24 @@ abstract class AppLocalizations {
   /// **'Экспорт eQ'**
   String get integrationExport;
 
+  /// No description provided for @exportEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет чеков для экспорта'**
+  String get exportEmpty;
+
+  /// No description provided for @exportFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось экспортировать'**
+  String get exportFailed;
+
+  /// No description provided for @exportShareSubject.
+  ///
+  /// In ru, this message translates to:
+  /// **'Чеки CheckScan'**
+  String get exportShareSubject;
+
   /// No description provided for @integrationCloud.
   ///
   /// In ru, this message translates to:

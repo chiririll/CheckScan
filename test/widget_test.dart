@@ -87,7 +87,8 @@ void main() {
     expect(find.text('1С'), findsOneWidget);
     expect(find.text('Экспорт eQ'), findsOneWidget);
     expect(find.text('Облако'), findsOneWidget);
-    expect(find.text('Скоро'), findsNWidgets(3));
+    expect(find.text('Скоро'), findsNWidgets(2));
+    expect(find.byIcon(Icons.share_outlined), findsOneWidget);
   });
 
   testWidgets('settings shows provider token from schema label', (tester) async {
