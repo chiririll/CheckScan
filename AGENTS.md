@@ -34,3 +34,4 @@ QR formats and provider IDs live in CheckScanProviders. Do not add Dart-side ada
 - Settings schema comes from CheckScanProviders `checkscan_settings`. Persist locally and `configure` the native library. Do not hardcode API names or tokens.
 - New code needs tests. Dart: [test/](test/) (`flutter test`; scan path uses [fake_providers_backend.dart](test/scan/fake_providers_backend.dart)).
 - Keep files small. Split growing files into modules; split a module when it starts doing more than one job.
+- Before adding or bumping a Flutter/Dart plugin, look up the current stable version on [pub.dev](https://pub.dev) (or `flutter pub outdated`) and use that constraint. Do not pick a remembered older version. Confirm it matches this repo's Flutter/Android (AGP) bounds.
