@@ -1,5 +1,5 @@
 final _keep = RegExp(r'[\p{L}0-9.%]', unicode: true);
-final _numberThenUnit = RegExp(r'([0-9]+(?:\.[0-9]+)?)\s+(мл|кг|шт|л|г|уп)');
+final _numberThenUnit = RegExp(r'([0-9]+(?:\.[0-9]+)?)\s+(мл|ml|кг|kg|шт|kom|ком|л|l|г|g|уп|pak|пак)');
 
 String normalizeItemName(String raw) {
   final lower = raw.toLowerCase();

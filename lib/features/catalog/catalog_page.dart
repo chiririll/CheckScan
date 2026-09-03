@@ -137,7 +137,7 @@ class _PositionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final unit = formatCatalogUnit(position.unit, position.unitSize, l10n);
+    final unit = formatPositionPack(position, null, l10n);
     final suggestions = state.catalog.suggestionsFor(position);
     return Material(
       color: Colors.white,
@@ -214,6 +214,10 @@ class _ProductsTab extends StatelessWidget {
       itemBuilder: (context, index) {
         final product = items[index];
         final category = product.categoryId == null ? null : state.catalog.categoryById(product.categoryId!);
+        final subtitle = [
+          if (category != null) categoryTitle(category, l10n),
+          if (product.unit != null) unitLabel(product.unit, l10n),
+        ].join(' · ');
         return ListTile(
           tileColor: Colors.white,
           shape: RoundedRectangleBorder(
@@ -221,7 +225,7 @@ class _ProductsTab extends StatelessWidget {
             side: const BorderSide(color: Color(0xFFE4E4E4)),
           ),
           title: Text(product.name),
-          subtitle: category == null ? null : Text(categoryTitle(category, l10n)),
+          subtitle: subtitle.isEmpty ? null : Text(subtitle),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (_) => ProductPage(state: state, productId: product.id)),
           ),

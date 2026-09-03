@@ -77,28 +77,48 @@ class CatalogRepository {
           id: '${row['id']}',
           name: '${row['name']}',
           categoryId: row['category_id'] as String?,
+          unit: ItemUnit.tryParse(row['unit'] as String?),
           tags: tagsByProduct['${row['id']}'] ?? const [],
         ),
     ];
   }
 
-  Future<CatalogProduct> createProduct({required String name, String? categoryId}) async {
-    final product = CatalogProduct(id: _uuid.v4(), name: name.trim(), categoryId: categoryId);
+  Future<CatalogProduct> createProduct({required String name, String? categoryId, ItemUnit? unit}) async {
+    final trimmed = name.trim();
+    final product = CatalogProduct(
+      id: _uuid.v4(),
+      name: trimmed,
+      categoryId: categoryId,
+      unit: unit ?? parseItemUnit(trimmed)?.unit,
+    );
     await (await _db).insert('products', {
       'id': product.id,
       'name': product.name,
       'category_id': product.categoryId,
+      'unit': product.unit?.name,
     });
     return product;
   }
 
-  Future<void> updateProduct(String id, {String? name, String? categoryId, bool clearCategory = false}) async {
+  Future<void> updateProduct(
+    String id, {
+    String? name,
+    String? categoryId,
+    bool clearCategory = false,
+    ItemUnit? unit,
+    bool clearUnit = false,
+  }) async {
     final values = <String, Object?>{};
     if (name != null) values['name'] = name.trim();
     if (clearCategory) {
       values['category_id'] = null;
     } else if (categoryId != null) {
       values['category_id'] = categoryId;
+    }
+    if (clearUnit) {
+      values['unit'] = null;
+    } else if (unit != null) {
+      values['unit'] = unit.name;
     }
     if (values.isEmpty) return;
     await (await _db).update('products', values, where: 'id = ?', whereArgs: [id]);
@@ -160,7 +180,6 @@ class CatalogRepository {
           id: '${row['id']}',
           displayName: '${row['display_name']}',
           productId: row['product_id'] as String?,
-          unit: ItemUnit.tryParse(row['unit'] as String?),
           unitSize: (row['unit_size'] as num?)?.toDouble(),
           aliases: aliases['${row['id']}'] ?? const [],
         ),
@@ -181,7 +200,6 @@ class CatalogRepository {
           'id': id,
           'display_name': raw,
           'product_id': null,
-          'unit': parsed?.unit.name,
           'unit_size': parsed?.size,
         });
         await txn.insert('position_aliases', {
@@ -196,24 +214,27 @@ class CatalogRepository {
   }
 
   Future<void> assignPosition(String positionId, String? productId) async {
-    await (await _db).update('positions', {'product_id': productId}, where: 'id = ?', whereArgs: [positionId]);
+    final db = await _db;
+    await db.transaction((txn) async {
+      await txn.update('positions', {'product_id': productId}, where: 'id = ?', whereArgs: [positionId]);
+      if (productId == null) return;
+      final productRows = await txn.query('products', where: 'id = ?', whereArgs: [productId], limit: 1);
+      if (productRows.isEmpty || productRows.first['unit'] != null) return;
+      final positionRows = await txn.query('positions', where: 'id = ?', whereArgs: [positionId], limit: 1);
+      if (positionRows.isEmpty) return;
+      final parsed = parseItemUnit('${positionRows.first['display_name']}');
+      if (parsed?.unit == null) return;
+      await txn.update('products', {'unit': parsed!.unit.name}, where: 'id = ?', whereArgs: [productId]);
+    });
   }
 
-  Future<void> updatePosition(
-    String id, {
-    String? displayName,
-    ItemUnit? unit,
-    double? unitSize,
-    bool clearUnit = false,
-  }) async {
+  Future<void> updatePosition(String id, {String? displayName, double? unitSize, bool clearAmount = false}) async {
     final values = <String, Object?>{};
     if (displayName != null) values['display_name'] = displayName;
-    if (clearUnit) {
-      values['unit'] = null;
+    if (clearAmount) {
       values['unit_size'] = null;
-    } else {
-      if (unit != null) values['unit'] = unit.name;
-      if (unitSize != null) values['unit_size'] = unitSize;
+    } else if (unitSize != null) {
+      values['unit_size'] = unitSize;
     }
     if (values.isEmpty) return;
     await (await _db).update('positions', values, where: 'id = ?', whereArgs: [id]);
@@ -228,11 +249,8 @@ class CatalogRepository {
       if (sourceRows.isEmpty || targetRows.isEmpty) return;
       final source = sourceRows.first;
       final target = targetRows.first;
-      if (target['unit'] == null && source['unit'] != null) {
-        await txn.update('positions', {
-          'unit': source['unit'],
-          'unit_size': source['unit_size'],
-        }, where: 'id = ?', whereArgs: [targetId]);
+      if (target['unit_size'] == null && source['unit_size'] != null) {
+        await txn.update('positions', {'unit_size': source['unit_size']}, where: 'id = ?', whereArgs: [targetId]);
       }
       await txn.update('position_aliases', {'position_id': targetId}, where: 'position_id = ?', whereArgs: [sourceId]);
       await txn.delete('positions', where: 'id = ?', whereArgs: [sourceId]);
@@ -255,7 +273,6 @@ class CatalogRepository {
         'id': id,
         'display_name': rawName,
         'product_id': null,
-        'unit': parsed?.unit.name,
         'unit_size': parsed?.size,
       });
       await txn.update('position_aliases', {'position_id': id}, where: 'raw_name = ?', whereArgs: [rawName]);

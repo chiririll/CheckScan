@@ -45,7 +45,7 @@ void main() {
       receiptType: 'sale',
       merchantName: 'Пятёрочка',
       grandTotal: 80,
-      items: const [EqItem(description: 'Молоко 1,5л', quantity: 1, unitPrice: 80, totalPrice: 80)],
+      items: const [EqItem(description: 'Молоко Леб 2.5% 1.7л', quantity: 1, unitPrice: 80, totalPrice: 80)],
     );
     final saved = await receipts.upsertParsed(
       qrHash: 'h',
@@ -72,8 +72,8 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.text('Молоко 1,5л'), findsOneWidget);
-    expect(find.text('1.5 л'), findsOneWidget);
+    expect(find.text('Молоко Леб 2.5% 1.7л'), findsOneWidget);
+    expect(find.text('1.7 л'), findsOneWidget);
     expect(find.text('В товар'), findsOneWidget);
   });
 }

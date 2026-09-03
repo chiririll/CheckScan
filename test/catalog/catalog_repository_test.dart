@@ -38,35 +38,60 @@ void main() {
     expect(categories.every((e) => e.isSeed), isTrue);
   });
 
-  test('ingest creates a position with parsed unit only once', () async {
-    await catalog.ingest(['Молоко 1,5л', 'Молоко 1,5л']);
+  test('ingest creates a position with parsed size only once', () async {
+    await catalog.ingest(['Молоко Леб 2.5% 1.7л', 'Молоко Леб 2.5% 1.7л']);
     final positions = await catalog.listPositions();
     expect(positions, hasLength(1));
-    expect(positions.single.unit, ItemUnit.l);
-    expect(positions.single.unitSize, 1.5);
-    expect(positions.single.aliases, ['Молоко 1,5л']);
+    expect(positions.single.unitSize, 1.7);
+    expect(positions.single.aliases, ['Молоко Леб 2.5% 1.7л']);
   });
 
-  test('does not overwrite unit on a later alias of a new raw name', () async {
+  test('does not overwrite size when the same raw name is ingested again', () async {
     await catalog.ingest(['Хлеб']);
-    await catalog.updatePosition( (await catalog.listPositions()).single.id, unit: ItemUnit.piece);
+    await catalog.updatePosition((await catalog.listPositions()).single.id, unitSize: 2);
     await catalog.ingest(['Хлеб', 'Батон']);
     final positions = await catalog.listPositions();
     final bread = positions.firstWhere((e) => e.displayName == 'Хлеб');
-    expect(bread.unit, ItemUnit.piece);
-    expect(positions.where((e) => e.displayName == 'Батон').single.unit, isNull);
+    expect(bread.unitSize, 2);
+    expect(positions.where((e) => e.displayName == 'Батон').single.unitSize, isNull);
   });
 
-  test('merge moves aliases and copies unit when target is empty', () async {
-    await catalog.ingest(['Молоко 1,5 л', 'МОЛОКО 1.5Л']);
+  test('merge moves aliases and copies size when target is empty', () async {
+    await catalog.ingest(['Молоко', 'МОЛОКО 1.5Л']);
     final positions = await catalog.listPositions();
     final source = positions.firstWhere((e) => e.displayName == 'МОЛОКО 1.5Л');
-    final target = positions.firstWhere((e) => e.displayName == 'Молоко 1,5 л');
+    final target = positions.firstWhere((e) => e.displayName == 'Молоко');
+    expect(target.unitSize, isNull);
     await catalog.mergePositions(sourceId: source.id, targetId: target.id);
     final after = await catalog.listPositions();
     expect(after, hasLength(1));
-    expect(after.single.aliases, containsAll(['Молоко 1,5 л', 'МОЛОКО 1.5Л']));
-    expect(after.single.unit, ItemUnit.l);
+    expect(after.single.aliases, containsAll(['Молоко', 'МОЛОКО 1.5Л']));
+    expect(after.single.unitSize, 1.5);
+  });
+
+  test('createProduct and assign take unit from the name onto the product', () async {
+    await catalog.ingest(['Молоко Леб 2.5% 1.7л']);
+    final position = (await catalog.listPositions()).single;
+    final product = await catalog.createProduct(name: 'Молоко Леб 2.5% 1.7л');
+    await catalog.assignPosition(position.id, product.id);
+    expect((await catalog.listProducts()).single.unit, ItemUnit.l);
+    expect((await catalog.listPositions()).single.unitSize, 1.7);
+  });
+
+  test('assign does not overwrite a product unit that is already set', () async {
+    await catalog.ingest(['Молоко Леб 2.5% 1.7л']);
+    final position = (await catalog.listPositions()).single;
+    final product = await catalog.createProduct(name: 'Молоко Леб', unit: ItemUnit.piece);
+    await catalog.assignPosition(position.id, product.id);
+    expect((await catalog.listProducts()).single.unit, ItemUnit.piece);
+  });
+
+  test('updateProduct can set and clear the unit', () async {
+    final product = await catalog.createProduct(name: 'Хлеб');
+    await catalog.updateProduct(product.id, unit: ItemUnit.piece);
+    expect((await catalog.listProducts()).single.unit, ItemUnit.piece);
+    await catalog.updateProduct(product.id, clearUnit: true);
+    expect((await catalog.listProducts()).single.unit, isNull);
   });
 
   test('unalias splits a raw name back into its own position', () async {
@@ -156,6 +181,44 @@ void main() {
     final receiptRepo = ReceiptRepository(database: migrated);
     expect(await catalogRepo.listCategories(), isNotEmpty);
     expect(await receiptRepo.listAll(), hasLength(1));
+    await migrated.close();
+  });
+
+  test('migrates v3 position units onto products', () async {
+    _seq += 1;
+    final path = p.join(Directory.systemTemp.path, 'checkscan_units_$_seq.db');
+    final file = File(path);
+    if (file.existsSync()) file.deleteSync();
+    final old = await openDatabase(
+      path,
+      version: 3,
+      onCreate: (db, version) async {
+        await db.execute('CREATE TABLE categories (id TEXT PRIMARY KEY, name TEXT NOT NULL, sort_order INTEGER NOT NULL, is_seed INTEGER NOT NULL DEFAULT 0)');
+        await db.execute('CREATE TABLE tags (id TEXT PRIMARY KEY, name TEXT NOT NULL, name_key TEXT NOT NULL UNIQUE)');
+        await db.execute('CREATE TABLE products (id TEXT PRIMARY KEY, name TEXT NOT NULL, category_id TEXT)');
+        await db.execute('CREATE TABLE product_tags (product_id TEXT NOT NULL, tag_id TEXT NOT NULL, PRIMARY KEY (product_id, tag_id))');
+        await db.execute(
+          'CREATE TABLE positions (id TEXT PRIMARY KEY, display_name TEXT NOT NULL, product_id TEXT, unit TEXT, unit_size REAL)',
+        );
+        await db.execute(
+          'CREATE TABLE position_aliases (raw_name TEXT PRIMARY KEY, normalized TEXT NOT NULL, position_id TEXT NOT NULL)',
+        );
+      },
+    );
+    await old.insert('products', {'id': 'prod', 'name': 'Молоко'});
+    await old.insert('positions', {
+      'id': 'pos',
+      'display_name': 'Молоко 1,5л',
+      'product_id': 'prod',
+      'unit': 'l',
+      'unit_size': 1.5,
+    });
+    await old.close();
+
+    final migrated = CheckScanDatabase(resolvePath: () async => path);
+    final catalogRepo = CatalogRepository(database: migrated);
+    expect((await catalogRepo.listProducts()).single.unit, ItemUnit.l);
+    expect((await catalogRepo.listPositions()).single.unitSize, 1.5);
     await migrated.close();
   });
 }

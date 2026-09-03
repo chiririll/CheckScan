@@ -3,8 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('normalizes case, punctuation and spaces before units', () {
-    expect(normalizeItemName('МОЛОКО 1,5 Л'), 'молоко 1.5л');
-    expect(normalizeItemName('Молоко 1.5Л'), 'молоко 1.5л');
+    expect(normalizeItemName('Молоко Леб 2.5% 1.7л'), 'молоко леб 2.5% 1.7л');
+    expect(normalizeItemName('МОЛОКО ЛЕБ 2,5% 1,7 Л'), 'молоко леб 2.5% 1.7л');
+    expect(normalizeItemName('MLEKO IMLEK 2,8% 1,5 L'), 'mleko imlek 2.8% 1.5l');
     expect(normalizeItemName('молоко  простоквашино  1.5%'), 'молоко простоквашино 1.5%');
   });
 

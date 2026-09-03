@@ -1,4 +1,7 @@
+import '../../core/catalog/catalog_position.dart';
+import '../../core/catalog/catalog_product.dart';
 import '../../core/catalog/item_unit.dart';
+import '../../core/catalog/unit_parser.dart';
 import '../../core/format.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -15,8 +18,14 @@ String unitLabel(ItemUnit? unit, AppLocalizations l10n) {
 }
 
 String formatCatalogUnit(ItemUnit? unit, double? size, AppLocalizations l10n) {
-  if (unit == null) return '';
+  if (unit == null && size == null) return '';
+  if (unit == null) return formatQty(size!);
   final label = unitLabel(unit, l10n);
   if (size == null) return label;
   return '${formatQty(size)} $label';
+}
+
+String formatPositionPack(CatalogPosition position, CatalogProduct? product, AppLocalizations l10n) {
+  final unit = product?.unit ?? parseItemUnit(position.displayName)?.unit;
+  return formatCatalogUnit(unit, position.unitSize, l10n);
 }

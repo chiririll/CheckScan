@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
 import '../../core/catalog/catalog_position.dart';
-import '../../core/catalog/item_unit.dart';
 import 'unit_labels.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
@@ -50,7 +49,7 @@ class _AssignSheet extends StatelessWidget {
               children: [
                 Text(position.displayName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                 const SizedBox(height: 12),
-                _UnitRow(state: state, position: position),
+                _AmountRow(state: state, position: position),
                 if (suggestions.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Wrap(
@@ -98,6 +97,7 @@ class _AssignSheet extends StatelessWidget {
                           ListTile(
                             dense: true,
                             title: Text(product.name),
+                            subtitle: product.unit == null ? null : Text(unitLabel(product.unit, l10n)),
                             onTap: () async {
                               await state.catalog.assignPosition(position.id, product.id);
                               if (context.mounted) Navigator.pop(context);
@@ -116,8 +116,8 @@ class _AssignSheet extends StatelessWidget {
   }
 }
 
-class _UnitRow extends StatelessWidget {
-  const _UnitRow({required this.state, required this.position});
+class _AmountRow extends StatelessWidget {
+  const _AmountRow({required this.state, required this.position});
 
   final AppState state;
   final CatalogPosition position;
@@ -125,31 +125,22 @@ class _UnitRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Row(
-      children: [
-        Text(l10n.unitLabel, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-        const SizedBox(width: 12),
-        DropdownButton<ItemUnit?>(
-          value: position.unit,
-          underline: const SizedBox.shrink(),
-          items: [
-            DropdownMenuItem(value: null, child: Text(l10n.unitNone)),
-            for (final unit in ItemUnit.values) DropdownMenuItem(value: unit, child: Text(unitLabel(unit, l10n))),
-          ],
-          onChanged: (unit) {
-            if (unit == null) {
-              state.catalog.updatePosition(position.id, clearUnit: true);
-            } else {
-              state.catalog.updatePosition(position.id, unit: unit, unitSize: position.unitSize);
-            }
-          },
-        ),
-        const Spacer(),
-        Text(
-          formatCatalogUnit(position.unit, position.unitSize, l10n),
-          style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
-        ),
-      ],
+    final product = position.productId == null ? null : state.catalog.productById(position.productId!);
+    final pack = formatPositionPack(position, product, l10n);
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      dense: true,
+      title: Text(l10n.unitSize, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+      trailing: Text(
+        pack.isEmpty ? l10n.unitNone : pack,
+        style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+      ),
+      onTap: () => editPositionAmount(
+        context: context,
+        catalog: state.catalog,
+        positionId: position.id,
+        current: position.unitSize,
+      ),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
 import '../../core/catalog/catalog_position.dart';
+import '../../core/catalog/catalog_product.dart';
 import '../../core/catalog/category_label.dart';
 import '../../core/catalog/item_unit.dart';
 import '../../l10n/app_localizations.dart';
@@ -66,6 +67,26 @@ class ProductPage extends StatelessWidget {
                 subtitle: Text(_categorySubtitle(product.categoryId, l10n)),
                 onTap: () => _pickCategory(context, product.id, product.categoryId),
               ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(l10n.unitLabel),
+                trailing: DropdownButton<ItemUnit?>(
+                  value: product.unit,
+                  underline: const SizedBox.shrink(),
+                  items: [
+                    DropdownMenuItem(value: null, child: Text(l10n.unitNone)),
+                    for (final item in ItemUnit.values)
+                      DropdownMenuItem(value: item, child: Text(unitLabel(item, l10n))),
+                  ],
+                  onChanged: (value) {
+                    if (value == null) {
+                      state.catalog.updateProduct(product.id, clearUnit: true);
+                    } else {
+                      state.catalog.updateProduct(product.id, unit: value);
+                    }
+                  },
+                ),
+              ),
               const SizedBox(height: 8),
               Text(l10n.productTags, style: const TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
@@ -90,7 +111,8 @@ class ProductPage extends StatelessWidget {
               const SizedBox(height: 16),
               Text(l10n.itemsSection, style: const TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
-              for (final position in positions) _PositionTile(state: state, position: position),
+              for (final position in positions)
+                _PositionTile(state: state, position: position, product: product),
             ],
           ),
         );
@@ -137,15 +159,16 @@ class ProductPage extends StatelessWidget {
 }
 
 class _PositionTile extends StatelessWidget {
-  const _PositionTile({required this.state, required this.position});
+  const _PositionTile({required this.state, required this.position, required this.product});
 
   final AppState state;
   final CatalogPosition position;
+  final CatalogProduct product;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final unit = formatCatalogUnit(position.unit, position.unitSize, l10n);
+    final pack = formatPositionPack(position, product, l10n);
     return Card(
       elevation: 0,
       color: Colors.white,
@@ -158,27 +181,22 @@ class _PositionTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(child: Text(position.displayName)),
-                DropdownButton<ItemUnit?>(
-                  value: position.unit,
-                  underline: const SizedBox.shrink(),
-                  items: [
-                    DropdownMenuItem(value: null, child: Text(l10n.unitNone)),
-                    for (final item in ItemUnit.values) DropdownMenuItem(value: item, child: Text(unitLabel(item, l10n))),
-                  ],
-                  onChanged: (value) {
-                    if (value == null) {
-                      state.catalog.updatePosition(position.id, clearUnit: true);
-                    } else {
-                      state.catalog.updatePosition(position.id, unit: value, unitSize: position.unitSize);
-                    }
-                  },
-                ),
-              ],
+            Text(position.displayName),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(l10n.unitSize, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+              trailing: Text(
+                pack.isEmpty ? l10n.unitNone : pack,
+                style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+              ),
+              onTap: () => editPositionAmount(
+                context: context,
+                catalog: state.catalog,
+                positionId: position.id,
+                current: position.unitSize,
+              ),
             ),
-            if (unit.isNotEmpty) Text(unit, style: const TextStyle(color: AppColors.primary, fontSize: 12)),
             Wrap(
               spacing: 8,
               children: [

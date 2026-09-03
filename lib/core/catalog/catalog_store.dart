@@ -58,8 +58,9 @@ class CatalogStore extends ChangeNotifier {
     required String name,
     String? categoryId,
     String? positionId,
+    ItemUnit? unit,
   }) async {
-    final product = await _repository.createProduct(name: name, categoryId: categoryId);
+    final product = await _repository.createProduct(name: name, categoryId: categoryId, unit: unit);
     if (positionId != null) {
       await _repository.assignPosition(positionId, product.id);
     }
@@ -72,8 +73,22 @@ class CatalogStore extends ChangeNotifier {
     await reload();
   }
 
-  Future<void> updateProduct(String id, {String? name, String? categoryId, bool clearCategory = false}) async {
-    await _repository.updateProduct(id, name: name, categoryId: categoryId, clearCategory: clearCategory);
+  Future<void> updateProduct(
+    String id, {
+    String? name,
+    String? categoryId,
+    bool clearCategory = false,
+    ItemUnit? unit,
+    bool clearUnit = false,
+  }) async {
+    await _repository.updateProduct(
+      id,
+      name: name,
+      categoryId: categoryId,
+      clearCategory: clearCategory,
+      unit: unit,
+      clearUnit: clearUnit,
+    );
     await reload();
   }
 
@@ -93,8 +108,8 @@ class CatalogStore extends ChangeNotifier {
     await reload();
   }
 
-  Future<void> updatePosition(String id, {ItemUnit? unit, double? unitSize, bool clearUnit = false}) async {
-    await _repository.updatePosition(id, unit: unit, unitSize: unitSize, clearUnit: clearUnit);
+  Future<void> updatePosition(String id, {double? unitSize, bool clearAmount = false}) async {
+    await _repository.updatePosition(id, unitSize: unitSize, clearAmount: clearAmount);
     await reload();
   }
 

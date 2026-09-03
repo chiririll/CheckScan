@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/catalog/catalog_store.dart';
+import '../../core/format.dart';
 import '../../l10n/app_localizations.dart';
 
 Future<String?> promptText(
@@ -7,13 +9,38 @@ Future<String?> promptText(
   required String title,
   String? initial,
   required String confirm,
+  bool allowEmpty = false,
 }) async {
   final result = await showDialog<String>(
     context: context,
     builder: (context) => _PromptDialog(title: title, initial: initial, confirm: confirm),
   );
-  if (result == null || result.isEmpty) return null;
+  if (result == null) return null;
+  if (result.isEmpty && !allowEmpty) return null;
   return result;
+}
+
+Future<void> editPositionAmount({
+  required BuildContext context,
+  required CatalogStore catalog,
+  required String positionId,
+  double? current,
+}) async {
+  final l10n = AppLocalizations.of(context);
+  final raw = await promptText(
+    context,
+    title: l10n.unitSize,
+    initial: current == null ? '' : formatQty(current),
+    confirm: l10n.save,
+    allowEmpty: true,
+  );
+  if (raw == null) return;
+  if (raw.isEmpty) {
+    await catalog.updatePosition(positionId, clearAmount: true);
+    return;
+  }
+  final size = double.tryParse(raw.replaceAll(',', '.'));
+  if (size != null) await catalog.updatePosition(positionId, unitSize: size);
 }
 
 class _PromptDialog extends StatefulWidget {

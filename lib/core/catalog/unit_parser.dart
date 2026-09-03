@@ -8,13 +8,22 @@ class ParsedUnit {
 }
 
 final _sized = RegExp(
-  r'([0-9]+(?:[.,][0-9]+)?)\s*(миллилитр(?:ов|а)?|мл|литров|литра|литр|л|килограмм(?:ов|а)?|кг|граммов|грамм|гр|г)(?![а-яa-z%0-9])',
+  r'([0-9]+(?:[.,][0-9]+)?)\s*(мл|ml|кг|kg|гр|gr|lt|л|l|г|g)(?!\p{L}|[%0-9])',
   caseSensitive: false,
+  unicode: true,
 );
 
-final _piece = RegExp(r'(?<![а-яa-z])(штук|шт\.?|шт)(?![а-яa-z])', caseSensitive: false);
+final _piece = RegExp(
+  r'(?<!\p{L})(шт\.?|kom\.?|ком)(?!\p{L})',
+  caseSensitive: false,
+  unicode: true,
+);
 
-final _pack = RegExp(r'(?<![а-яa-z])(упаковка|упак|уп)(?![а-яa-z])', caseSensitive: false);
+final _pack = RegExp(
+  r'(?<!\p{L})(упак|уп|pak\.?|пак)(?!\p{L})',
+  caseSensitive: false,
+  unicode: true,
+);
 
 ParsedUnit? parseItemUnit(String raw) {
   final text = raw.toLowerCase();
@@ -33,10 +42,11 @@ ParsedUnit? parseItemUnit(String raw) {
 double _parseSize(String raw) => double.parse(raw.replaceAll(',', '.'));
 
 ItemUnit? _unitFromSuffix(String suffix) {
-  final s = suffix.toLowerCase();
-  if (s.startsWith('мл') || s.startsWith('миллилитр')) return ItemUnit.ml;
-  if (s.startsWith('л') || s.startsWith('литр')) return ItemUnit.l;
-  if (s.startsWith('кг') || s.startsWith('килограмм')) return ItemUnit.kg;
-  if (s.startsWith('г')) return ItemUnit.g;
-  return null;
+  return switch (suffix.toLowerCase()) {
+    'мл' || 'ml' => ItemUnit.ml,
+    'кг' || 'kg' => ItemUnit.kg,
+    'л' || 'l' || 'lt' => ItemUnit.l,
+    'г' || 'g' || 'гр' || 'gr' => ItemUnit.g,
+    _ => null,
+  };
 }

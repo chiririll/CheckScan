@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 
 import '../catalog/category_seeder.dart';
 
-const checkScanDbVersion = 3;
+const checkScanDbVersion = 4;
 
 class CheckScanDatabase {
   CheckScanDatabase({this._resolvePath});
@@ -33,6 +33,8 @@ class CheckScanDatabase {
         if (oldVersion < 3) {
           await createCatalogTables(db);
           await seedCategoriesIfEmpty(db);
+        } else if (oldVersion < 4) {
+          await migrateCatalogUnitsToProducts(db);
         }
       },
     );
@@ -87,7 +89,8 @@ Future<void> createCatalogTables(DatabaseExecutor db) async {
     CREATE TABLE products (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
-      category_id TEXT
+      category_id TEXT,
+      unit TEXT
     )
   ''');
   await db.execute('''
@@ -102,7 +105,6 @@ Future<void> createCatalogTables(DatabaseExecutor db) async {
       id TEXT PRIMARY KEY,
       display_name TEXT NOT NULL,
       product_id TEXT,
-      unit TEXT,
       unit_size REAL
     )
   ''');
@@ -115,4 +117,17 @@ Future<void> createCatalogTables(DatabaseExecutor db) async {
   ''');
   await db.execute('CREATE INDEX idx_position_aliases_normalized ON position_aliases(normalized)');
   await db.execute('CREATE INDEX idx_positions_product ON positions(product_id)');
+}
+
+Future<void> migrateCatalogUnitsToProducts(DatabaseExecutor db) async {
+  await db.execute('ALTER TABLE products ADD COLUMN unit TEXT');
+  await db.execute('''
+    UPDATE products
+    SET unit = (
+      SELECT p.unit FROM positions p
+      WHERE p.product_id = products.id AND p.unit IS NOT NULL
+      LIMIT 1
+    )
+    WHERE unit IS NULL
+  ''');
 }
