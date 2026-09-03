@@ -1,78 +1,36 @@
 import 'package:eq_models/eq_models.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/receipt_record.dart';
+import 'database.dart';
 
 class ReceiptRepository {
-  ReceiptRepository({this._resolveDbPath});
+  ReceiptRepository({
+    CheckScanDatabase? database,
+    Future<String> Function()? resolveDbPath,
+  }) : database = database ?? CheckScanDatabase(resolvePath: resolveDbPath);
 
-  final Future<String> Function()? _resolveDbPath;
-  Database? _db;
+  final CheckScanDatabase database;
 
-  Future<Database> get _database async {
-    if (_db != null) return _db!;
-    final resolver = _resolveDbPath;
-    final path = resolver != null
-        ? await resolver()
-        : p.join((await getApplicationDocumentsDirectory()).path, 'checkscan.db');
-    _db = await openDatabase(
-      path,
-      version: 2,
-      onCreate: (db, version) async {
-        await db.execute('''
-          CREATE TABLE receipts (
-            id TEXT PRIMARY KEY,
-            qr_hash TEXT NOT NULL UNIQUE,
-            adapter_id TEXT NOT NULL,
-            status TEXT NOT NULL,
-            issued_at TEXT,
-            merchant_name TEXT,
-            grand_total REAL NOT NULL,
-            currency TEXT NOT NULL,
-            item_count INTEGER NOT NULL,
-            payload TEXT NOT NULL,
-            scanned_at TEXT NOT NULL,
-            raw_qr TEXT NOT NULL,
-            last_status INTEGER NOT NULL DEFAULT 200
-          )
-        ''');
-        await db.execute('CREATE UNIQUE INDEX idx_receipts_qr_hash ON receipts(qr_hash)');
-      },
-      onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          await db.execute('ALTER TABLE receipts ADD COLUMN last_status INTEGER NOT NULL DEFAULT 200');
-        }
-      },
-    );
-    return _db!;
-  }
+  Future<Database> get _db => database.database;
 
-  Future<void> close() async {
-    final db = _db;
-    _db = null;
-    if (db != null) await db.close();
-  }
+  Future<void> close() => database.close();
 
   Future<ReceiptRecord?> findByHash(String qrHash) async {
-    final db = await _database;
-    final rows = await db.query('receipts', where: 'qr_hash = ?', whereArgs: [qrHash], limit: 1);
+    final rows = await (await _db).query('receipts', where: 'qr_hash = ?', whereArgs: [qrHash], limit: 1);
     if (rows.isEmpty) return null;
     return _fromRow(rows.first);
   }
 
   Future<ReceiptRecord?> findById(String id) async {
-    final db = await _database;
-    final rows = await db.query('receipts', where: 'id = ?', whereArgs: [id], limit: 1);
+    final rows = await (await _db).query('receipts', where: 'id = ?', whereArgs: [id], limit: 1);
     if (rows.isEmpty) return null;
     return _fromRow(rows.first);
   }
 
   Future<List<ReceiptRecord>> listAll() async {
-    final db = await _database;
-    final rows = await db.query('receipts', orderBy: 'COALESCE(issued_at, scanned_at) DESC');
+    final rows = await (await _db).query('receipts', orderBy: 'COALESCE(issued_at, scanned_at) DESC');
     return rows.map(_fromRow).toList();
   }
 
@@ -108,13 +66,11 @@ class ReceiptRepository {
   Future<void> replace(ReceiptRecord record) => _upsert(record);
 
   Future<void> deleteById(String id) async {
-    final db = await _database;
-    await db.delete('receipts', where: 'id = ?', whereArgs: [id]);
+    await (await _db).delete('receipts', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<void> _upsert(ReceiptRecord record) async {
-    final db = await _database;
-    await db.insert(
+    await (await _db).insert(
       'receipts',
       {
         'id': record.id,

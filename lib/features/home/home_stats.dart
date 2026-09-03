@@ -1,3 +1,4 @@
+import '../../core/catalog/catalog_resolver.dart';
 import '../../core/models/receipt_record.dart';
 
 class HomePeriod {
@@ -33,10 +34,19 @@ class HomePeriod {
 }
 
 class HomeItemStat {
-  const HomeItemStat({required this.name, required this.count});
+  const HomeItemStat({required this.name, required this.count, this.productId});
 
   final String name;
   final int count;
+  final String? productId;
+}
+
+class HomeCategoryStat {
+  const HomeCategoryStat({required this.name, required this.spent, this.categoryId});
+
+  final String name;
+  final double spent;
+  final String? categoryId;
 }
 
 class HomePriceStat {
@@ -53,6 +63,7 @@ class HomeStats {
     required this.top,
     required this.cheaperKey,
     required this.cheaper,
+    this.categories = const [],
   });
 
   final double spent;
@@ -60,6 +71,7 @@ class HomeStats {
   final List<HomeItemStat> top;
   final String? cheaperKey;
   final List<HomePriceStat> cheaper;
+  final List<HomeCategoryStat> categories;
 
   bool get isEmpty => receiptCount == 0;
 
@@ -68,41 +80,69 @@ class HomeStats {
     required HomePeriod period,
     required String currency,
     required String fallbackMerchant,
+    CatalogResolver resolver = CatalogResolver.empty,
+    String uncategorized = 'Без категории',
   }) {
     final scoped = [
       for (final receipt in receipts)
         if (receipt.currency == currency && period.contains(receipt.issuedAt ?? receipt.scannedAt)) receipt,
     ];
     final spent = scoped.fold<double>(0, (sum, receipt) => sum + receipt.grandTotal);
-    final counts = <String, int>{};
+    final topCounts = <String, int>{};
+    final topIds = <String, String?>{};
+    final positionCounts = <String, int>{};
     final prices = <String, Map<String, double>>{};
+    final categorySpent = <String, double>{};
+    final categoryIds = <String, String?>{};
+    var hasMappedCategory = false;
     for (final record in scoped) {
       for (final item in record.receipt.items) {
-        counts[item.description] = (counts[item.description] ?? 0) + 1;
+        final topKey = resolver.topKey(item.description);
+        topCounts[topKey] = (topCounts[topKey] ?? 0) + 1;
+        topIds.putIfAbsent(topKey, () => resolver.resolve(item.description)?.product?.id);
+        final cheaperKey = resolver.cheaperKey(item.description);
+        positionCounts[cheaperKey] = (positionCounts[cheaperKey] ?? 0) + 1;
         final store = record.merchantName ??
             (record.providerLabel.isNotEmpty ? record.providerLabel : fallbackMerchant);
-        final byStore = prices.putIfAbsent(item.description, () => {});
+        final byStore = prices.putIfAbsent(cheaperKey, () => {});
         final current = byStore[store];
         if (current == null || item.unitPrice < current) {
           byStore[store] = item.unitPrice;
         }
+        final categoryName = resolver.categoryName(item.description);
+        if (categoryName != null) {
+          hasMappedCategory = true;
+          categorySpent[categoryName] = (categorySpent[categoryName] ?? 0) + item.totalPrice;
+          categoryIds.putIfAbsent(categoryName, () => resolver.categoryId(item.description));
+        } else {
+          categorySpent[uncategorized] = (categorySpent[uncategorized] ?? 0) + item.totalPrice;
+          categoryIds.putIfAbsent(uncategorized, () => null);
+        }
       }
     }
-    final ranked = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-    final top = [for (final entry in ranked.take(3)) HomeItemStat(name: entry.key, count: entry.value)];
-    final cheaperKey = top.isNotEmpty ? top.first.name : null;
+    final ranked = topCounts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    final top = [
+      for (final entry in ranked.take(3)) HomeItemStat(name: entry.key, count: entry.value, productId: topIds[entry.key]),
+    ];
+    final rankedPositions = positionCounts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    final cheaperKey = rankedPositions.isNotEmpty ? rankedPositions.first.key : null;
     final cheaper = <HomePriceStat>[];
     if (cheaperKey != null) {
       final stores = prices[cheaperKey]?.entries.toList() ?? [];
       stores.sort((a, b) => a.value.compareTo(b.value));
       cheaper.addAll([for (final entry in stores) HomePriceStat(store: entry.key, price: entry.value)]);
     }
+    final categoryEntries = categorySpent.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    final categories = hasMappedCategory
+        ? [for (final entry in categoryEntries) HomeCategoryStat(name: entry.key, spent: entry.value, categoryId: categoryIds[entry.key])]
+        : const <HomeCategoryStat>[];
     return HomeStats(
       spent: spent,
       receiptCount: scoped.length,
       top: top,
       cheaperKey: cheaperKey,
       cheaper: cheaper,
+      categories: categories,
     );
   }
 }

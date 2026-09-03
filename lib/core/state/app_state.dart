@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../catalog/catalog_repository.dart';
+import '../catalog/catalog_store.dart';
 import '../models/receipt_record.dart';
 import '../scan/native_adapter.dart';
 import '../scan/scan_outcome.dart';
@@ -14,15 +16,20 @@ class AppState extends ChangeNotifier {
     required NativeAdapter adapter,
     SettingsStore? settings,
     ScanSession? session,
+    CatalogStore? catalog,
   })  : _repository = repository,
         _adapter = adapter,
         settings = settings ?? SettingsStore(),
-        _session = session ?? ScanSession(repository: repository, adapter: adapter);
+        _session = session ?? ScanSession(repository: repository, adapter: adapter),
+        catalog = catalog ?? CatalogStore(repository: CatalogRepository(database: repository.database)) {
+    this.catalog.addListener(notifyListeners);
+  }
 
   final ReceiptRepository _repository;
   final NativeAdapter _adapter;
   final SettingsStore settings;
   final ScanSession _session;
+  final CatalogStore catalog;
 
   static const _onboardingKey = 'onboarding_done';
 
@@ -40,6 +47,7 @@ class AppState extends ChangeNotifier {
       settingFields = await _adapter.settings();
       _adapter.configure(settings.snapshot());
       receipts = await _repository.listAll();
+      await catalog.ingest(receipts);
       loadError = null;
     } catch (error) {
       loadError = '$error';
@@ -63,7 +71,13 @@ class AppState extends ChangeNotifier {
 
   Future<void> reload() async {
     receipts = await _repository.listAll();
-    notifyListeners();
+    await catalog.ingest(receipts);
+  }
+
+  @override
+  void dispose() {
+    catalog.removeListener(notifyListeners);
+    super.dispose();
   }
 
   ReceiptRecord? byId(String id) {

@@ -172,4 +172,14 @@ void main() {
     expect(find.text(formatMoney(500, 'RSD')), findsWidgets);
     expect(find.text('Hleb'), findsOneWidget);
   });
+
+  testWidgets('home opens catalog from the app bar', (tester) async {
+    await tester.pumpWidget(CheckScanApp(state: _state(onboardingDone: true, receipts: [_sampleReceipt()])));
+    await tester.pump();
+    await tester.tap(find.byTooltip('Каталог'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.text('Не разобрано'), findsWidgets);
+    expect(find.text('Категории'), findsOneWidget);
+  });
 }

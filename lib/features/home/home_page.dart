@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
+import '../../core/catalog/category_label.dart';
 import '../../core/format.dart';
 import '../../core/models/receipt_record.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
+import '../catalog/catalog_page.dart';
+import '../catalog/category_page.dart';
+import '../catalog/product_page.dart';
 import '../settings/settings_page.dart';
 import '../widgets/empty_hint.dart';
 import 'home_stats.dart';
@@ -22,6 +26,11 @@ class HomePage extends StatelessWidget {
         title: Text(l10n.homeTitle),
         actions: [
           IconButton(
+            tooltip: l10n.catalogTitle,
+            icon: const Icon(Icons.category_outlined),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CatalogPage(state: state))),
+          ),
+          IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SettingsPage(state: state))),
           ),
@@ -29,15 +38,15 @@ class HomePage extends StatelessWidget {
       ),
       body: state.receipts.isEmpty
           ? EmptyHint(title: l10n.emptyHomeTitle, body: l10n.emptyHomeBody)
-          : _HomeBody(receipts: state.receipts),
+          : _HomeBody(state: state),
     );
   }
 }
 
 class _HomeBody extends StatefulWidget {
-  const _HomeBody({required this.receipts});
+  const _HomeBody({required this.state});
 
-  final List<ReceiptRecord> receipts;
+  final AppState state;
 
   @override
   State<_HomeBody> createState() => _HomeBodyState();
@@ -54,7 +63,7 @@ class _HomeBodyState extends State<_HomeBody> {
 
   @override
   Widget build(BuildContext context) {
-    final receipts = widget.receipts;
+    final receipts = widget.state.receipts;
     final currencies = listCurrencies(receipts);
     if (currencies.isEmpty) {
       final l10n = AppLocalizations.of(context);
@@ -83,10 +92,10 @@ class _HomeBodyState extends State<_HomeBody> {
                 ? TabBarView(
                     children: [
                       for (final currency in currencies)
-                        _StatsPane(receipts: receipts, period: _period, currency: currency),
+                        _StatsPane(state: widget.state, receipts: receipts, period: _period, currency: currency),
                     ],
                   )
-                : _StatsPane(receipts: receipts, period: _period, currency: currencies.first),
+                : _StatsPane(state: widget.state, receipts: receipts, period: _period, currency: currencies.first),
           ),
         ],
       ),
@@ -132,8 +141,9 @@ class _PeriodBar extends StatelessWidget {
 }
 
 class _StatsPane extends StatelessWidget {
-  const _StatsPane({required this.receipts, required this.period, required this.currency});
+  const _StatsPane({required this.state, required this.receipts, required this.period, required this.currency});
 
+  final AppState state;
   final List<ReceiptRecord> receipts;
   final HomePeriod period;
   final String currency;
@@ -146,6 +156,8 @@ class _StatsPane extends StatelessWidget {
       period: period,
       currency: currency,
       fallbackMerchant: l10n.receiptTitle,
+      resolver: state.catalog.resolver,
+      uncategorized: l10n.uncategorized,
     );
     if (stats.isEmpty) {
       return Center(
@@ -177,7 +189,36 @@ class _StatsPane extends StatelessWidget {
           const SizedBox(height: 20),
           Text(l10n.mostOften, style: const TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
-          ...stats.top.map((e) => _Bar(name: e.name, label: l10n.timesCount(e.count), pct: e.count / maxCount)),
+          ...stats.top.map(
+            (e) => _Bar(
+              name: e.name,
+              label: l10n.timesCount(e.count),
+              pct: e.count / maxCount,
+              onTap: e.productId == null
+                  ? null
+                  : () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(builder: (_) => ProductPage(state: state, productId: e.productId!)),
+                    ),
+            ),
+          ),
+        ],
+        if (stats.categories.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          Text(l10n.byCategory, style: const TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          ...stats.categories.map((e) {
+            final maxSpent = stats.categories.first.spent;
+            return _Bar(
+              name: categoryLabel(e.name, l10n),
+              label: formatMoney(e.spent, currency),
+              pct: maxSpent == 0 ? 0 : e.spent / maxSpent,
+              onTap: e.categoryId == null
+                  ? null
+                  : () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(builder: (_) => CategoryPage(state: state, categoryId: e.categoryId!)),
+                    ),
+            );
+          }),
         ],
         if (stats.cheaper.isNotEmpty && stats.cheaperKey != null) ...[
           const SizedBox(height: 20),
@@ -215,14 +256,15 @@ class _Metric extends StatelessWidget {
 }
 
 class _Bar extends StatelessWidget {
-  const _Bar({required this.name, required this.label, required this.pct});
+  const _Bar({required this.name, required this.label, required this.pct, this.onTap});
   final String name;
   final String label;
   final double pct;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    final bar = Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Column(
         children: [
@@ -245,6 +287,8 @@ class _Bar extends StatelessWidget {
         ],
       ),
     );
+    if (onTap == null) return bar;
+    return InkWell(onTap: onTap, child: bar);
   }
 }
 

@@ -5,6 +5,7 @@ import '../../core/format.dart';
 import '../../core/models/receipt_record.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
+import 'receipt_items.dart';
 import 'receipt_metadata.dart';
 
 class ReceiptPage extends StatefulWidget {
@@ -135,35 +136,7 @@ class _ReceiptPageState extends State<ReceiptPage> {
                         style: TextStyle(color: Colors.grey.shade700),
                       ),
                     ],
-                    if (receipt.items.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      const Divider(),
-                      Text(l10n.itemsSection, style: const TextStyle(fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 8),
-                      ...receipt.items.map((item) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(item.description),
-                                    Text(
-                                      l10n.qtyPrice(formatQty(item.quantity), formatMoney(item.unitPrice, record.currency)),
-                                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Text(formatMoney(item.totalPrice, record.currency), style: const TextStyle(fontWeight: FontWeight.w600)),
-                            ],
-                          ),
-                        );
-                      }),
-                    ],
+                    if (receipt.items.isNotEmpty) ReceiptItemList(state: widget.state, record: record),
                     const SizedBox(height: 8),
                     const Divider(),
                     ReceiptMetadataTile(record: record),

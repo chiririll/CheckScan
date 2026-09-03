@@ -603,6 +603,360 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'{value} ₽'**
   String amount(String value);
+
+  /// No description provided for @catalogTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Каталог'**
+  String get catalogTitle;
+
+  /// No description provided for @catalogUnassigned.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не разобрано'**
+  String get catalogUnassigned;
+
+  /// No description provided for @catalogProducts.
+  ///
+  /// In ru, this message translates to:
+  /// **'Товары'**
+  String get catalogProducts;
+
+  /// No description provided for @catalogCategories.
+  ///
+  /// In ru, this message translates to:
+  /// **'Категории'**
+  String get catalogCategories;
+
+  /// No description provided for @catalogSearch.
+  ///
+  /// In ru, this message translates to:
+  /// **'Поиск'**
+  String get catalogSearch;
+
+  /// No description provided for @catalogEmptyUnassigned.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все позиции уже в товарах'**
+  String get catalogEmptyUnassigned;
+
+  /// No description provided for @catalogEmptyUnassignedBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новые названия из чеков появятся здесь.'**
+  String get catalogEmptyUnassignedBody;
+
+  /// No description provided for @catalogEmptyProducts.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пока нет товаров'**
+  String get catalogEmptyProducts;
+
+  /// No description provided for @catalogEmptyProductsBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объедините позиции из «Не разобрано» в товар.'**
+  String get catalogEmptyProductsBody;
+
+  /// No description provided for @catalogEmptySearch.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ничего не найдено'**
+  String get catalogEmptySearch;
+
+  /// No description provided for @assignToProduct.
+  ///
+  /// In ru, this message translates to:
+  /// **'В товар'**
+  String get assignToProduct;
+
+  /// No description provided for @mergeWith.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объединить с {name}'**
+  String mergeWith(String name);
+
+  /// No description provided for @newProduct.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новый товар'**
+  String get newProduct;
+
+  /// No description provided for @productName.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название товара'**
+  String get productName;
+
+  /// No description provided for @productCategory.
+  ///
+  /// In ru, this message translates to:
+  /// **'Категория'**
+  String get productCategory;
+
+  /// No description provided for @productTags.
+  ///
+  /// In ru, this message translates to:
+  /// **'Теги'**
+  String get productTags;
+
+  /// No description provided for @addTag.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить тег'**
+  String get addTag;
+
+  /// No description provided for @detachPosition.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отвязать'**
+  String get detachPosition;
+
+  /// No description provided for @deleteProduct.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить товар'**
+  String get deleteProduct;
+
+  /// No description provided for @deleteProductTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить товар?'**
+  String get deleteProductTitle;
+
+  /// No description provided for @deleteProductBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Позиции останутся в «Не разобрано».'**
+  String get deleteProductBody;
+
+  /// No description provided for @deleteCategoryTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить категорию?'**
+  String get deleteCategoryTitle;
+
+  /// No description provided for @deleteCategoryBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Товары останутся без категории.'**
+  String get deleteCategoryBody;
+
+  /// No description provided for @addCategory.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новая категория'**
+  String get addCategory;
+
+  /// No description provided for @categoryName.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название категории'**
+  String get categoryName;
+
+  /// No description provided for @uncategorized.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без категории'**
+  String get uncategorized;
+
+  /// No description provided for @unitLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Единица'**
+  String get unitLabel;
+
+  /// No description provided for @unitNone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не задана'**
+  String get unitNone;
+
+  /// No description provided for @unitPiece.
+  ///
+  /// In ru, this message translates to:
+  /// **'шт'**
+  String get unitPiece;
+
+  /// No description provided for @unitPack.
+  ///
+  /// In ru, this message translates to:
+  /// **'упак'**
+  String get unitPack;
+
+  /// No description provided for @unitKg.
+  ///
+  /// In ru, this message translates to:
+  /// **'кг'**
+  String get unitKg;
+
+  /// No description provided for @unitG.
+  ///
+  /// In ru, this message translates to:
+  /// **'г'**
+  String get unitG;
+
+  /// No description provided for @unitL.
+  ///
+  /// In ru, this message translates to:
+  /// **'л'**
+  String get unitL;
+
+  /// No description provided for @unitMl.
+  ///
+  /// In ru, this message translates to:
+  /// **'мл'**
+  String get unitMl;
+
+  /// No description provided for @unitSize.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фасовка'**
+  String get unitSize;
+
+  /// No description provided for @byCategory.
+  ///
+  /// In ru, this message translates to:
+  /// **'По категориям'**
+  String get byCategory;
+
+  /// No description provided for @splitAlias.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отделить'**
+  String get splitAlias;
+
+  /// No description provided for @save.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранить'**
+  String get save;
+
+  /// No description provided for @createAndAssign.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать и привязать'**
+  String get createAndAssign;
+
+  /// No description provided for @rename.
+  ///
+  /// In ru, this message translates to:
+  /// **'Переименовать'**
+  String get rename;
+
+  /// No description provided for @aliasesSection.
+  ///
+  /// In ru, this message translates to:
+  /// **'Названия в чеках'**
+  String get aliasesSection;
+
+  /// No description provided for @noCategory.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без категории'**
+  String get noCategory;
+
+  /// No description provided for @seedCategoryDairyEggs.
+  ///
+  /// In ru, this message translates to:
+  /// **'Молочные и яйца'**
+  String get seedCategoryDairyEggs;
+
+  /// No description provided for @seedCategoryMeat.
+  ///
+  /// In ru, this message translates to:
+  /// **'Мясо и птица'**
+  String get seedCategoryMeat;
+
+  /// No description provided for @seedCategoryFish.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рыба и морепродукты'**
+  String get seedCategoryFish;
+
+  /// No description provided for @seedCategoryDeli.
+  ///
+  /// In ru, this message translates to:
+  /// **'Колбасы и копчёности'**
+  String get seedCategoryDeli;
+
+  /// No description provided for @seedCategoryProduce.
+  ///
+  /// In ru, this message translates to:
+  /// **'Овощи и фрукты'**
+  String get seedCategoryProduce;
+
+  /// No description provided for @seedCategoryBakery.
+  ///
+  /// In ru, this message translates to:
+  /// **'Хлеб и выпечка'**
+  String get seedCategoryBakery;
+
+  /// No description provided for @seedCategoryGrocery.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бакалея'**
+  String get seedCategoryGrocery;
+
+  /// No description provided for @seedCategoryDrinks.
+  ///
+  /// In ru, this message translates to:
+  /// **'Напитки'**
+  String get seedCategoryDrinks;
+
+  /// No description provided for @seedCategorySnacks.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сладости и снеки'**
+  String get seedCategorySnacks;
+
+  /// No description provided for @seedCategoryReadyMeals.
+  ///
+  /// In ru, this message translates to:
+  /// **'Готовая еда'**
+  String get seedCategoryReadyMeals;
+
+  /// No description provided for @seedCategoryAlcohol.
+  ///
+  /// In ru, this message translates to:
+  /// **'Алкоголь'**
+  String get seedCategoryAlcohol;
+
+  /// No description provided for @seedCategoryKids.
+  ///
+  /// In ru, this message translates to:
+  /// **'Детские товары'**
+  String get seedCategoryKids;
+
+  /// No description provided for @seedCategoryPets.
+  ///
+  /// In ru, this message translates to:
+  /// **'Товары для животных'**
+  String get seedCategoryPets;
+
+  /// No description provided for @seedCategoryBeauty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Красота и гигиена'**
+  String get seedCategoryBeauty;
+
+  /// No description provided for @seedCategoryPharmacy.
+  ///
+  /// In ru, this message translates to:
+  /// **'Аптека'**
+  String get seedCategoryPharmacy;
+
+  /// No description provided for @seedCategoryHome.
+  ///
+  /// In ru, this message translates to:
+  /// **'Дом и быт'**
+  String get seedCategoryHome;
+
+  /// No description provided for @seedCategoryOther.
+  ///
+  /// In ru, this message translates to:
+  /// **'Прочее'**
+  String get seedCategoryOther;
 }
 
 class _AppLocalizationsDelegate

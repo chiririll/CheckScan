@@ -295,4 +295,185 @@ class AppLocalizationsRu extends AppLocalizations {
   String amount(String value) {
     return '$value ₽';
   }
+
+  @override
+  String get catalogTitle => 'Каталог';
+
+  @override
+  String get catalogUnassigned => 'Не разобрано';
+
+  @override
+  String get catalogProducts => 'Товары';
+
+  @override
+  String get catalogCategories => 'Категории';
+
+  @override
+  String get catalogSearch => 'Поиск';
+
+  @override
+  String get catalogEmptyUnassigned => 'Все позиции уже в товарах';
+
+  @override
+  String get catalogEmptyUnassignedBody =>
+      'Новые названия из чеков появятся здесь.';
+
+  @override
+  String get catalogEmptyProducts => 'Пока нет товаров';
+
+  @override
+  String get catalogEmptyProductsBody =>
+      'Объедините позиции из «Не разобрано» в товар.';
+
+  @override
+  String get catalogEmptySearch => 'Ничего не найдено';
+
+  @override
+  String get assignToProduct => 'В товар';
+
+  @override
+  String mergeWith(String name) {
+    return 'Объединить с $name';
+  }
+
+  @override
+  String get newProduct => 'Новый товар';
+
+  @override
+  String get productName => 'Название товара';
+
+  @override
+  String get productCategory => 'Категория';
+
+  @override
+  String get productTags => 'Теги';
+
+  @override
+  String get addTag => 'Добавить тег';
+
+  @override
+  String get detachPosition => 'Отвязать';
+
+  @override
+  String get deleteProduct => 'Удалить товар';
+
+  @override
+  String get deleteProductTitle => 'Удалить товар?';
+
+  @override
+  String get deleteProductBody => 'Позиции останутся в «Не разобрано».';
+
+  @override
+  String get deleteCategoryTitle => 'Удалить категорию?';
+
+  @override
+  String get deleteCategoryBody => 'Товары останутся без категории.';
+
+  @override
+  String get addCategory => 'Новая категория';
+
+  @override
+  String get categoryName => 'Название категории';
+
+  @override
+  String get uncategorized => 'Без категории';
+
+  @override
+  String get unitLabel => 'Единица';
+
+  @override
+  String get unitNone => 'Не задана';
+
+  @override
+  String get unitPiece => 'шт';
+
+  @override
+  String get unitPack => 'упак';
+
+  @override
+  String get unitKg => 'кг';
+
+  @override
+  String get unitG => 'г';
+
+  @override
+  String get unitL => 'л';
+
+  @override
+  String get unitMl => 'мл';
+
+  @override
+  String get unitSize => 'Фасовка';
+
+  @override
+  String get byCategory => 'По категориям';
+
+  @override
+  String get splitAlias => 'Отделить';
+
+  @override
+  String get save => 'Сохранить';
+
+  @override
+  String get createAndAssign => 'Создать и привязать';
+
+  @override
+  String get rename => 'Переименовать';
+
+  @override
+  String get aliasesSection => 'Названия в чеках';
+
+  @override
+  String get noCategory => 'Без категории';
+
+  @override
+  String get seedCategoryDairyEggs => 'Молочные и яйца';
+
+  @override
+  String get seedCategoryMeat => 'Мясо и птица';
+
+  @override
+  String get seedCategoryFish => 'Рыба и морепродукты';
+
+  @override
+  String get seedCategoryDeli => 'Колбасы и копчёности';
+
+  @override
+  String get seedCategoryProduce => 'Овощи и фрукты';
+
+  @override
+  String get seedCategoryBakery => 'Хлеб и выпечка';
+
+  @override
+  String get seedCategoryGrocery => 'Бакалея';
+
+  @override
+  String get seedCategoryDrinks => 'Напитки';
+
+  @override
+  String get seedCategorySnacks => 'Сладости и снеки';
+
+  @override
+  String get seedCategoryReadyMeals => 'Готовая еда';
+
+  @override
+  String get seedCategoryAlcohol => 'Алкоголь';
+
+  @override
+  String get seedCategoryKids => 'Детские товары';
+
+  @override
+  String get seedCategoryPets => 'Товары для животных';
+
+  @override
+  String get seedCategoryBeauty => 'Красота и гигиена';
+
+  @override
+  String get seedCategoryPharmacy => 'Аптека';
+
+  @override
+  String get seedCategoryHome => 'Дом и быт';
+
+  @override
+  String get seedCategoryOther => 'Прочее';
 }

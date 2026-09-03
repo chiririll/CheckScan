@@ -1,3 +1,7 @@
+import 'package:checkscan/core/catalog/catalog_category.dart';
+import 'package:checkscan/core/catalog/catalog_position.dart';
+import 'package:checkscan/core/catalog/catalog_product.dart';
+import 'package:checkscan/core/catalog/catalog_resolver.dart';
 import 'package:checkscan/core/format.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
 import 'package:checkscan/features/home/home_stats.dart';
@@ -82,5 +86,58 @@ void main() {
     expect(formatCurrencyLabel('RUB'), '₽');
     expect(formatCurrencyLabel('RSD'), 'дин.');
     expect(formatCurrencyLabel('EUR'), 'EUR');
+  });
+
+  test('HomeStats groups top by product and cheaper by position', () {
+    const period = HomePeriod(year: 2026, month: 8);
+    final receipts = [
+      _receipt(
+        id: 'a',
+        currency: 'RUB',
+        issuedAt: DateTime(2026, 8, 10),
+        total: 200,
+        merchant: 'Пятёрочка',
+        items: const [
+          EqItem(description: 'Молоко 1 л', quantity: 1, unitPrice: 80, totalPrice: 80),
+          EqItem(description: 'Молоко 2 л', quantity: 1, unitPrice: 140, totalPrice: 140),
+        ],
+      ),
+      _receipt(
+        id: 'b',
+        currency: 'RUB',
+        issuedAt: DateTime(2026, 8, 11),
+        total: 80,
+        merchant: 'Магнит',
+        items: const [EqItem(description: 'Молоко 1 л', quantity: 1, unitPrice: 70, totalPrice: 70)],
+      ),
+    ];
+    const resolver = CatalogResolver(
+      byRawName: {'Молоко 1 л': 'p1', 'Молоко 2 л': 'p2'},
+      positions: {
+        'p1': CatalogPosition(id: 'p1', displayName: 'Молоко 1 л', productId: 'prod'),
+        'p2': CatalogPosition(id: 'p2', displayName: 'Молоко 2 л', productId: 'prod'),
+      },
+      products: {
+        'prod': CatalogProduct(id: 'prod', name: 'Молоко', categoryId: 'cat'),
+      },
+      categories: {
+        'cat': CatalogCategory(id: 'cat', name: 'Молочные', sortOrder: 0, isSeed: true),
+      },
+    );
+
+    final stats = HomeStats.of(
+      receipts,
+      period: period,
+      currency: 'RUB',
+      fallbackMerchant: 'Чек',
+      resolver: resolver,
+    );
+    expect(stats.top.single.name, 'Молоко');
+    expect(stats.top.single.count, 3);
+    expect(stats.cheaperKey, 'Молоко 1 л');
+    expect(stats.cheaper.first.store, 'Магнит');
+    expect(stats.cheaper.first.price, 70);
+    expect(stats.categories.single.name, 'Молочные');
+    expect(stats.categories.single.spent, 290);
   });
 }
