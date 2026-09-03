@@ -57,6 +57,16 @@ List<CatalogPosition> nextAssistBatch(List<CatalogPosition> unassigned) {
   return first.sublist(0, assistBatchLimit);
 }
 
+List<CatalogPosition> clusterPeers(CatalogPosition position, List<CatalogPosition> positions) {
+  final pool = [for (final item in positions) if (item.productId == position.productId) item];
+  for (final cluster in clusterUnassigned(pool)) {
+    if (cluster.length < 2) continue;
+    if (!cluster.any((item) => item.id == position.id)) continue;
+    return [for (final item in cluster) if (item.id != position.id) item];
+  }
+  return const [];
+}
+
 List<CatalogProduct> similarProductsFor(List<CatalogPosition> batch, List<CatalogProduct> products) {
   final stems = {for (final position in batch) itemNameStem(position.displayName)}.difference({''});
   return [

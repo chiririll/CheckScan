@@ -83,7 +83,7 @@ class _ItemRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final hit = state.catalog.resolver.resolve(item.description);
-    final unit = hit == null ? '' : formatPositionPack(hit.position, hit.product, l10n);
+    final unit = hit == null ? '' : formatPositionMeta(hit.position, hit.product, l10n);
     final product = hit?.product?.name;
     final subtitle = [
       ?product,

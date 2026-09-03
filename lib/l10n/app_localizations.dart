@@ -814,6 +814,36 @@ abstract class AppLocalizations {
   /// **'Фасовка'**
   String get unitSize;
 
+  /// No description provided for @positionBrand.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бренд'**
+  String get positionBrand;
+
+  /// No description provided for @mergeGroup.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объединить'**
+  String get mergeGroup;
+
+  /// No description provided for @mergeGroupBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Похожие позиции. Уберите лишние — остальные станут одной.'**
+  String get mergeGroupBody;
+
+  /// No description provided for @mergeGroupConfirm.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объединить'**
+  String get mergeGroupConfirm;
+
+  /// No description provided for @mergeSuggested.
+  ///
+  /// In ru, this message translates to:
+  /// **'Похожие · {count}'**
+  String mergeSuggested(int count);
+
   /// No description provided for @byCategory.
   ///
   /// In ru, this message translates to:
@@ -975,6 +1005,18 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Вставить JSON'**
   String get assistPasteJson;
+
+  /// No description provided for @assistCopyShort.
+  ///
+  /// In ru, this message translates to:
+  /// **'Промпт'**
+  String get assistCopyShort;
+
+  /// No description provided for @assistPasteShort.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вставить'**
+  String get assistPasteShort;
 
   /// No description provided for @assistCopied.
   ///

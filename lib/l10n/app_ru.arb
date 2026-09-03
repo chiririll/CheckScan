@@ -156,6 +156,16 @@
   "unitL": "л",
   "unitMl": "мл",
   "unitSize": "Фасовка",
+  "positionBrand": "Бренд",
+  "mergeGroup": "Объединить",
+  "mergeGroupBody": "Похожие позиции. Уберите лишние — остальные станут одной.",
+  "mergeGroupConfirm": "Объединить",
+  "mergeSuggested": "Похожие · {count}",
+  "@mergeSuggested": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "byCategory": "По категориям",
   "splitAlias": "Отделить",
   "save": "Сохранить",
@@ -183,6 +193,8 @@
   "appLanguageName": "русский",
   "assistCopyPrompt": "Скопировать промпт",
   "assistPasteJson": "Вставить JSON",
+  "assistCopyShort": "Промпт",
+  "assistPasteShort": "Вставить",
   "assistCopied": "Промпт скопирован",
   "assistReview": "Проверка",
   "assistApply": "Применить",

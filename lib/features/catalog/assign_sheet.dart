@@ -6,6 +6,7 @@ import 'unit_labels.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 import 'catalog_dialogs.dart';
+import 'merge_group_page.dart';
 import 'product_page.dart';
 
 Future<void> showAssignSheet({
@@ -52,19 +53,17 @@ class _AssignSheet extends StatelessWidget {
                 _AmountRow(state: state, position: position),
                 if (suggestions.isNotEmpty) ...[
                   const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final other in suggestions.take(3))
-                        ActionChip(
-                          label: Text(l10n.mergeWith(other.displayName), overflow: TextOverflow.ellipsis),
-                          onPressed: () async {
-                            await state.catalog.mergePositions(sourceId: position.id, targetId: other.id);
-                            if (context.mounted) Navigator.pop(context);
-                          },
+                  ActionChip(
+                    label: Text(l10n.mergeSuggested(suggestions.length)),
+                    onPressed: () {
+                      final nav = Navigator.of(context);
+                      nav.pop();
+                      nav.push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => MergeGroupPage(state: state, target: position, peers: suggestions),
                         ),
-                    ],
+                      );
+                    },
                   ),
                 ],
                 const SizedBox(height: 12),
@@ -127,20 +126,39 @@ class _AmountRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final product = position.productId == null ? null : state.catalog.productById(position.productId!);
     final pack = formatPositionPack(position, product, l10n);
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      dense: true,
-      title: Text(l10n.unitSize, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-      trailing: Text(
-        pack.isEmpty ? l10n.unitNone : pack,
-        style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
-      ),
-      onTap: () => editPositionAmount(
-        context: context,
-        catalog: state.catalog,
-        positionId: position.id,
-        current: position.unitSize,
-      ),
+    return Column(
+      children: [
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          dense: true,
+          title: Text(l10n.unitSize, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+          trailing: Text(
+            pack.isEmpty ? l10n.unitNone : pack,
+            style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+          ),
+          onTap: () => editPositionAmount(
+            context: context,
+            catalog: state.catalog,
+            positionId: position.id,
+            current: position.unitSize,
+          ),
+        ),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          dense: true,
+          title: Text(l10n.positionBrand, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+          trailing: Text(
+            position.brand == null || position.brand!.isEmpty ? l10n.unitNone : position.brand!,
+            style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+          ),
+          onTap: () => editPositionBrand(
+            context: context,
+            catalog: state.catalog,
+            positionId: position.id,
+            current: position.brand,
+          ),
+        ),
+      ],
     );
   }
 }

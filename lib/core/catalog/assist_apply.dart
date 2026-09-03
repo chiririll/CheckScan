@@ -2,6 +2,15 @@ import 'assist_draft.dart';
 import 'catalog_product.dart';
 import 'catalog_repository.dart';
 
+Future<void> _writePositionFields(CatalogRepository repository, AssistDraftPosition position) async {
+  if (position.unitSize != null) {
+    await repository.updatePosition(position.id, unitSize: position.unitSize);
+  }
+  if (position.brand != null) {
+    await repository.updatePosition(position.id, brand: position.brand);
+  }
+}
+
 Future<void> applyAssistDraftToRepo({
   required CatalogRepository repository,
   required AssistDraft draft,
@@ -36,18 +45,14 @@ Future<void> applyAssistDraftToRepo({
       );
       for (final position in item.positions) {
         await repository.assignPosition(position.id, current.id);
-        if (position.unitSize != null) {
-          await repository.updatePosition(position.id, unitSize: position.unitSize);
-        }
+        await _writePositionFields(repository, position);
       }
       continue;
     }
     final created = await repository.createProduct(name: item.name, categoryId: categoryId, unit: item.unit);
     for (final position in item.positions) {
       await repository.assignPosition(position.id, created.id);
-      if (position.unitSize != null) {
-        await repository.updatePosition(position.id, unitSize: position.unitSize);
-      }
+      await _writePositionFields(repository, position);
     }
   }
 }

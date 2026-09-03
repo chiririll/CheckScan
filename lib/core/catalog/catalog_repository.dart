@@ -181,6 +181,7 @@ class CatalogRepository {
           displayName: '${row['display_name']}',
           productId: row['product_id'] as String?,
           unitSize: (row['unit_size'] as num?)?.toDouble(),
+          brand: row['brand'] as String?,
           aliases: aliases['${row['id']}'] ?? const [],
         ),
     ];
@@ -228,13 +229,25 @@ class CatalogRepository {
     });
   }
 
-  Future<void> updatePosition(String id, {String? displayName, double? unitSize, bool clearAmount = false}) async {
+  Future<void> updatePosition(
+    String id, {
+    String? displayName,
+    double? unitSize,
+    bool clearAmount = false,
+    String? brand,
+    bool clearBrand = false,
+  }) async {
     final values = <String, Object?>{};
     if (displayName != null) values['display_name'] = displayName;
     if (clearAmount) {
       values['unit_size'] = null;
     } else if (unitSize != null) {
       values['unit_size'] = unitSize;
+    }
+    if (clearBrand) {
+      values['brand'] = null;
+    } else if (brand != null) {
+      values['brand'] = brand.trim();
     }
     if (values.isEmpty) return;
     await (await _db).update('positions', values, where: 'id = ?', whereArgs: [id]);
@@ -249,8 +262,15 @@ class CatalogRepository {
       if (sourceRows.isEmpty || targetRows.isEmpty) return;
       final source = sourceRows.first;
       final target = targetRows.first;
+      final copied = <String, Object?>{};
       if (target['unit_size'] == null && source['unit_size'] != null) {
-        await txn.update('positions', {'unit_size': source['unit_size']}, where: 'id = ?', whereArgs: [targetId]);
+        copied['unit_size'] = source['unit_size'];
+      }
+      if (target['brand'] == null && source['brand'] != null) {
+        copied['brand'] = source['brand'];
+      }
+      if (copied.isNotEmpty) {
+        await txn.update('positions', copied, where: 'id = ?', whereArgs: [targetId]);
       }
       await txn.update('position_aliases', {'position_id': targetId}, where: 'position_id = ?', whereArgs: [sourceId]);
       await txn.delete('positions', where: 'id = ?', whereArgs: [sourceId]);

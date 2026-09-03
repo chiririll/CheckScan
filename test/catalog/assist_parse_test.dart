@@ -38,6 +38,14 @@ void main() {
     expect(result.draft!.products.single.positions.single.unitSize, 1.7);
   });
 
+  test('reads brand from a position row', () {
+    final result = parseAssistJson(
+      '{"products":[{"name":"Молоко","positions":[{"id":"pos-1","unitSize":1.7,"brand":"Леб"}]}]}',
+      _ctx,
+    );
+    expect(result.draft!.products.single.positions.single.brand, 'Леб');
+  });
+
   test('maps a seed label to the seed and does not invent a category', () {
     final result = parseAssistJson(
       '{"products":[{"name":"Молоко","category":"Молочные и яйца","positions":[{"id":"pos-1"}]}]}',

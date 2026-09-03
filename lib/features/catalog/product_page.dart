@@ -183,6 +183,7 @@ class _PositionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final pack = formatPositionPack(position, product, l10n);
+    final brand = position.brand;
     return Card(
       elevation: 0,
       color: Colors.white,
@@ -209,6 +210,21 @@ class _PositionTile extends StatelessWidget {
                 catalog: state.catalog,
                 positionId: position.id,
                 current: position.unitSize,
+              ),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(l10n.positionBrand, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+              trailing: Text(
+                brand == null || brand.isEmpty ? l10n.unitNone : brand,
+                style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+              ),
+              onTap: () => editPositionBrand(
+                context: context,
+                catalog: state.catalog,
+                positionId: position.id,
+                current: brand,
               ),
             ),
             Wrap(

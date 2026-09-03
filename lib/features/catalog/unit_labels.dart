@@ -29,3 +29,10 @@ String formatPositionPack(CatalogPosition position, CatalogProduct? product, App
   final unit = product?.unit ?? parseItemUnit(position.displayName)?.unit;
   return formatCatalogUnit(unit, position.unitSize, l10n);
 }
+
+String formatPositionMeta(CatalogPosition position, CatalogProduct? product, AppLocalizations l10n) {
+  return [
+    formatPositionPack(position, product, l10n),
+    ?position.brand,
+  ].where((part) => part.isNotEmpty).join(' · ');
+}

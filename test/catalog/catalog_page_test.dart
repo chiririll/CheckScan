@@ -1,12 +1,14 @@
 import 'dart:io';
 
 import 'package:checkscan/core/app_state.dart';
+import 'package:checkscan/core/catalog/catalog_position.dart';
 import 'package:checkscan/core/catalog/catalog_repository.dart';
 import 'package:checkscan/core/catalog/catalog_store.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
 import 'package:checkscan/core/storage/database.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
 import 'package:checkscan/features/catalog/catalog_page.dart';
+import 'package:checkscan/features/catalog/merge_group_page.dart';
 import 'package:checkscan/l10n/app_localizations.dart';
 import 'package:eq_models/eq_models.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +27,7 @@ void main() {
 
   late CheckScanDatabase database;
   late AppState state;
+  late CatalogRepository catalog;
 
   setUp(() async {
     _seq += 1;
@@ -33,10 +36,11 @@ void main() {
     if (file.existsSync()) file.deleteSync();
     database = CheckScanDatabase(resolvePath: () async => path);
     final receipts = ReceiptRepository(database: database);
+    catalog = CatalogRepository(database: database);
     state = AppState(
       repository: receipts,
       adapter: FakeNativeAdapter(),
-      catalog: CatalogStore(repository: CatalogRepository(database: database)),
+      catalog: CatalogStore(repository: catalog),
     );
     final receipt = EqReceipt(
       id: 'r1',
@@ -48,7 +52,7 @@ void main() {
       items: const [EqItem(description: 'Молоко Леб 2.5% 1.7л', quantity: 1, unitPrice: 80, totalPrice: 80)],
     );
     final saved = await receipts.upsertParsed(
-      qrHash: 'h',
+      qrHash: 'h$_seq',
       adapterId: 'eq',
       rawQr: '{}',
       receipt: receipt,
@@ -62,24 +66,40 @@ void main() {
     await database.close();
   });
 
-  testWidgets('unassigned tab lists ingested positions with parsed unit', (tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('ru'),
-        supportedLocales: AppLocalizations.supportedLocales,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        home: CatalogPage(state: state),
-      ),
+  Widget app(Widget home) {
+    return MaterialApp(
+      locale: const Locale('ru'),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      home: home,
     );
+  }
+
+  testWidgets('unassigned tab lists ingested positions with parsed unit', (tester) async {
+    await tester.pumpWidget(app(CatalogPage(state: state)));
     await tester.pump();
     expect(find.text('Молоко Леб 2.5% 1.7л'), findsOneWidget);
     expect(find.text('1.7 л'), findsOneWidget);
     expect(find.text('В товар'), findsOneWidget);
     expect(find.text('Каталог'), findsWidgets);
-    expect(find.byTooltip('Скопировать промпт'), findsOneWidget);
-    expect(find.byTooltip('Вставить JSON'), findsOneWidget);
+    expect(find.text('Промпт'), findsOneWidget);
+    expect(find.text('Вставить'), findsOneWidget);
     await tester.tap(find.text('Товары').first);
     await tester.pump();
-    expect(find.byTooltip('Скопировать промпт'), findsNothing);
+    expect(find.text('Промпт'), findsNothing);
+    expect(find.text('Вставить'), findsNothing);
+  });
+
+  testWidgets('merge group lists cluster peers and can drop a member', (tester) async {
+    final target = state.catalog.unassigned.single;
+    const peer = CatalogPosition(id: 'peer', displayName: 'МОЛОКО ЛЕБ 2,5% 0,93Л', unitSize: 0.93);
+    await tester.pumpWidget(app(MergeGroupPage(state: state, target: target, peers: const [peer])));
+    await tester.pump();
+    expect(find.text('Объединить'), findsWidgets);
+    expect(find.text('Молоко Леб 2.5% 1.7л'), findsOneWidget);
+    expect(find.text('МОЛОКО ЛЕБ 2,5% 0,93Л'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pump();
+    expect(find.text('МОЛОКО ЛЕБ 2,5% 0,93Л'), findsNothing);
   });
 }

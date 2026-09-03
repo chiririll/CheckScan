@@ -10,10 +10,11 @@ class AssistNewCategory {
 }
 
 class AssistDraftPosition {
-  const AssistDraftPosition({required this.id, this.unitSize});
+  const AssistDraftPosition({required this.id, this.unitSize, this.brand});
 
   final String id;
   final double? unitSize;
+  final String? brand;
 }
 
 class AssistDraftProduct {

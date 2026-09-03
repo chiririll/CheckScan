@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 
 import '../catalog/category_seeder.dart';
 
-const checkScanDbVersion = 4;
+const checkScanDbVersion = 5;
 
 class CheckScanDatabase {
   CheckScanDatabase({this._resolvePath});
@@ -33,8 +33,13 @@ class CheckScanDatabase {
         if (oldVersion < 3) {
           await createCatalogTables(db);
           await seedCategoriesIfEmpty(db);
-        } else if (oldVersion < 4) {
-          await migrateCatalogUnitsToProducts(db);
+        } else {
+          if (oldVersion < 4) {
+            await migrateCatalogUnitsToProducts(db);
+          }
+          if (oldVersion < 5) {
+            await migratePositionBrand(db);
+          }
         }
       },
     );
@@ -105,7 +110,8 @@ Future<void> createCatalogTables(DatabaseExecutor db) async {
       id TEXT PRIMARY KEY,
       display_name TEXT NOT NULL,
       product_id TEXT,
-      unit_size REAL
+      unit_size REAL,
+      brand TEXT
     )
   ''');
   await db.execute('''
@@ -130,4 +136,8 @@ Future<void> migrateCatalogUnitsToProducts(DatabaseExecutor db) async {
     )
     WHERE unit IS NULL
   ''');
+}
+
+Future<void> migratePositionBrand(DatabaseExecutor db) async {
+  await db.execute('ALTER TABLE positions ADD COLUMN brand TEXT');
 }

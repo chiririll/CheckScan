@@ -4,6 +4,7 @@ class CatalogPosition {
     required this.displayName,
     this.productId,
     this.unitSize,
+    this.brand,
     this.aliases = const [],
   });
 
@@ -11,6 +12,7 @@ class CatalogPosition {
   final String displayName;
   final String? productId;
   final double? unitSize;
+  final String? brand;
   final List<String> aliases;
 
   CatalogPosition copyWith({
@@ -19,6 +21,8 @@ class CatalogPosition {
     bool clearProduct = false,
     double? unitSize,
     bool clearAmount = false,
+    String? brand,
+    bool clearBrand = false,
     List<String>? aliases,
   }) {
     return CatalogPosition(
@@ -26,6 +30,7 @@ class CatalogPosition {
       displayName: displayName ?? this.displayName,
       productId: clearProduct ? null : (productId ?? this.productId),
       unitSize: clearAmount ? null : (unitSize ?? this.unitSize),
+      brand: clearBrand ? null : (brand ?? this.brand),
       aliases: aliases ?? this.aliases,
     );
   }

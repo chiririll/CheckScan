@@ -86,6 +86,15 @@ void main() {
     expect((await catalog.listProducts()).single.unit, ItemUnit.piece);
   });
 
+  test('updatePosition can set brand and pack size', () async {
+    await catalog.ingest(['Молоко Леб 2.5% 1.7л']);
+    final id = (await catalog.listPositions()).single.id;
+    await catalog.updatePosition(id, brand: 'Леб');
+    expect((await catalog.listPositions()).single.brand, 'Леб');
+    await catalog.updatePosition(id, clearBrand: true);
+    expect((await catalog.listPositions()).single.brand, isNull);
+  });
+
   test('updateProduct can set and clear the unit', () async {
     final product = await catalog.createProduct(name: 'Хлеб');
     await catalog.updateProduct(product.id, unit: ItemUnit.piece);

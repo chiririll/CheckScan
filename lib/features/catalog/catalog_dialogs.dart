@@ -43,6 +43,28 @@ Future<void> editPositionAmount({
   if (size != null) await catalog.updatePosition(positionId, unitSize: size);
 }
 
+Future<void> editPositionBrand({
+  required BuildContext context,
+  required CatalogStore catalog,
+  required String positionId,
+  String? current,
+}) async {
+  final l10n = AppLocalizations.of(context);
+  final raw = await promptText(
+    context,
+    title: l10n.positionBrand,
+    initial: current ?? '',
+    confirm: l10n.save,
+    allowEmpty: true,
+  );
+  if (raw == null) return;
+  if (raw.isEmpty) {
+    await catalog.updatePosition(positionId, clearBrand: true);
+    return;
+  }
+  await catalog.updatePosition(positionId, brand: raw);
+}
+
 class _PromptDialog extends StatefulWidget {
   const _PromptDialog({required this.title, required this.confirm, this.initial});
 

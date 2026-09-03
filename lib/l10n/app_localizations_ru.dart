@@ -406,6 +406,24 @@ class AppLocalizationsRu extends AppLocalizations {
   String get unitSize => 'Фасовка';
 
   @override
+  String get positionBrand => 'Бренд';
+
+  @override
+  String get mergeGroup => 'Объединить';
+
+  @override
+  String get mergeGroupBody =>
+      'Похожие позиции. Уберите лишние — остальные станут одной.';
+
+  @override
+  String get mergeGroupConfirm => 'Объединить';
+
+  @override
+  String mergeSuggested(int count) {
+    return 'Похожие · $count';
+  }
+
+  @override
   String get byCategory => 'По категориям';
 
   @override
@@ -485,6 +503,12 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get assistPasteJson => 'Вставить JSON';
+
+  @override
+  String get assistCopyShort => 'Промпт';
+
+  @override
+  String get assistPasteShort => 'Вставить';
 
   @override
   String get assistCopied => 'Промпт скопирован';

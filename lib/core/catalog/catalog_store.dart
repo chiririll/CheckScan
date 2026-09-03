@@ -5,11 +5,11 @@ import 'catalog_category.dart';
 import 'catalog_position.dart';
 import 'catalog_product.dart';
 import 'assist_apply.dart';
+import 'assist_cluster.dart';
 import 'assist_draft.dart';
 import 'catalog_repository.dart';
 import 'catalog_resolver.dart';
 import 'item_unit.dart';
-import 'position_suggestions.dart';
 
 class CatalogStore extends ChangeNotifier {
   CatalogStore({required this._repository});
@@ -56,11 +56,19 @@ class CatalogStore extends ChangeNotifier {
   }
 
   List<CatalogPosition> suggestionsFor(CatalogPosition position) {
-    return suggestPositionMerges(position.displayName, positions: positions, excludeId: position.id);
+    return clusterPeers(position, positions);
   }
 
   Future<void> mergePositions({required String sourceId, required String targetId}) async {
     await _repository.mergePositions(sourceId: sourceId, targetId: targetId);
+    await reload();
+  }
+
+  Future<void> mergeGroup({required String targetId, required List<String> sourceIds}) async {
+    for (final sourceId in sourceIds) {
+      if (sourceId == targetId) continue;
+      await _repository.mergePositions(sourceId: sourceId, targetId: targetId);
+    }
     await reload();
   }
 
@@ -123,8 +131,20 @@ class CatalogStore extends ChangeNotifier {
     await reload();
   }
 
-  Future<void> updatePosition(String id, {double? unitSize, bool clearAmount = false}) async {
-    await _repository.updatePosition(id, unitSize: unitSize, clearAmount: clearAmount);
+  Future<void> updatePosition(
+    String id, {
+    double? unitSize,
+    bool clearAmount = false,
+    String? brand,
+    bool clearBrand = false,
+  }) async {
+    await _repository.updatePosition(
+      id,
+      unitSize: unitSize,
+      clearAmount: clearAmount,
+      brand: brand,
+      clearBrand: clearBrand,
+    );
     await reload();
   }
 

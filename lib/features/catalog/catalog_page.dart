@@ -9,6 +9,7 @@ import '../widgets/empty_hint.dart';
 import 'assign_sheet.dart';
 import 'assist_actions.dart';
 import 'catalog_dialogs.dart';
+import 'merge_group_page.dart';
 import 'catalog_trail.dart';
 import 'category_page.dart';
 import 'product_page.dart';
@@ -54,38 +55,32 @@ class _CatalogPageState extends State<CatalogPage> with SingleTickerProviderStat
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
+        titleSpacing: 0,
         title: AnimatedBuilder(
-          animation: _tabs,
+          animation: Listenable.merge([_tabs, widget.state]),
           builder: (context, _) => CatalogTrail(
             crumbs: [
               CatalogCrumb(label: l10n.catalogTitle),
               CatalogCrumb(label: _tabLabel(l10n)),
             ],
+            trailing: _tabs.index != 0
+                ? const []
+                : [
+                    TextButton(
+                      onPressed: widget.state.catalog.unassigned.isEmpty
+                          ? null
+                          : () => copyAssistPrompt(context, widget.state),
+                      child: Text(l10n.assistCopyShort),
+                    ),
+                    TextButton(
+                      onPressed: widget.state.catalog.unassigned.isEmpty
+                          ? null
+                          : () => pasteAssistJson(context, widget.state),
+                      child: Text(l10n.assistPasteShort),
+                    ),
+                  ],
           ),
         ),
-        actions: [
-          AnimatedBuilder(
-            animation: Listenable.merge([_tabs, widget.state]),
-            builder: (context, _) {
-              if (_tabs.index != 0) return const SizedBox.shrink();
-              final enabled = widget.state.catalog.unassigned.isNotEmpty;
-              return Row(
-                children: [
-                  IconButton(
-                    tooltip: l10n.assistCopyPrompt,
-                    onPressed: enabled ? () => copyAssistPrompt(context, widget.state) : null,
-                    icon: const Icon(Icons.content_copy_outlined),
-                  ),
-                  IconButton(
-                    tooltip: l10n.assistPasteJson,
-                    onPressed: enabled ? () => pasteAssistJson(context, widget.state) : null,
-                    icon: const Icon(Icons.content_paste_outlined),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
         bottom: TabBar(
           controller: _tabs,
           labelColor: AppColors.primary,
@@ -185,7 +180,7 @@ class _PositionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final unit = formatPositionPack(position, null, l10n);
+    final unit = formatPositionMeta(position, null, l10n);
     final suggestions = state.catalog.suggestionsFor(position);
     return Material(
       color: Colors.white,
@@ -216,10 +211,10 @@ class _PositionCard extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 4,
                 children: [
-                  for (final other in suggestions.take(2))
+                  if (suggestions.isNotEmpty)
                     ActionChip(
-                      label: Text(other.displayName, overflow: TextOverflow.ellipsis),
-                      onPressed: () => state.catalog.mergePositions(sourceId: position.id, targetId: other.id),
+                      label: Text(l10n.mergeSuggested(suggestions.length)),
+                      onPressed: () => openMergeGroup(context: context, state: state, position: position),
                     ),
                   ActionChip(
                     label: Text(l10n.assignToProduct),

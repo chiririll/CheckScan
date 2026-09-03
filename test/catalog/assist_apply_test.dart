@@ -45,7 +45,7 @@ void main() {
             name: 'Молоко',
             existingCategoryId: dairy.id,
             unit: ItemUnit.l,
-            positions: [AssistDraftPosition(id: position.id, unitSize: 1.7)],
+            positions: [AssistDraftPosition(id: position.id, unitSize: 1.7, brand: 'Леб')],
           ),
         ],
       ),
@@ -56,6 +56,7 @@ void main() {
     expect(product.unit, ItemUnit.l);
     expect((await catalog.listPositions()).single.productId, product.id);
     expect((await catalog.listPositions()).single.unitSize, 1.7);
+    expect((await catalog.listPositions()).single.brand, 'Леб');
   });
 
   test('does not overwrite unit or name of an existing product', () async {

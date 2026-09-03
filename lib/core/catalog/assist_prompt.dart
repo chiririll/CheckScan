@@ -27,6 +27,7 @@ String buildAssistPrompt({
     ..writeln('Разбери позиции чека в каталог.')
     ..writeln('Язык приложения: $languageName. Названия товаров (products[].name) пиши на этом языке, без фасовки.')
     ..writeln('Названия позиций из чека не меняй и не переводи.')
+    ..writeln('У позиции укажи brand — производитель или марка, на языке приложения. Разные марки не сливай в одну позицию.')
     ..writeln('В category пиши id из списка ниже, не подпись. Новую категорию создавай только если ни одна не подходит — имя на языке приложения.')
     ..writeln('Единицы: ${[for (final unit in ItemUnit.values) unit.name].join(', ')}.')
     ..writeln()
@@ -54,6 +55,9 @@ String buildAssistPrompt({
     final size = position.unitSize;
     buffer.write('  {"id": "${position.id}", "name": ${_jsonString(position.displayName)}');
     if (size != null) buffer.write(', "unitSize": $size');
+    if (position.brand != null && position.brand!.isNotEmpty) {
+      buffer.write(', "brand": ${_jsonString(position.brand!)}');
+    }
     buffer.write('}');
     if (i != positions.length - 1) buffer.write(',');
     buffer.writeln();
@@ -70,7 +74,7 @@ String buildAssistPrompt({
     ..writeln('      "category": "#dairyEggs",')
     ..writeln('      "unit": "l",')
     ..writeln('      "existingProductId": null,')
-    ..writeln('      "positions": [{"id": "<id из списка>", "unitSize": 1.7}]')
+    ..writeln('      "positions": [{"id": "<id из списка>", "unitSize": 1.7, "brand": "Леб"}]')
     ..writeln('    }')
     ..writeln('  ]')
     ..writeln('}');

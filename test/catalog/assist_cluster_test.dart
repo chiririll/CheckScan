@@ -22,6 +22,14 @@ void main() {
     expect(nextAssistBatch(positions), hasLength(assistBatchLimit));
   });
 
+  test('cluster peers ignore pack size and stay on the same product', () {
+    const milkA = CatalogPosition(id: 'a', displayName: 'Молоко Леб 2.5% 1.7л');
+    const milkB = CatalogPosition(id: 'b', displayName: 'МОЛОКО ЛЕБ 2,5% 0,93Л');
+    const bread = CatalogPosition(id: 'c', displayName: 'Хлеб дарницкий 0,6кг');
+    expect(clusterPeers(milkA, [milkA, milkB, bread]).single.id, 'b');
+    expect(clusterPeers(milkA, [milkA, milkB.copyWith(productId: 'other')]), isEmpty);
+  });
+
   test('picks similar products by stem', () {
     const batch = [CatalogPosition(id: 'p', displayName: 'Молоко Леб 2.5% 1.7л')];
     const products = [
