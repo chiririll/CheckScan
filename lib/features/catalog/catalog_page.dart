@@ -7,7 +7,9 @@ import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 import '../widgets/empty_hint.dart';
 import 'assign_sheet.dart';
+import 'assist_actions.dart';
 import 'catalog_dialogs.dart';
+import 'catalog_trail.dart';
 import 'category_page.dart';
 import 'product_page.dart';
 import 'unit_labels.dart';
@@ -30,11 +32,18 @@ class _CatalogPageState extends State<CatalogPage> with SingleTickerProviderStat
   void initState() {
     super.initState();
     _tabs = TabController(length: 3, vsync: this, initialIndex: widget.initialTab);
+    widget.state.catalog.addListener(_onCatalog);
     _query.addListener(() => setState(() {}));
+  }
+
+  void _onCatalog() {
+    final pending = widget.state.catalog.takePendingTab();
+    if (pending != null && pending != _tabs.index) _tabs.animateTo(pending);
   }
 
   @override
   void dispose() {
+    widget.state.catalog.removeListener(_onCatalog);
     _tabs.dispose();
     _query.dispose();
     super.dispose();
@@ -45,7 +54,38 @@ class _CatalogPageState extends State<CatalogPage> with SingleTickerProviderStat
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.catalogTitle),
+        title: AnimatedBuilder(
+          animation: _tabs,
+          builder: (context, _) => CatalogTrail(
+            crumbs: [
+              CatalogCrumb(label: l10n.catalogTitle),
+              CatalogCrumb(label: _tabLabel(l10n)),
+            ],
+          ),
+        ),
+        actions: [
+          AnimatedBuilder(
+            animation: Listenable.merge([_tabs, widget.state]),
+            builder: (context, _) {
+              if (_tabs.index != 0) return const SizedBox.shrink();
+              final enabled = widget.state.catalog.unassigned.isNotEmpty;
+              return Row(
+                children: [
+                  IconButton(
+                    tooltip: l10n.assistCopyPrompt,
+                    onPressed: enabled ? () => copyAssistPrompt(context, widget.state) : null,
+                    icon: const Icon(Icons.content_copy_outlined),
+                  ),
+                  IconButton(
+                    tooltip: l10n.assistPasteJson,
+                    onPressed: enabled ? () => pasteAssistJson(context, widget.state) : null,
+                    icon: const Icon(Icons.content_paste_outlined),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
         bottom: TabBar(
           controller: _tabs,
           labelColor: AppColors.primary,
@@ -94,6 +134,14 @@ class _CatalogPageState extends State<CatalogPage> with SingleTickerProviderStat
         },
       ),
     );
+  }
+
+  String _tabLabel(AppLocalizations l10n) {
+    return switch (_tabs.index) {
+      1 => l10n.catalogProducts,
+      2 => l10n.catalogCategories,
+      _ => l10n.catalogUnassigned,
+    };
   }
 }
 

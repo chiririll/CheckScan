@@ -476,4 +476,40 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get seedCategoryOther => 'Прочее';
+
+  @override
+  String get appLanguageName => 'русский';
+
+  @override
+  String get assistCopyPrompt => 'Скопировать промпт';
+
+  @override
+  String get assistPasteJson => 'Вставить JSON';
+
+  @override
+  String get assistCopied => 'Промпт скопирован';
+
+  @override
+  String get assistReview => 'Проверка';
+
+  @override
+  String get assistApply => 'Применить';
+
+  @override
+  String get assistNewCategories => 'Новые категории';
+
+  @override
+  String get assistSkippedSome => 'Часть строк пропущена';
+
+  @override
+  String get assistErrorEmpty => 'Буфер пуст';
+
+  @override
+  String get assistErrorNotJson => 'Это не JSON';
+
+  @override
+  String get assistErrorNoProducts => 'Нет списка товаров';
+
+  @override
+  String get assistErrorNothing => 'Нечего применять';
 }

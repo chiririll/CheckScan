@@ -6,6 +6,7 @@ import '../../core/format.dart';
 import '../../core/models/receipt_record.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
+import '../catalog/catalog_nav.dart';
 import '../catalog/catalog_page.dart';
 import '../catalog/category_page.dart';
 import '../catalog/product_page.dart';
@@ -28,7 +29,12 @@ class HomePage extends StatelessWidget {
           IconButton(
             tooltip: l10n.catalogTitle,
             icon: const Icon(Icons.category_outlined),
-            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CatalogPage(state: state))),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                settings: const RouteSettings(name: catalogRouteName),
+                builder: (_) => CatalogPage(state: state),
+              ),
+            ),
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),

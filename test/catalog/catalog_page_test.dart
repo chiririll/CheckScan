@@ -75,5 +75,11 @@ void main() {
     expect(find.text('Молоко Леб 2.5% 1.7л'), findsOneWidget);
     expect(find.text('1.7 л'), findsOneWidget);
     expect(find.text('В товар'), findsOneWidget);
+    expect(find.text('Каталог'), findsWidgets);
+    expect(find.byTooltip('Скопировать промпт'), findsOneWidget);
+    expect(find.byTooltip('Вставить JSON'), findsOneWidget);
+    await tester.tap(find.text('Товары').first);
+    await tester.pump();
+    expect(find.byTooltip('Скопировать промпт'), findsNothing);
   });
 }

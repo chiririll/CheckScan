@@ -4,6 +4,8 @@ import '../models/receipt_record.dart';
 import 'catalog_category.dart';
 import 'catalog_position.dart';
 import 'catalog_product.dart';
+import 'assist_apply.dart';
+import 'assist_draft.dart';
 import 'catalog_repository.dart';
 import 'catalog_resolver.dart';
 import 'item_unit.dart';
@@ -20,6 +22,19 @@ class CatalogStore extends ChangeNotifier {
   List<CatalogPosition> positions = const [];
 
   List<CatalogPosition> get unassigned => [for (final position in positions) if (position.productId == null) position];
+
+  int? _pendingTab;
+
+  void requestTab(int index) {
+    _pendingTab = index;
+    notifyListeners();
+  }
+
+  int? takePendingTab() {
+    final index = _pendingTab;
+    _pendingTab = null;
+    return index;
+  }
 
   Future<void> ingest(List<ReceiptRecord> receipts) async {
     final names = <String>{};
@@ -110,6 +125,11 @@ class CatalogStore extends ChangeNotifier {
 
   Future<void> updatePosition(String id, {double? unitSize, bool clearAmount = false}) async {
     await _repository.updatePosition(id, unitSize: unitSize, clearAmount: clearAmount);
+    await reload();
+  }
+
+  Future<void> applyAssistDraft(AssistDraft draft) async {
+    await applyAssistDraftToRepo(repository: _repository, draft: draft, products: products);
     await reload();
   }
 

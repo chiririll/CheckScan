@@ -9,13 +9,16 @@ import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 import 'assign_sheet.dart';
 import 'catalog_dialogs.dart';
+import 'catalog_nav.dart';
+import 'catalog_trail.dart';
 import 'unit_labels.dart';
 
 class ProductPage extends StatelessWidget {
-  const ProductPage({super.key, required this.state, required this.productId});
+  const ProductPage({super.key, required this.state, required this.productId, this.fromCategoryId});
 
   final AppState state;
   final String productId;
+  final String? fromCategoryId;
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +30,21 @@ class ProductPage extends StatelessWidget {
         if (product == null) {
           return Scaffold(appBar: AppBar(title: Text(l10n.catalogProducts)));
         }
+        final fromCategory = fromCategoryId == null ? null : state.catalog.categoryById(fromCategoryId!);
         final positions = [for (final position in state.catalog.positions) if (position.productId == product.id) position];
         return Scaffold(
           appBar: AppBar(
-            title: Text(product.name),
+            title: CatalogTrail(
+              crumbs: [
+                CatalogCrumb(label: l10n.catalogTitle, onTap: () => openCatalog(context, state)),
+                if (fromCategory != null) ...[
+                  CatalogCrumb(label: l10n.catalogCategories, onTap: () => openCatalog(context, state, tab: 2)),
+                  CatalogCrumb(label: categoryTitle(fromCategory, l10n), onTap: () => Navigator.pop(context)),
+                ] else
+                  CatalogCrumb(label: l10n.catalogProducts, onTap: () => openCatalog(context, state, tab: 1)),
+                CatalogCrumb(label: product.name),
+              ],
+            ),
             actions: [
               IconButton(
                 tooltip: l10n.deleteProduct,

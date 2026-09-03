@@ -957,6 +957,78 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Прочее'**
   String get seedCategoryOther;
+
+  /// No description provided for @appLanguageName.
+  ///
+  /// In ru, this message translates to:
+  /// **'русский'**
+  String get appLanguageName;
+
+  /// No description provided for @assistCopyPrompt.
+  ///
+  /// In ru, this message translates to:
+  /// **'Скопировать промпт'**
+  String get assistCopyPrompt;
+
+  /// No description provided for @assistPasteJson.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вставить JSON'**
+  String get assistPasteJson;
+
+  /// No description provided for @assistCopied.
+  ///
+  /// In ru, this message translates to:
+  /// **'Промпт скопирован'**
+  String get assistCopied;
+
+  /// No description provided for @assistReview.
+  ///
+  /// In ru, this message translates to:
+  /// **'Проверка'**
+  String get assistReview;
+
+  /// No description provided for @assistApply.
+  ///
+  /// In ru, this message translates to:
+  /// **'Применить'**
+  String get assistApply;
+
+  /// No description provided for @assistNewCategories.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новые категории'**
+  String get assistNewCategories;
+
+  /// No description provided for @assistSkippedSome.
+  ///
+  /// In ru, this message translates to:
+  /// **'Часть строк пропущена'**
+  String get assistSkippedSome;
+
+  /// No description provided for @assistErrorEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Буфер пуст'**
+  String get assistErrorEmpty;
+
+  /// No description provided for @assistErrorNotJson.
+  ///
+  /// In ru, this message translates to:
+  /// **'Это не JSON'**
+  String get assistErrorNotJson;
+
+  /// No description provided for @assistErrorNoProducts.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет списка товаров'**
+  String get assistErrorNoProducts;
+
+  /// No description provided for @assistErrorNothing.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нечего применять'**
+  String get assistErrorNothing;
 }
 
 class _AppLocalizationsDelegate

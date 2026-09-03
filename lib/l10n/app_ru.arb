@@ -179,5 +179,17 @@
   "seedCategoryBeauty": "Красота и гигиена",
   "seedCategoryPharmacy": "Аптека",
   "seedCategoryHome": "Дом и быт",
-  "seedCategoryOther": "Прочее"
+  "seedCategoryOther": "Прочее",
+  "appLanguageName": "русский",
+  "assistCopyPrompt": "Скопировать промпт",
+  "assistPasteJson": "Вставить JSON",
+  "assistCopied": "Промпт скопирован",
+  "assistReview": "Проверка",
+  "assistApply": "Применить",
+  "assistNewCategories": "Новые категории",
+  "assistSkippedSome": "Часть строк пропущена",
+  "assistErrorEmpty": "Буфер пуст",
+  "assistErrorNotJson": "Это не JSON",
+  "assistErrorNoProducts": "Нет списка товаров",
+  "assistErrorNothing": "Нечего применять"
 }

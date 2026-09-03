@@ -4,6 +4,8 @@ import '../../core/app_state.dart';
 import '../../core/catalog/category_label.dart';
 import '../../l10n/app_localizations.dart';
 import '../widgets/empty_hint.dart';
+import 'catalog_nav.dart';
+import 'catalog_trail.dart';
 import 'product_page.dart';
 
 class CategoryPage extends StatelessWidget {
@@ -24,7 +26,15 @@ class CategoryPage extends StatelessWidget {
         }
         final products = [for (final product in state.catalog.products) if (product.categoryId == category.id) product];
         return Scaffold(
-          appBar: AppBar(title: Text(categoryTitle(category, l10n))),
+          appBar: AppBar(
+            title: CatalogTrail(
+              crumbs: [
+                CatalogCrumb(label: l10n.catalogTitle, onTap: () => openCatalog(context, state)),
+                CatalogCrumb(label: l10n.catalogCategories, onTap: () => openCatalog(context, state, tab: 2)),
+                CatalogCrumb(label: categoryTitle(category, l10n)),
+              ],
+            ),
+          ),
           body: products.isEmpty
               ? EmptyHint(title: l10n.catalogEmptyProducts, body: l10n.catalogEmptyProductsBody)
               : ListView.separated(
@@ -41,7 +51,9 @@ class CategoryPage extends StatelessWidget {
                       ),
                       title: Text(product.name),
                       onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(builder: (_) => ProductPage(state: state, productId: product.id)),
+                        MaterialPageRoute<void>(
+                          builder: (_) => ProductPage(state: state, productId: product.id, fromCategoryId: category.id),
+                        ),
                       ),
                     );
                   },
