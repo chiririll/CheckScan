@@ -26,8 +26,10 @@ String formatCatalogUnit(ItemUnit? unit, double? size, AppLocalizations l10n) {
 }
 
 String formatPositionPack(CatalogPosition position, CatalogProduct? product, AppLocalizations l10n) {
-  final unit = product?.unit ?? parseItemUnit(position.displayName)?.unit;
-  return formatCatalogUnit(unit, position.unitSize, l10n);
+  final parsed = parseItemUnit(position.displayName);
+  final unit = product?.unit ?? parsed?.unit;
+  final size = position.unitSize ?? parsed?.size;
+  return formatCatalogUnit(unit, size, l10n);
 }
 
 String formatPositionMeta(CatalogPosition position, CatalogProduct? product, AppLocalizations l10n) {

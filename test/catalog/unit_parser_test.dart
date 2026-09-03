@@ -25,9 +25,28 @@ void main() {
     }
   });
 
-  test('does not treat fat percent or a product code as the pack size', () {
+  test('keeps measure sizes with separators but does not invent size for piece or pack', () {
+    expect(parseItemUnit('Молоко 1,5\u00a0л')?.size, 1.5);
+    expect(parseItemUnit('Хлеб 400\u202fг')?.size, 400);
+    expect(parseItemUnit('Сахар 1 x кг')?.size, 1);
+    expect(parseItemUnit('Яйцо 10 шт')?.unit, ItemUnit.piece);
+    expect(parseItemUnit('Яйцо 10 шт')?.size, isNull);
+    expect(parseItemUnit('Яйцо x10шт')?.size, isNull);
+    expect(parseItemUnit('Печенье 2 упак')?.unit, ItemUnit.pack);
+    expect(parseItemUnit('Печенье 2 упак')?.size, isNull);
+  });
+
+  test('prefers the pack size at the end over an earlier number', () {
+    final parsed = parseItemUnit('Напиток 0,5л пэт 1.5л');
+    expect(parsed?.unit, ItemUnit.l);
+    expect(parsed?.size, 1.5);
+  });
+
+  test('does not treat fat percent or a bare number as the pack size', () {
     expect(parseItemUnit('Молоко Леб 2.5%'), isNull);
     expect(parseItemUnit('Сыр росс 45%'), isNull);
+    expect(parseItemUnit('Молоко 1,5'), isNull);
+    expect(parseItemUnit('Хлеб 400'), isNull);
     final glued = parseItemUnit('Молоко Леб 2.5%1.7л');
     expect(glued?.unit, ItemUnit.l);
     expect(glued?.size, 1.7);
