@@ -1,14 +1,14 @@
 import 'dart:io';
 
 import 'package:checkscan/core/app_state.dart';
-import 'package:checkscan/core/catalog/catalog_position.dart';
 import 'package:checkscan/core/catalog/catalog_repository.dart';
 import 'package:checkscan/core/catalog/catalog_store.dart';
+import 'package:checkscan/core/catalog/item_unit.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
 import 'package:checkscan/core/storage/database.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
 import 'package:checkscan/features/catalog/catalog_page.dart';
-import 'package:checkscan/features/catalog/merge_group_page.dart';
+import 'package:checkscan/features/catalog/draft_product_page.dart';
 import 'package:checkscan/l10n/app_localizations.dart';
 import 'package:eq_models/eq_models.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +49,12 @@ void main() {
       receiptType: 'sale',
       merchantName: 'Пятёрочка',
       grandTotal: 80,
-      items: const [EqItem(description: 'Молоко Леб 2.5% 1.7л', quantity: 1, unitPrice: 80, totalPrice: 80)],
+      items: const [
+        EqItem(description: 'Молоко Леб 2.5% 1.7л', quantity: 1, unitPrice: 80, totalPrice: 80),
+        EqItem(description: 'МОЛОКО ЛЕБ 2,5% 0,93Л', quantity: 1, unitPrice: 70, totalPrice: 70),
+        EqItem(description: 'Молоко Леб 0.5л', quantity: 1, unitPrice: 40, totalPrice: 40),
+        EqItem(description: 'Молоко Леб 2л', quantity: 1, unitPrice: 90, totalPrice: 90),
+      ],
     );
     final saved = await receipts.upsertParsed(
       qrHash: 'h$_seq',
@@ -75,12 +80,15 @@ void main() {
     );
   }
 
-  testWidgets('unassigned tab lists ingested positions with parsed unit', (tester) async {
+  testWidgets('unassigned tab lists a cluster card instead of one row per position', (tester) async {
     await tester.pumpWidget(app(CatalogPage(state: state)));
     await tester.pump();
-    expect(find.text('Молоко Леб 2.5% 1.7л'), findsOneWidget);
-    expect(find.text('1.7 л'), findsOneWidget);
-    expect(find.text('В товар'), findsOneWidget);
+    expect(find.text('Молоко Леб'), findsOneWidget);
+    expect(find.text('• Молоко Леб 2.5% 1.7л'), findsOneWidget);
+    expect(find.text('• МОЛОКО ЛЕБ 2,5% 0,93Л'), findsOneWidget);
+    expect(find.text('• Молоко Леб 0.5л'), findsOneWidget);
+    expect(find.text('и ещё 1'), findsOneWidget);
+    expect(find.text('В товар'), findsNothing);
     expect(find.text('Каталог'), findsWidgets);
     expect(find.text('Промпт'), findsOneWidget);
     expect(find.text('Вставить'), findsOneWidget);
@@ -90,16 +98,30 @@ void main() {
     expect(find.text('Вставить'), findsNothing);
   });
 
-  testWidgets('merge group lists cluster peers and can drop a member', (tester) async {
-    final target = state.catalog.unassigned.single;
-    const peer = CatalogPosition(id: 'peer', displayName: 'МОЛОКО ЛЕБ 2,5% 0,93Л', unitSize: 0.93);
-    await tester.pumpWidget(app(MergeGroupPage(state: state, target: target, peers: const [peer])));
+  testWidgets('tapping a cluster opens a draft product that can drop a position', (tester) async {
+    await tester.pumpWidget(app(CatalogPage(state: state)));
     await tester.pump();
-    expect(find.text('Объединить'), findsWidgets);
-    expect(find.text('Молоко Леб 2.5% 1.7л'), findsOneWidget);
-    expect(find.text('МОЛОКО ЛЕБ 2,5% 0,93Л'), findsOneWidget);
-    await tester.tap(find.byIcon(Icons.close));
+    await tester.tap(find.text('Молоко Леб'));
     await tester.pump();
-    expect(find.text('МОЛОКО ЛЕБ 2,5% 0,93Л'), findsNothing);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byType(DraftProductPage), findsOneWidget);
+    expect(find.text('Создать товар'), findsOneWidget);
+    expect(find.byIcon(Icons.close), findsNWidgets(4));
+    await tester.tap(find.byIcon(Icons.close).first);
+    await tester.pump();
+    expect(find.byIcon(Icons.close), findsNWidgets(3));
+  });
+
+  test('createProductWithPositions assigns the cluster', () async {
+    final ids = [for (final position in state.catalog.unassigned) position.id];
+    final product = await state.catalog.createProductWithPositions(
+      name: 'Молоко Леб',
+      unit: ItemUnit.l,
+      positionIds: ids,
+    );
+    expect(product.name, 'Молоко Леб');
+    expect(product.unit, ItemUnit.l);
+    expect(state.catalog.unassigned, isEmpty);
+    expect(state.catalog.products.single.id, product.id);
   });
 }

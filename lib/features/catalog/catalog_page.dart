@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
-import '../../core/catalog/catalog_position.dart';
+import '../../core/catalog/assist_cluster.dart';
 import '../../core/catalog/category_label.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 import '../widgets/empty_hint.dart';
-import 'assign_sheet.dart';
 import 'assist_actions.dart';
 import 'catalog_dialogs.dart';
-import 'merge_group_page.dart';
 import 'catalog_trail.dart';
 import 'category_page.dart';
+import 'draft_product_page.dart';
 import 'product_page.dart';
 import 'unit_labels.dart';
 
@@ -57,7 +56,7 @@ class _CatalogPageState extends State<CatalogPage> with SingleTickerProviderStat
       appBar: AppBar(
         titleSpacing: 0,
         title: AnimatedBuilder(
-          animation: Listenable.merge([_tabs, widget.state]),
+          animation: Listenable.merge([_tabs, widget.state.catalog]),
           builder: (context, _) => CatalogTrail(
             crumbs: [
               CatalogCrumb(label: l10n.catalogTitle),
@@ -94,7 +93,7 @@ class _CatalogPageState extends State<CatalogPage> with SingleTickerProviderStat
         ),
       ),
       body: ListenableBuilder(
-        listenable: widget.state,
+        listenable: widget.state.catalog,
         builder: (context, _) {
           return Column(
             children: [
@@ -149,12 +148,14 @@ class _UnassignedTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final counts = state.catalog.positionCounts(state.receipts);
     final needle = query.trim().toLowerCase();
     final items = [
-      for (final position in state.catalog.unassigned)
-        if (needle.isEmpty || position.displayName.toLowerCase().contains(needle)) position,
-    ]..sort((a, b) => (counts[b.id] ?? 0).compareTo(counts[a.id] ?? 0));
+      for (final cluster in state.catalog.unassignedClusters)
+        if (needle.isEmpty ||
+            cluster.name.toLowerCase().contains(needle) ||
+            cluster.positions.any((position) => position.displayName.toLowerCase().contains(needle)))
+          cluster,
+    ];
     if (state.catalog.unassigned.isEmpty) {
       return EmptyHint(title: l10n.catalogEmptyUnassigned, body: l10n.catalogEmptyUnassignedBody);
     }
@@ -165,23 +166,20 @@ class _UnassignedTab extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       itemCount: items.length,
       separatorBuilder: (context, index) => const SizedBox(height: 8),
-      itemBuilder: (context, index) => _PositionCard(state: state, position: items[index], count: counts[items[index].id] ?? 0),
+      itemBuilder: (context, index) => _ClusterCard(state: state, cluster: items[index]),
     );
   }
 }
 
-class _PositionCard extends StatelessWidget {
-  const _PositionCard({required this.state, required this.position, required this.count});
+class _ClusterCard extends StatelessWidget {
+  const _ClusterCard({required this.state, required this.cluster});
 
   final AppState state;
-  final CatalogPosition position;
-  final int count;
+  final UnassignedCluster cluster;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final unit = formatPositionMeta(position, null, l10n);
-    final suggestions = state.catalog.suggestionsFor(position);
     return Material(
       color: Colors.white,
       shape: RoundedRectangleBorder(
@@ -190,38 +188,27 @@ class _PositionCard extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
-        onTap: () => showAssignSheet(context: context, state: state, position: position),
+        onTap: () => openDraftProduct(context: context, state: state, positions: cluster.positions),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(child: Text(position.displayName)),
-                  Text(l10n.timesCount(count), style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-                ],
-              ),
-              if (unit.isNotEmpty) ...[
-                const SizedBox(height: 2),
-                Text(unit, style: const TextStyle(color: AppColors.primary, fontSize: 12)),
-              ],
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: [
-                  if (suggestions.isNotEmpty)
-                    ActionChip(
-                      label: Text(l10n.mergeSuggested(suggestions.length)),
-                      onPressed: () => openMergeGroup(context: context, state: state, position: position),
-                    ),
-                  ActionChip(
-                    label: Text(l10n.assignToProduct),
-                    onPressed: () => showAssignSheet(context: context, state: state, position: position),
+              Text(cluster.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 6),
+              for (final position in cluster.preview)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Text('• ${position.displayName}'),
+                ),
+              if (cluster.hiddenCount > 0)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    l10n.clusterAndMore(cluster.hiddenCount),
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                   ),
-                ],
-              ),
+                ),
             ],
           ),
         ),

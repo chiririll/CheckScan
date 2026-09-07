@@ -424,6 +424,20 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String clusterAndMore(int count) {
+    return 'и ещё $count';
+  }
+
+  @override
+  String get positionsSection => 'Позиции';
+
+  @override
+  String get addPosition => 'Добавить позицию';
+
+  @override
+  String get draftProductCreate => 'Создать товар';
+
+  @override
   String get byCategory => 'По категориям';
 
   @override

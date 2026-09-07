@@ -4,6 +4,20 @@ import 'name_stem.dart';
 import 'position_suggestions.dart';
 
 const assistBatchLimit = 30;
+const clusterPreviewLimit = 3;
+
+class UnassignedCluster {
+  const UnassignedCluster({required this.name, required this.positions});
+
+  final String name;
+  final List<CatalogPosition> positions;
+
+  List<CatalogPosition> get preview =>
+      positions.length <= clusterPreviewLimit ? positions : positions.sublist(0, clusterPreviewLimit);
+
+  int get hiddenCount =>
+      positions.length <= clusterPreviewLimit ? 0 : positions.length - clusterPreviewLimit;
+}
 
 bool stemsSimilar(String a, String b) {
   if (a.isEmpty || b.isEmpty) return false;
@@ -14,6 +28,38 @@ bool stemsSimilar(String a, String b) {
   final left = stemTokens(a);
   final right = stemTokens(b);
   return left.isNotEmpty && right.isNotEmpty && left.first == right.first;
+}
+
+String titleCaseStem(String stem) {
+  return [
+    for (final word in stem.split(' '))
+      if (word.isNotEmpty) '${word[0].toUpperCase()}${word.substring(1)}',
+  ].join(' ');
+}
+
+String proposedClusterName(List<CatalogPosition> cluster) {
+  if (cluster.isEmpty) return '';
+  final counts = <String, int>{};
+  for (final position in cluster) {
+    final stem = itemNameStem(position.displayName);
+    if (stem.isEmpty) continue;
+    counts[stem] = (counts[stem] ?? 0) + 1;
+  }
+  if (counts.isEmpty) return cluster.first.displayName;
+  final ranked = counts.entries.toList()
+    ..sort((a, b) {
+      final byCount = b.value.compareTo(a.value);
+      if (byCount != 0) return byCount;
+      return a.key.length.compareTo(b.key.length);
+    });
+  return titleCaseStem(ranked.first.key);
+}
+
+List<UnassignedCluster> buildUnassignedClusters(List<CatalogPosition> positions) {
+  return [
+    for (final group in clusterUnassigned(positions))
+      UnassignedCluster(name: proposedClusterName(group), positions: group),
+  ];
 }
 
 List<List<CatalogPosition>> clusterUnassigned(List<CatalogPosition> positions) {
@@ -35,9 +81,25 @@ List<List<CatalogPosition>> clusterUnassigned(List<CatalogPosition> positions) {
     if (ra != rb) parent[rb] = ra;
   }
 
+  final buckets = <String, List<int>>{};
   for (var i = 0; i < positions.length; i++) {
-    for (var j = i + 1; j < positions.length; j++) {
-      if (stemsSimilar(stems[i], stems[j])) union(i, j);
+    final tokens = stemTokens(stems[i]);
+    final key = tokens.isEmpty ? '\u0000$i' : tokens.first;
+    buckets.putIfAbsent(key, () => []).add(i);
+  }
+  for (final bucket in buckets.values) {
+    for (var i = 1; i < bucket.length; i++) {
+      union(bucket.first, bucket[i]);
+    }
+  }
+  final keys = buckets.keys.toList();
+  for (var i = 0; i < keys.length; i++) {
+    if (keys[i].startsWith('\u0000')) continue;
+    for (var j = i + 1; j < keys.length; j++) {
+      if (keys[j].startsWith('\u0000')) continue;
+      if (stemsSimilar(keys[i], keys[j])) {
+        union(buckets[keys[i]]!.first, buckets[keys[j]]!.first);
+      }
     }
   }
 

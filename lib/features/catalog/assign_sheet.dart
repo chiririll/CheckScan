@@ -6,7 +6,6 @@ import 'unit_labels.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 import 'catalog_dialogs.dart';
-import 'merge_group_page.dart';
 import 'product_page.dart';
 
 Future<void> showAssignSheet({
@@ -40,7 +39,6 @@ class _AssignSheet extends StatelessWidget {
         if (position == null) {
           return const SizedBox(height: 120, child: Center(child: Text('—')));
         }
-        final suggestions = state.catalog.suggestionsFor(position);
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -51,21 +49,6 @@ class _AssignSheet extends StatelessWidget {
                 Text(position.displayName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                 const SizedBox(height: 12),
                 _AmountRow(state: state, position: position),
-                if (suggestions.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  ActionChip(
-                    label: Text(l10n.mergeSuggested(suggestions.length)),
-                    onPressed: () {
-                      final nav = Navigator.of(context);
-                      nav.pop();
-                      nav.push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => MergeGroupPage(state: state, target: position, peers: suggestions),
-                        ),
-                      );
-                    },
-                  ),
-                ],
                 const SizedBox(height: 12),
                 FilledButton(
                   onPressed: () async {

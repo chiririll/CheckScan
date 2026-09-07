@@ -166,6 +166,15 @@
       "count": { "type": "int" }
     }
   },
+  "clusterAndMore": "и ещё {count}",
+  "@clusterAndMore": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "positionsSection": "Позиции",
+  "addPosition": "Добавить позицию",
+  "draftProductCreate": "Создать товар",
   "byCategory": "По категориям",
   "splitAlias": "Отделить",
   "save": "Сохранить",

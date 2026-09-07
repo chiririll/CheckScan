@@ -844,6 +844,30 @@ abstract class AppLocalizations {
   /// **'Похожие · {count}'**
   String mergeSuggested(int count);
 
+  /// No description provided for @clusterAndMore.
+  ///
+  /// In ru, this message translates to:
+  /// **'и ещё {count}'**
+  String clusterAndMore(int count);
+
+  /// No description provided for @positionsSection.
+  ///
+  /// In ru, this message translates to:
+  /// **'Позиции'**
+  String get positionsSection;
+
+  /// No description provided for @addPosition.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить позицию'**
+  String get addPosition;
+
+  /// No description provided for @draftProductCreate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать товар'**
+  String get draftProductCreate;
+
   /// No description provided for @byCategory.
   ///
   /// In ru, this message translates to:

@@ -30,6 +30,25 @@ void main() {
     expect(clusterPeers(milkA, [milkA, milkB.copyWith(productId: 'other')]), isEmpty);
   });
 
+  test('proposed name is the title-cased stem', () {
+    const milkA = CatalogPosition(id: 'a', displayName: 'Молоко Леб 2.5% 1.7л');
+    const milkB = CatalogPosition(id: 'b', displayName: 'МОЛОКО ЛЕБ 2,5% 0,93Л');
+    expect(proposedClusterName([milkA, milkB]), 'Молоко Леб');
+    final cluster = buildUnassignedClusters([milkA, milkB]).single;
+    expect(cluster.name, 'Молоко Леб');
+    expect(cluster.preview, hasLength(2));
+    expect(cluster.hiddenCount, 0);
+  });
+
+  test('cluster preview keeps three names and counts the rest', () {
+    final positions = [
+      for (var i = 0; i < 5; i++) CatalogPosition(id: '$i', displayName: 'Молоко Леб ${i + 1}л'),
+    ];
+    final cluster = buildUnassignedClusters(positions).single;
+    expect(cluster.preview, hasLength(clusterPreviewLimit));
+    expect(cluster.hiddenCount, 2);
+  });
+
   test('picks similar products by stem', () {
     const batch = [CatalogPosition(id: 'p', displayName: 'Молоко Леб 2.5% 1.7л')];
     const products = [

@@ -23,6 +23,14 @@ class CatalogStore extends ChangeNotifier {
 
   List<CatalogPosition> get unassigned => [for (final position in positions) if (position.productId == null) position];
 
+  List<UnassignedCluster>? _unassignedClusters;
+  Map<String, int>? _positionCounts;
+  int? _countsStamp;
+
+  List<UnassignedCluster> get unassignedClusters {
+    return _unassignedClusters ??= buildUnassignedClusters(unassigned);
+  }
+
   int? _pendingTab;
 
   void requestTab(int index) {
@@ -52,11 +60,33 @@ class CatalogStore extends ChangeNotifier {
     products = await _repository.listProducts();
     positions = await _repository.listPositions();
     resolver = await _repository.buildResolver();
+    _unassignedClusters = null;
+    _positionCounts = null;
+    _countsStamp = null;
     notifyListeners();
   }
 
   List<CatalogPosition> suggestionsFor(CatalogPosition position) {
-    return clusterPeers(position, positions);
+    for (final cluster in unassignedClusters) {
+      if (cluster.positions.length < 2) continue;
+      if (!cluster.positions.any((item) => item.id == position.id)) continue;
+      return [for (final item in cluster.positions) if (item.id != position.id) item];
+    }
+    return const [];
+  }
+
+  Future<CatalogProduct> createProductWithPositions({
+    required String name,
+    String? categoryId,
+    ItemUnit? unit,
+    required List<String> positionIds,
+  }) async {
+    final product = await _repository.createProduct(name: name, categoryId: categoryId, unit: unit);
+    for (final positionId in positionIds) {
+      await _repository.assignPosition(positionId, product.id);
+    }
+    await reload();
+    return products.firstWhere((item) => item.id == product.id, orElse: () => product);
   }
 
   Future<void> mergePositions({required String sourceId, required String targetId}) async {
@@ -191,6 +221,12 @@ class CatalogStore extends ChangeNotifier {
   }
 
   Map<String, int> positionCounts(List<ReceiptRecord> receipts) {
+    var items = 0;
+    for (final receipt in receipts) {
+      items += receipt.receipt.items.length;
+    }
+    final stamp = Object.hash(receipts.length, items);
+    if (_positionCounts != null && _countsStamp == stamp) return _positionCounts!;
     final counts = <String, int>{};
     for (final receipt in receipts) {
       for (final item in receipt.receipt.items) {
@@ -199,6 +235,8 @@ class CatalogStore extends ChangeNotifier {
         counts[key] = (counts[key] ?? 0) + 1;
       }
     }
+    _countsStamp = stamp;
+    _positionCounts = counts;
     return counts;
   }
 }
