@@ -75,7 +75,9 @@ void main() {
     await tester.tap(find.text('Не сейчас'));
     await tester.pump();
     expect(find.text('Пока нет статистики'), findsOneWidget);
-    expect(find.text('История'), findsOneWidget);
+    expect(find.text('Каталог'), findsWidgets);
+    expect(find.text('Список'), findsWidgets);
+    expect(find.text('История'), findsWidgets);
   });
 
   testWidgets('settings lists integrations as soon', (tester) async {
@@ -86,9 +88,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.text('1С'), findsOneWidget);
     expect(find.text('Экспорт eQ'), findsOneWidget);
+    expect(find.text('Экспорт CSV'), findsOneWidget);
     expect(find.text('Облако'), findsOneWidget);
     expect(find.text('Скоро'), findsNWidgets(2));
     expect(find.byIcon(Icons.share_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.table_chart_outlined), findsOneWidget);
   });
 
   testWidgets('settings shows provider token from schema label', (tester) async {
@@ -120,6 +124,10 @@ void main() {
     await tester.pump();
     expect(find.text('Пятёрочка'), findsOneWidget);
     expect(find.text('1 товар'), findsOneWidget);
+
+    await tester.tap(find.text('Список').first);
+    await tester.pump();
+    expect(find.text('Пока нечего брать'), findsOneWidget);
   });
 
   testWidgets('home splits stats by currency tabs and keeps period shared', (tester) async {
@@ -165,12 +173,14 @@ void main() {
     expect(find.text('Нет чеков за этот месяц'), findsWidgets);
 
     await tester.tap(find.text('дин.'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
     expect(find.text(previousLabel), findsOneWidget);
     expect(find.text('Нет чеков за этот месяц'), findsWidgets);
 
     await tester.tap(find.byTooltip('Следующий период'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
     expect(find.text(formatMonthYear(HomePeriod.current(now).asDate)), findsOneWidget);
     expect(find.text(formatMoney(500, 'RSD')), findsWidgets);
     expect(find.text('Цены'), findsOneWidget);

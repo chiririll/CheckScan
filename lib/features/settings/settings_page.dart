@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../core/catalog/category_label.dart';
+import '../../core/export/category_csv.dart';
+import '../../core/export/category_csv_share.dart';
 import '../../core/export/eq_jsonl_share.dart';
 import '../../core/scan/native_adapter.dart';
 import '../../core/state/app_state.dart';
@@ -40,6 +43,7 @@ class SettingsPage extends StatelessWidget {
               const SizedBox(height: 8),
               _row(l10n.integration1c, l10n.soon),
               _ExportEqRow(state: state),
+              _ExportCsvRow(state: state),
               _row(l10n.integrationCloud, l10n.soon),
             ],
           );
@@ -167,6 +171,86 @@ class _ExportEqRowState extends State<_ExportEqRow> {
                   )
                 else
                   Icon(Icons.share_outlined, size: 18, color: Colors.grey.shade600),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExportCsvRow extends StatefulWidget {
+  const _ExportCsvRow({required this.state});
+
+  final AppState state;
+
+  @override
+  State<_ExportCsvRow> createState() => _ExportCsvRowState();
+}
+
+class _ExportCsvRowState extends State<_ExportCsvRow> {
+  bool _busy = false;
+
+  Future<void> _export() async {
+    if (_busy) return;
+    final l10n = AppLocalizations.of(context);
+    final receipts = widget.state.receipts;
+    if (receipts.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.exportEmpty)));
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      final rows = buildCategoryExport(
+        receipts: receipts,
+        resolver: widget.state.catalog.resolver,
+        categories: widget.state.catalog.categories,
+        merchants: widget.state.merchantList,
+      );
+      await shareCategoryCsv(
+        rows: rows,
+        subject: l10n.exportCsvSubject,
+        categoryName: (key) => key.isEmpty ? l10n.uncategorized : categoryLabel(key, l10n),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.exportFailed)));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          onTap: _busy ? null : _export,
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFE4E4E4)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(l10n.exportCsv, style: const TextStyle(fontWeight: FontWeight.w500)),
+                ),
+                if (_busy)
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                else
+                  Icon(Icons.table_chart_outlined, size: 18, color: Colors.grey.shade600),
               ],
             ),
           ),
