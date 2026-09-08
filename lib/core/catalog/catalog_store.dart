@@ -13,6 +13,7 @@ import 'catalog_resolver.dart';
 import 'item_unit.dart';
 import 'name_stem.dart';
 import 'product_kind.dart';
+import 'purchase.dart';
 
 class CatalogStore extends ChangeNotifier {
   CatalogStore({required this._repository});
@@ -24,6 +25,8 @@ class CatalogStore extends ChangeNotifier {
   List<CatalogProduct> products = const [];
   List<CatalogPosition> positions = const [];
   List<Merchant> merchants = const [];
+  List<Purchase> purchases = const [];
+  List<ReceiptRecord> _receipts = const [];
 
   List<CatalogPosition> get unassigned => [for (final position in positions) if (position.productId == null) position];
 
@@ -51,10 +54,18 @@ class CatalogStore extends ChangeNotifier {
   }
 
   Future<void> ingest(List<ReceiptRecord> receipts, {Iterable<Merchant> merchants = const []}) async {
+    _receipts = List.of(receipts);
     this.merchants = merchants.toList();
-    await _repository.ingestFromReceipts(receipts, this.merchants);
+    await _repository.ingestFromReceipts(_receipts, this.merchants);
     await reload();
-    await _repository.rebuildPurchases(receipts: receipts, merchants: this.merchants);
+    await _rebuildPurchases();
+  }
+
+  Future<void> syncPurchases(List<ReceiptRecord> receipts, {Iterable<Merchant> merchants = const []}) async {
+    _receipts = List.of(receipts);
+    if (merchants.isNotEmpty) this.merchants = merchants.toList();
+    await _rebuildPurchases();
+    notifyListeners();
   }
 
   Future<void> reload() async {
@@ -66,6 +77,16 @@ class CatalogStore extends ChangeNotifier {
     _positionCounts = null;
     _countsStamp = null;
     notifyListeners();
+  }
+
+  Future<void> _rebuildPurchases() async {
+    await _repository.rebuildPurchases(receipts: _receipts, merchants: this.merchants);
+    purchases = await _repository.listPurchases();
+  }
+
+  Future<void> _afterCatalogChange() async {
+    await reload();
+    await _rebuildPurchases();
   }
 
   List<CatalogCategory> childrenOf(String categoryId) {
@@ -120,13 +141,13 @@ class CatalogStore extends ChangeNotifier {
     for (final positionId in positionIds) {
       await _repository.assignPosition(positionId, product.id);
     }
-    await reload();
+    await _afterCatalogChange();
     return products.firstWhere((item) => item.id == product.id, orElse: () => product);
   }
 
   Future<void> mergePositions({required String sourceId, required String targetId}) async {
     await _repository.mergePositions(sourceId: sourceId, targetId: targetId);
-    await reload();
+    await _afterCatalogChange();
   }
 
   Future<void> mergeGroup({required String targetId, required List<String> sourceIds}) async {
@@ -134,12 +155,12 @@ class CatalogStore extends ChangeNotifier {
       if (sourceId == targetId) continue;
       await _repository.mergePositions(sourceId: sourceId, targetId: targetId);
     }
-    await reload();
+    await _afterCatalogChange();
   }
 
   Future<void> unalias(String rawName) async {
     await _repository.unalias(rawName);
-    await reload();
+    await _afterCatalogChange();
   }
 
   Future<CatalogProduct> createProduct({
@@ -153,13 +174,13 @@ class CatalogStore extends ChangeNotifier {
     if (positionId != null) {
       await _repository.assignPosition(positionId, product.id);
     }
-    await reload();
+    await _afterCatalogChange();
     return products.firstWhere((item) => item.id == product.id, orElse: () => product);
   }
 
   Future<void> assignPosition(String positionId, String? productId) async {
     await _repository.assignPosition(positionId, productId);
-    await reload();
+    await _afterCatalogChange();
   }
 
   Future<void> updateProduct(
@@ -185,7 +206,7 @@ class CatalogStore extends ChangeNotifier {
 
   Future<void> deleteProduct(String id) async {
     await _repository.deleteProduct(id);
-    await reload();
+    await _afterCatalogChange();
   }
 
   Future<void> addTag(String productId, String name) async {
@@ -217,7 +238,7 @@ class CatalogStore extends ChangeNotifier {
 
   Future<void> applyAssistDraft(AssistDraft draft) async {
     await applyAssistDraftToRepo(repository: _repository, draft: draft, products: products);
-    await reload();
+    await _afterCatalogChange();
   }
 
   Future<void> createCategory(String name, {String? parentId}) async {

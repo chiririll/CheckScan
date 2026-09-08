@@ -112,6 +112,7 @@ class AppState extends ChangeNotifier {
   Future<void> deleteReceipt(String id) async {
     await _repository.deleteById(id);
     receipts = receipts.where((receipt) => receipt.id != id).toList();
+    await catalog.syncPurchases(receipts, merchants: merchantList);
     notifyListeners();
   }
 

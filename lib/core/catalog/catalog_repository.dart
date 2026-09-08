@@ -11,6 +11,7 @@ import 'catalog_tag.dart';
 import 'item_unit.dart';
 import 'name_normalizer.dart';
 import 'product_kind.dart';
+import 'purchase.dart';
 import 'purchase_cache.dart';
 import 'unit_parser.dart';
 
@@ -382,5 +383,30 @@ class CatalogRepository {
       resolver: await buildResolver(),
       ignoreMerchantIds: ignoreMerchantIdsOf(merchants),
     );
+  }
+
+  Future<List<Purchase>> listPurchases() async {
+    final rows = await (await _db).rawQuery('''
+      SELECT p.id, p.check_id, p.product_id, p.quantity, p.unit_price, p.total,
+             r.issued_at, r.scanned_at, r.currency, r.merchant_id, r.merchant_name
+      FROM purchase p
+      JOIN receipts r ON r.id = p.check_id
+    ''');
+    return [
+      for (final row in rows)
+        Purchase(
+          id: '${row['id']}',
+          checkId: '${row['check_id']}',
+          productId: '${row['product_id']}',
+          quantity: (row['quantity'] as num?)?.toDouble() ?? 0,
+          unitPrice: (row['unit_price'] as num?)?.toDouble() ?? 0,
+          total: (row['total'] as num?)?.toDouble() ?? 0,
+          currency: '${row['currency'] ?? ''}',
+          issuedAt: DateTime.tryParse('${row['issued_at']}'),
+          scannedAt: DateTime.tryParse('${row['scanned_at']}'),
+          merchantId: row['merchant_id'] == null ? null : '${row['merchant_id']}',
+          merchantName: row['merchant_name'] as String?,
+        ),
+    ];
   }
 }
