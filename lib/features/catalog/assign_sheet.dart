@@ -126,21 +126,6 @@ class _AmountRow extends StatelessWidget {
             current: position.unitSize,
           ),
         ),
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          dense: true,
-          title: Text(l10n.positionBrand, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-          trailing: Text(
-            position.brand == null || position.brand!.isEmpty ? l10n.unitNone : position.brand!,
-            style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
-          ),
-          onTap: () => editPositionBrand(
-            context: context,
-            catalog: state.catalog,
-            positionId: position.id,
-            current: position.brand,
-          ),
-        ),
       ],
     );
   }

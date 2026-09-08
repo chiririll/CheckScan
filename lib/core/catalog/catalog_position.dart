@@ -1,19 +1,21 @@
+import 'catalog_tag.dart';
+
 class CatalogPosition {
   const CatalogPosition({
     required this.id,
     required this.displayName,
     this.productId,
     this.unitSize,
-    this.brand,
     this.aliases = const [],
+    this.tags = const [],
   });
 
   final String id;
   final String displayName;
   final String? productId;
   final double? unitSize;
-  final String? brand;
   final List<String> aliases;
+  final List<CatalogTag> tags;
 
   CatalogPosition copyWith({
     String? displayName,
@@ -21,17 +23,16 @@ class CatalogPosition {
     bool clearProduct = false,
     double? unitSize,
     bool clearAmount = false,
-    String? brand,
-    bool clearBrand = false,
     List<String>? aliases,
+    List<CatalogTag>? tags,
   }) {
     return CatalogPosition(
       id: id,
       displayName: displayName ?? this.displayName,
       productId: clearProduct ? null : (productId ?? this.productId),
       unitSize: clearAmount ? null : (unitSize ?? this.unitSize),
-      brand: clearBrand ? null : (brand ?? this.brand),
       aliases: aliases ?? this.aliases,
+      tags: tags ?? this.tags,
     );
   }
 }

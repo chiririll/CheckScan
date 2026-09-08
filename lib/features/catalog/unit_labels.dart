@@ -33,8 +33,5 @@ String formatPositionPack(CatalogPosition position, CatalogProduct? product, App
 }
 
 String formatPositionMeta(CatalogPosition position, CatalogProduct? product, AppLocalizations l10n) {
-  return [
-    formatPositionPack(position, product, l10n),
-    ?position.brand,
-  ].where((part) => part.isNotEmpty).join(' · ');
+  return formatPositionPack(position, product, l10n);
 }

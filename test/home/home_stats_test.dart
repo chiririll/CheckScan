@@ -121,7 +121,7 @@ void main() {
         'prod': CatalogProduct(id: 'prod', name: 'Молоко', categoryId: 'cat'),
       },
       categories: {
-        'cat': CatalogCategory(id: 'cat', name: 'Молочные', sortOrder: 0, isSeed: true),
+        'cat': CatalogCategory(id: 'cat', name: 'Молочные', sortOrder: 0),
       },
     );
 

@@ -1,5 +1,6 @@
 import 'catalog_tag.dart';
 import 'item_unit.dart';
+import 'product_kind.dart';
 
 class CatalogProduct {
   const CatalogProduct({
@@ -7,6 +8,7 @@ class CatalogProduct {
     required this.name,
     this.categoryId,
     this.unit,
+    this.kind = ProductKind.good,
     this.tags = const [],
   });
 
@@ -14,6 +16,7 @@ class CatalogProduct {
   final String name;
   final String? categoryId;
   final ItemUnit? unit;
+  final ProductKind kind;
   final List<CatalogTag> tags;
 
   CatalogProduct copyWith({
@@ -22,6 +25,7 @@ class CatalogProduct {
     bool clearCategory = false,
     ItemUnit? unit,
     bool clearUnit = false,
+    ProductKind? kind,
     List<CatalogTag>? tags,
   }) {
     return CatalogProduct(
@@ -29,6 +33,7 @@ class CatalogProduct {
       name: name ?? this.name,
       categoryId: clearCategory ? null : (categoryId ?? this.categoryId),
       unit: clearUnit ? null : (unit ?? this.unit),
+      kind: kind ?? this.kind,
       tags: tags ?? this.tags,
     );
   }

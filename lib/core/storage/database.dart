@@ -2,9 +2,29 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../catalog/category_seeder.dart';
+import 'migrations/migration.dart';
+import 'migrations/v1_receipts.dart';
+import 'migrations/v2_last_status.dart';
+import 'migrations/v3_catalog.dart';
+import 'migrations/v4_product_units.dart';
+import 'migrations/v5_position_brand.dart';
+import 'migrations/v6_catalog_model.dart';
 
-const checkScanDbVersion = 5;
+export 'migrations/v1_receipts.dart' show createReceiptsTable;
+export 'migrations/v3_catalog.dart' show createCatalogTables;
+export 'migrations/v4_product_units.dart' show migrateCatalogUnitsToProducts;
+export 'migrations/v5_position_brand.dart' show migratePositionBrand;
+
+const checkScanDbVersion = 6;
+
+final checkScanMigrations = [
+  v1Receipts,
+  v2LastStatus,
+  v3Catalog,
+  v4ProductUnits,
+  v5PositionBrand,
+  v6CatalogModel,
+];
 
 class CheckScanDatabase {
   CheckScanDatabase({this._resolvePath});
@@ -21,27 +41,9 @@ class CheckScanDatabase {
     _db = await openDatabase(
       path,
       version: checkScanDbVersion,
-      onCreate: (db, version) async {
-        await createReceiptsTable(db);
-        await createCatalogTables(db);
-        await seedCategoriesIfEmpty(db);
-      },
-      onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          await db.execute('ALTER TABLE receipts ADD COLUMN last_status INTEGER NOT NULL DEFAULT 200');
-        }
-        if (oldVersion < 3) {
-          await createCatalogTables(db);
-          await seedCategoriesIfEmpty(db);
-        } else {
-          if (oldVersion < 4) {
-            await migrateCatalogUnitsToProducts(db);
-          }
-          if (oldVersion < 5) {
-            await migratePositionBrand(db);
-          }
-        }
-      },
+      onCreate: (db, version) => runMigrations(db, fromExclusive: 0, toInclusive: version, steps: checkScanMigrations),
+      onUpgrade: (db, oldVersion, newVersion) =>
+          runMigrations(db, fromExclusive: oldVersion, toInclusive: newVersion, steps: checkScanMigrations),
     );
     return _db!;
   }
@@ -51,93 +53,4 @@ class CheckScanDatabase {
     _db = null;
     if (db != null) await db.close();
   }
-}
-
-Future<void> createReceiptsTable(DatabaseExecutor db) async {
-  await db.execute('''
-    CREATE TABLE receipts (
-      id TEXT PRIMARY KEY,
-      qr_hash TEXT NOT NULL UNIQUE,
-      adapter_id TEXT NOT NULL,
-      status TEXT NOT NULL,
-      issued_at TEXT,
-      merchant_name TEXT,
-      grand_total REAL NOT NULL,
-      currency TEXT NOT NULL,
-      item_count INTEGER NOT NULL,
-      payload TEXT NOT NULL,
-      scanned_at TEXT NOT NULL,
-      raw_qr TEXT NOT NULL,
-      last_status INTEGER NOT NULL DEFAULT 200
-    )
-  ''');
-  await db.execute('CREATE UNIQUE INDEX idx_receipts_qr_hash ON receipts(qr_hash)');
-}
-
-Future<void> createCatalogTables(DatabaseExecutor db) async {
-  await db.execute('''
-    CREATE TABLE categories (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      sort_order INTEGER NOT NULL,
-      is_seed INTEGER NOT NULL DEFAULT 0
-    )
-  ''');
-  await db.execute('''
-    CREATE TABLE tags (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      name_key TEXT NOT NULL UNIQUE
-    )
-  ''');
-  await db.execute('''
-    CREATE TABLE products (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      category_id TEXT,
-      unit TEXT
-    )
-  ''');
-  await db.execute('''
-    CREATE TABLE product_tags (
-      product_id TEXT NOT NULL,
-      tag_id TEXT NOT NULL,
-      PRIMARY KEY (product_id, tag_id)
-    )
-  ''');
-  await db.execute('''
-    CREATE TABLE positions (
-      id TEXT PRIMARY KEY,
-      display_name TEXT NOT NULL,
-      product_id TEXT,
-      unit_size REAL,
-      brand TEXT
-    )
-  ''');
-  await db.execute('''
-    CREATE TABLE position_aliases (
-      raw_name TEXT PRIMARY KEY,
-      normalized TEXT NOT NULL,
-      position_id TEXT NOT NULL
-    )
-  ''');
-  await db.execute('CREATE INDEX idx_position_aliases_normalized ON position_aliases(normalized)');
-  await db.execute('CREATE INDEX idx_positions_product ON positions(product_id)');
-}
-
-Future<void> migrateCatalogUnitsToProducts(DatabaseExecutor db) async {
-  await db.execute('ALTER TABLE products ADD COLUMN unit TEXT');
-  await db.execute('''
-    UPDATE products
-    SET unit = (
-      SELECT p.unit FROM positions p
-      WHERE p.product_id = products.id AND p.unit IS NOT NULL
-      LIMIT 1
-    )
-    WHERE unit IS NULL
-  ''');
-}
-
-Future<void> migratePositionBrand(DatabaseExecutor db) async {
-  await db.execute('ALTER TABLE positions ADD COLUMN brand TEXT');
 }

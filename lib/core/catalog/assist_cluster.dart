@@ -2,8 +2,10 @@ import 'catalog_position.dart';
 import 'catalog_product.dart';
 import 'name_stem.dart';
 import 'position_suggestions.dart';
+import 'service_name.dart';
 
-const assistBatchLimit = 30;
+const assistBatchLimit = 24;
+const assistClusterLimit = 24;
 const clusterPreviewLimit = 3;
 
 class UnassignedCluster {
@@ -27,7 +29,26 @@ bool stemsSimilar(String a, String b) {
   if (dist <= 3 || dist / maxLen <= 0.25) return true;
   final left = stemTokens(a);
   final right = stemTokens(b);
-  return left.isNotEmpty && right.isNotEmpty && left.first == right.first;
+  return left.isNotEmpty && right.isNotEmpty && left.first == right.first && tokensCompatible(left, right);
+}
+
+bool tokensCompatible(List<String> left, List<String> right) {
+  if (left.isEmpty || right.isEmpty) return false;
+  if (!_tokenSimilar(left.first, right.first)) return false;
+  if (left.length == 1 || right.length == 1) return true;
+  return _tokenSimilar(left[1], right[1]);
+}
+
+bool _tokenSimilar(String a, String b) {
+  if (a == b) return true;
+  final dist = levenshtein(a, b);
+  final maxLen = a.length > b.length ? a.length : b.length;
+  return dist <= 2 || dist / maxLen <= 0.25;
+}
+
+bool shouldCluster(String stemA, String stemB) {
+  if (stemA.isEmpty || stemB.isEmpty) return false;
+  return tokensCompatible(stemTokens(stemA), stemTokens(stemB));
 }
 
 String titleCaseStem(String stem) {
@@ -64,6 +85,13 @@ List<UnassignedCluster> buildUnassignedClusters(List<CatalogPosition> positions)
 
 List<List<CatalogPosition>> clusterUnassigned(List<CatalogPosition> positions) {
   if (positions.isEmpty) return const [];
+  final goods = [for (final position in positions) if (!looksLikeService(position.displayName)) position];
+  final services = [for (final position in positions) if (looksLikeService(position.displayName)) position];
+  return [..._clusterPool(goods), ..._clusterPool(services)];
+}
+
+List<List<CatalogPosition>> _clusterPool(List<CatalogPosition> positions) {
+  if (positions.isEmpty) return const [];
   final stems = [for (final position in positions) itemNameStem(position.displayName)];
   final parent = List<int>.generate(positions.length, (i) => i);
 
@@ -81,25 +109,9 @@ List<List<CatalogPosition>> clusterUnassigned(List<CatalogPosition> positions) {
     if (ra != rb) parent[rb] = ra;
   }
 
-  final buckets = <String, List<int>>{};
   for (var i = 0; i < positions.length; i++) {
-    final tokens = stemTokens(stems[i]);
-    final key = tokens.isEmpty ? '\u0000$i' : tokens.first;
-    buckets.putIfAbsent(key, () => []).add(i);
-  }
-  for (final bucket in buckets.values) {
-    for (var i = 1; i < bucket.length; i++) {
-      union(bucket.first, bucket[i]);
-    }
-  }
-  final keys = buckets.keys.toList();
-  for (var i = 0; i < keys.length; i++) {
-    if (keys[i].startsWith('\u0000')) continue;
-    for (var j = i + 1; j < keys.length; j++) {
-      if (keys[j].startsWith('\u0000')) continue;
-      if (stemsSimilar(keys[i], keys[j])) {
-        union(buckets[keys[i]]!.first, buckets[keys[j]]!.first);
-      }
+    for (var j = i + 1; j < positions.length; j++) {
+      if (shouldCluster(stems[i], stems[j])) union(i, j);
     }
   }
 
@@ -107,7 +119,18 @@ List<List<CatalogPosition>> clusterUnassigned(List<CatalogPosition> positions) {
   for (var i = 0; i < positions.length; i++) {
     groups.putIfAbsent(find(i), () => []).add(positions[i]);
   }
-  final clusters = groups.values.toList()..sort((a, b) => b.length.compareTo(a.length));
+  final clusters = <List<CatalogPosition>>[];
+  for (final group in groups.values) {
+    if (group.length <= assistClusterLimit) {
+      clusters.add(group);
+      continue;
+    }
+    for (var offset = 0; offset < group.length; offset += assistClusterLimit) {
+      final end = offset + assistClusterLimit > group.length ? group.length : offset + assistClusterLimit;
+      clusters.add(group.sublist(offset, end));
+    }
+  }
+  clusters.sort((a, b) => b.length.compareTo(a.length));
   return clusters;
 }
 
@@ -136,3 +159,5 @@ List<CatalogProduct> similarProductsFor(List<CatalogPosition> batch, List<Catalo
       if (stems.any((stem) => stemsSimilar(stem, itemNameStem(product.name)))) product,
   ];
 }
+
+bool looksLikeServiceName(String raw) => looksLikeService(raw);

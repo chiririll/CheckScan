@@ -6,8 +6,8 @@ import 'package:checkscan/core/catalog/catalog_product.dart';
 import 'package:checkscan/core/catalog/item_unit.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-const _dairy = CatalogCategory(id: 'cat-dairy', name: '#dairyEggs', sortOrder: 0, isSeed: true);
-const _custom = CatalogCategory(id: 'cat-custom', name: 'Своя', sortOrder: 1, isSeed: false);
+const _dairy = CatalogCategory(id: 'cat-dairy', name: '#dairyEggs', sortOrder: 0);
+const _custom = CatalogCategory(id: 'cat-custom', name: 'Своя', sortOrder: 1);
 const _pos = CatalogPosition(id: 'pos-1', displayName: 'Молоко Леб 2.5% 1.7л', unitSize: 1.7);
 const _ctx = AssistParseContext(
   categories: [_dairy, _custom],
@@ -38,12 +38,12 @@ void main() {
     expect(result.draft!.products.single.positions.single.unitSize, 1.7);
   });
 
-  test('reads brand from a position row', () {
+  test('ignores brand on a position row', () {
     final result = parseAssistJson(
       '{"products":[{"name":"Молоко","positions":[{"id":"pos-1","unitSize":1.7,"brand":"Леб"}]}]}',
       _ctx,
     );
-    expect(result.draft!.products.single.positions.single.brand, 'Леб');
+    expect(result.draft!.products.single.positions.single.unitSize, 1.7);
   });
 
   test('maps a seed label to the seed and does not invent a category', () {

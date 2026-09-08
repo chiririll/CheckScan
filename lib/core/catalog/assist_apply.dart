@@ -6,9 +6,6 @@ Future<void> _writePositionFields(CatalogRepository repository, AssistDraftPosit
   if (position.unitSize != null) {
     await repository.updatePosition(position.id, unitSize: position.unitSize);
   }
-  if (position.brand != null) {
-    await repository.updatePosition(position.id, brand: position.brand);
-  }
 }
 
 Future<void> applyAssistDraftToRepo({

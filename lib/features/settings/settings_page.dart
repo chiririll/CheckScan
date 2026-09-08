@@ -4,6 +4,7 @@ import '../../core/export/eq_jsonl_share.dart';
 import '../../core/scan/native_adapter.dart';
 import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
+import '../merchant/merchants_page.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key, required this.state});
@@ -33,6 +34,8 @@ class SettingsPage extends StatelessWidget {
                   _SecretField(state: state, field: field, title: l10n.providerToken(field.label)),
                 const SizedBox(height: 16),
               ],
+              _MerchantsRow(state: state),
+              const SizedBox(height: 16),
               Text(l10n.integrations, style: TextStyle(color: Colors.grey.shade600)),
               const SizedBox(height: 8),
               _row(l10n.integration1c, l10n.soon),
@@ -59,6 +62,45 @@ class SettingsPage extends StatelessWidget {
           Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w500))),
           Text(chip, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
         ],
+      ),
+    );
+  }
+}
+
+class _MerchantsRow extends StatelessWidget {
+  const _MerchantsRow({required this.state});
+
+  final AppState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => MerchantsPage(state: state)),
+          ),
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFE4E4E4)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(l10n.merchantsTitle, style: const TextStyle(fontWeight: FontWeight.w500)),
+                ),
+                Icon(Icons.chevron_right, size: 18, color: Colors.grey.shade600),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

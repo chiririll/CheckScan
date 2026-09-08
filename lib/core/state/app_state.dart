@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../catalog/catalog_repository.dart';
 import '../catalog/catalog_store.dart';
+import '../merchant/merchant.dart';
+import '../merchant/merchant_repository.dart';
 import '../models/receipt_record.dart';
 import '../scan/native_adapter.dart';
 import '../scan/scan_outcome.dart';
@@ -17,11 +19,13 @@ class AppState extends ChangeNotifier {
     SettingsStore? settings,
     ScanSession? session,
     CatalogStore? catalog,
+    MerchantRepository? merchants,
   })  : _repository = repository,
         _adapter = adapter,
         settings = settings ?? SettingsStore(),
         _session = session ?? ScanSession(repository: repository, adapter: adapter),
-        catalog = catalog ?? CatalogStore(repository: CatalogRepository(database: repository.database)) {
+        catalog = catalog ?? CatalogStore(repository: CatalogRepository(database: repository.database)),
+        merchants = merchants ?? MerchantRepository(database: repository.database) {
     this.catalog.addListener(notifyListeners);
   }
 
@@ -30,6 +34,9 @@ class AppState extends ChangeNotifier {
   final SettingsStore settings;
   final ScanSession _session;
   final CatalogStore catalog;
+  final MerchantRepository merchants;
+
+  List<Merchant> merchantList = const [];
 
   static const _onboardingKey = 'onboarding_done';
 
@@ -47,7 +54,8 @@ class AppState extends ChangeNotifier {
       settingFields = await _adapter.settings();
       _adapter.configure(settings.snapshot());
       receipts = await _repository.listAll();
-      await catalog.ingest(receipts);
+      merchantList = await merchants.listAll();
+      await catalog.ingest(receipts, merchants: merchantList);
       loadError = null;
     } catch (error) {
       loadError = '$error';
@@ -71,7 +79,21 @@ class AppState extends ChangeNotifier {
 
   Future<void> reload() async {
     receipts = await _repository.listAll();
-    await catalog.ingest(receipts);
+    merchantList = await merchants.listAll();
+    await catalog.ingest(receipts, merchants: merchantList);
+  }
+
+  Merchant? merchantById(String? id) {
+    if (id == null) return null;
+    for (final merchant in merchantList) {
+      if (merchant.id == id) return merchant;
+    }
+    return null;
+  }
+
+  Future<void> reloadMerchants() async {
+    merchantList = await merchants.listAll();
+    notifyListeners();
   }
 
   @override

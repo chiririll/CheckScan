@@ -11,6 +11,7 @@ import '../../theme.dart';
 import 'catalog_dialogs.dart';
 import 'catalog_nav.dart';
 import 'catalog_trail.dart';
+import 'category_picker.dart';
 import 'unit_labels.dart';
 
 Future<void> openDraftProduct({
@@ -185,23 +186,10 @@ class _DraftProductPageState extends State<DraftProductPage> {
   }
 
   Future<void> _pickCategory() async {
-    final l10n = AppLocalizations.of(context);
-    final selected = await showModalBottomSheet<String?>(
+    final selected = await pickAssignableCategory(
       context: context,
-      builder: (context) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            ListTile(title: Text(l10n.noCategory), onTap: () => Navigator.pop(context, '')),
-            for (final category in widget.state.catalog.categories)
-              ListTile(
-                title: Text(categoryTitle(category, l10n)),
-                selected: category.id == _categoryId,
-                onTap: () => Navigator.pop(context, category.id),
-              ),
-          ],
-        ),
-      ),
+      catalog: widget.state.catalog,
+      currentId: _categoryId,
     );
     if (selected == null) return;
     setState(() => _categoryId = selected.isEmpty ? null : selected);

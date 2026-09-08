@@ -18,7 +18,7 @@ void main() {
         'milk': CatalogProduct(id: 'milk', name: 'Молоко', categoryId: 'dairy'),
       },
       categories: {
-        'dairy': CatalogCategory(id: 'dairy', name: 'Молочные', sortOrder: 0, isSeed: true),
+        'dairy': CatalogCategory(id: 'dairy', name: 'Молочные', sortOrder: 0),
       },
     );
     const items = [

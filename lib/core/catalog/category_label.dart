@@ -21,6 +21,10 @@ String categoryLabel(String stored, AppLocalizations l10n) {
     '#pharmacy' => l10n.seedCategoryPharmacy,
     '#home' => l10n.seedCategoryHome,
     '#other' => l10n.seedCategoryOther,
+    '#products' => l10n.seedCategoryProducts,
+    '#household' => l10n.seedCategoryHousehold,
+    '#cafe' => l10n.seedCategoryCafe,
+    '#transport' => l10n.seedCategoryTransport,
     _ => stored.substring(1),
   };
 }
@@ -46,5 +50,9 @@ Map<String, String> seedCategoryLabels(AppLocalizations l10n) {
     '#pharmacy': l10n.seedCategoryPharmacy,
     '#home': l10n.seedCategoryHome,
     '#other': l10n.seedCategoryOther,
+    '#products': l10n.seedCategoryProducts,
+    '#household': l10n.seedCategoryHousehold,
+    '#cafe': l10n.seedCategoryCafe,
+    '#transport': l10n.seedCategoryTransport,
   };
 }

@@ -106,12 +106,10 @@ AssistParseResult parseAssistJson(String raw, AssistParseContext context) {
           skipped += 1;
           continue;
         }
-        final brand = '${row['brand'] ?? ''}'.trim();
         positions.add(
           AssistDraftPosition(
             id: id,
             unitSize: _readSize(row['unitSize']),
-            brand: brand.isEmpty ? null : brand,
           ),
         );
       }

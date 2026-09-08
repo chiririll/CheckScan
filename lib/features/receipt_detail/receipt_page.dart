@@ -5,6 +5,7 @@ import '../../core/format.dart';
 import '../../core/models/receipt_record.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
+import '../merchant/merchant_page.dart';
 import 'receipt_items.dart';
 import 'receipt_metadata.dart';
 
@@ -101,7 +102,18 @@ class _ReceiptPageState extends State<ReceiptPage> {
               children: [
                 Row(
                   children: [
-                    Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18))),
+                    Expanded(
+                      child: record.merchantId == null
+                          ? Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18))
+                          : GestureDetector(
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (_) => MerchantPage(state: widget.state, merchantId: record.merchantId!),
+                                ),
+                              ),
+                              child: Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18)),
+                            ),
+                    ),
                     if (record.providerLabel.isNotEmpty) _Chip(record.providerLabel),
                   ],
                 ),

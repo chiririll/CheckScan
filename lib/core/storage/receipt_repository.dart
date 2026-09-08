@@ -2,6 +2,7 @@ import 'package:eq_models/eq_models.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
+import '../merchant/merchant_repository.dart';
 import '../models/receipt_record.dart';
 import 'database.dart';
 
@@ -9,9 +10,14 @@ class ReceiptRepository {
   ReceiptRepository({
     CheckScanDatabase? database,
     Future<String> Function()? resolveDbPath,
-  }) : database = database ?? CheckScanDatabase(resolvePath: resolveDbPath);
+    MerchantRepository? merchants,
+  })  : database = database ?? CheckScanDatabase(resolvePath: resolveDbPath),
+        _merchants = merchants;
 
   final CheckScanDatabase database;
+  final MerchantRepository? _merchants;
+
+  MerchantRepository get merchants => _merchants ?? MerchantRepository(database: database);
 
   Future<Database> get _db => database.database;
 
@@ -44,6 +50,9 @@ class ReceiptRepository {
     DateTime? scannedAt,
   }) async {
     final existing = await findByHash(qrHash);
+    final hasMerchant = (receipt.merchantName != null && receipt.merchantName!.trim().isNotEmpty) ||
+        (receipt.taxId != null && receipt.taxId!.trim().isNotEmpty);
+    final merchantId = hasMerchant ? await merchants.resolve(name: receipt.merchantName, taxId: receipt.taxId) : existing?.merchantId;
     final record = ReceiptRecord(
       id: existing?.id ?? id ?? const Uuid().v4(),
       qrHash: qrHash,
@@ -51,6 +60,7 @@ class ReceiptRepository {
       status: receiptStatusFromNative(lastStatus),
       issuedAt: receipt.issuedAt,
       merchantName: receipt.merchantName,
+      merchantId: merchantId,
       grandTotal: receipt.grandTotal,
       currency: receipt.currency,
       itemCount: receipt.items.length,
@@ -86,6 +96,7 @@ class ReceiptRepository {
         'scanned_at': record.scannedAt.toIso8601String(),
         'raw_qr': record.rawQr,
         'last_status': record.lastStatus,
+        'merchant_id': record.merchantId == null ? null : int.tryParse(record.merchantId!),
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -110,6 +121,7 @@ class ReceiptRepository {
       scannedAt: DateTime.tryParse('${row['scanned_at']}') ?? DateTime.fromMillisecondsSinceEpoch(0),
       rawQr: '${row['raw_qr'] ?? ''}',
       lastStatus: lastStatus,
+      merchantId: row['merchant_id'] == null ? null : '${row['merchant_id']}',
     );
   }
 }

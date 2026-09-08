@@ -3,14 +3,18 @@ import 'package:flutter/material.dart';
 import '../../core/app_state.dart';
 import '../../core/catalog/catalog_position.dart';
 import '../../core/catalog/catalog_product.dart';
+import '../../core/catalog/catalog_tag.dart';
 import '../../core/catalog/category_label.dart';
 import '../../core/catalog/item_unit.dart';
+import '../../core/catalog/product_kind.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 import 'assign_sheet.dart';
 import 'catalog_dialogs.dart';
 import 'catalog_nav.dart';
 import 'catalog_trail.dart';
+import 'category_picker.dart';
+import 'product_item_search.dart';
 import 'unit_labels.dart';
 
 class ProductPage extends StatelessWidget {
@@ -101,29 +105,37 @@ class ProductPage extends StatelessWidget {
                   },
                 ),
               ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(l10n.productKind),
+                trailing: DropdownButton<ProductKind>(
+                  value: product.kind,
+                  underline: const SizedBox.shrink(),
+                  items: [
+                    DropdownMenuItem(value: ProductKind.good, child: Text(l10n.productKindGood)),
+                    DropdownMenuItem(value: ProductKind.service, child: Text(l10n.productKindService)),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) state.catalog.updateProduct(product.id, kind: value);
+                  },
+                ),
+              ),
               const SizedBox(height: 8),
               Text(l10n.productTags, style: const TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final tag in product.tags)
-                    InputChip(
-                      label: Text(tag.name),
-                      onDeleted: () => state.catalog.removeTag(product.id, tag.id),
-                    ),
-                  ActionChip(
-                    label: Text(l10n.addTag),
-                    onPressed: () async {
-                      final name = await promptText(context, title: l10n.addTag, confirm: l10n.save);
-                      if (name != null) await state.catalog.addTag(product.id, name);
-                    },
-                  ),
-                ],
+              _TagWrap(
+                tags: product.tags,
+                onAdd: () async {
+                  final name = await promptText(context, title: l10n.addTag, confirm: l10n.save);
+                  if (name != null) await state.catalog.addTag(product.id, name);
+                },
+                onRemove: (tagId) => state.catalog.removeTag(product.id, tagId),
+                addLabel: l10n.addTag,
               ),
               const SizedBox(height: 16),
               Text(l10n.itemsSection, style: const TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              ProductItemSearch(state: state, productId: product.id),
               const SizedBox(height: 8),
               for (final position in positions)
                 _PositionTile(state: state, position: position, product: product),
@@ -135,27 +147,7 @@ class ProductPage extends StatelessWidget {
   }
 
   Future<void> _pickCategory(BuildContext context, String productId, String? currentId) async {
-    final l10n = AppLocalizations.of(context);
-    final selected = await showModalBottomSheet<String?>(
-      context: context,
-      builder: (context) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            ListTile(
-              title: Text(l10n.noCategory),
-              onTap: () => Navigator.pop(context, ''),
-            ),
-            for (final category in state.catalog.categories)
-              ListTile(
-                title: Text(categoryTitle(category, l10n)),
-                selected: category.id == currentId,
-                onTap: () => Navigator.pop(context, category.id),
-              ),
-          ],
-        ),
-      ),
-    );
+    final selected = await pickAssignableCategory(context: context, catalog: state.catalog, currentId: currentId);
     if (selected == null) return;
     if (selected.isEmpty) {
       await state.catalog.updateProduct(productId, clearCategory: true);
@@ -172,6 +164,31 @@ class ProductPage extends StatelessWidget {
   }
 }
 
+class _TagWrap extends StatelessWidget {
+  const _TagWrap({required this.tags, required this.onAdd, required this.onRemove, required this.addLabel});
+
+  final List<CatalogTag> tags;
+  final Future<void> Function() onAdd;
+  final void Function(String tagId) onRemove;
+  final String addLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final tag in tags)
+          InputChip(
+            label: Text(tag.name),
+            onDeleted: () => onRemove(tag.id),
+          ),
+        ActionChip(label: Text(addLabel), onPressed: onAdd),
+      ],
+    );
+  }
+}
+
 class _PositionTile extends StatelessWidget {
   const _PositionTile({required this.state, required this.position, required this.product});
 
@@ -183,7 +200,6 @@ class _PositionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final pack = formatPositionPack(position, product, l10n);
-    final brand = position.brand;
     return Card(
       elevation: 0,
       color: Colors.white,
@@ -212,20 +228,16 @@ class _PositionTile extends StatelessWidget {
                 current: position.unitSize,
               ),
             ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              title: Text(l10n.positionBrand, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-              trailing: Text(
-                brand == null || brand.isEmpty ? l10n.unitNone : brand,
-                style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
-              ),
-              onTap: () => editPositionBrand(
-                context: context,
-                catalog: state.catalog,
-                positionId: position.id,
-                current: brand,
-              ),
+            Text(l10n.itemTags, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+            const SizedBox(height: 4),
+            _TagWrap(
+              tags: position.tags,
+              addLabel: l10n.addTag,
+              onAdd: () async {
+                final name = await promptText(context, title: l10n.addTag, confirm: l10n.save);
+                if (name != null) await state.catalog.addItemTag(position.id, name);
+              },
+              onRemove: (tagId) => state.catalog.removeItemTag(position.id, tagId),
             ),
             Wrap(
               spacing: 8,

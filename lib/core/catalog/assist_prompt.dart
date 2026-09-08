@@ -14,7 +14,12 @@ List<AssistCategoryHint> assistCategoryHints(
   List<CatalogCategory> categories,
   String Function(CatalogCategory category) labelOf,
 ) {
-  return [for (final category in categories) AssistCategoryHint(id: category.isSeed ? category.name : category.id, label: labelOf(category))];
+  final parents = {for (final category in categories) if (category.parentId != null) category.parentId!};
+  return [
+    for (final category in categories)
+      if (!parents.contains(category.id))
+        AssistCategoryHint(id: category.isSeed ? category.name : category.id, label: labelOf(category)),
+  ];
 }
 
 String buildAssistPrompt({
@@ -27,8 +32,7 @@ String buildAssistPrompt({
     ..writeln('Разбери позиции чека в каталог.')
     ..writeln('Язык приложения: $languageName. Названия товаров (products[].name) пиши на этом языке, без фасовки.')
     ..writeln('Названия позиций из чека не меняй и не переводи.')
-    ..writeln('У позиции укажи brand — производитель или марка, на языке приложения. Разные марки не сливай в одну позицию.')
-    ..writeln('В category пиши id из списка ниже, не подпись. Новую категорию создавай только если ни одна не подходит — имя на языке приложения.')
+    ..writeln('В category пиши id из списка ниже, не подпись. Новую категорию создавай только если ни одна не подходит — имя на языке приложения. Только низ или верх без детей.')
     ..writeln('Единицы: ${[for (final unit in ItemUnit.values) unit.name].join(', ')}.')
     ..writeln()
     ..writeln('Категории:');
@@ -55,9 +59,6 @@ String buildAssistPrompt({
     final size = position.unitSize;
     buffer.write('  {"id": "${position.id}", "name": ${_jsonString(position.displayName)}');
     if (size != null) buffer.write(', "unitSize": $size');
-    if (position.brand != null && position.brand!.isNotEmpty) {
-      buffer.write(', "brand": ${_jsonString(position.brand!)}');
-    }
     buffer.write('}');
     if (i != positions.length - 1) buffer.write(',');
     buffer.writeln();
@@ -74,7 +75,7 @@ String buildAssistPrompt({
     ..writeln('      "category": "#dairyEggs",')
     ..writeln('      "unit": "l",')
     ..writeln('      "existingProductId": null,')
-    ..writeln('      "positions": [{"id": "<id из списка>", "unitSize": 1.7, "brand": "Леб"}]')
+      ..writeln('      "positions": [{"id": "<id из списка>", "unitSize": 1.7}]')
     ..writeln('    }')
     ..writeln('  ]')
     ..writeln('}');

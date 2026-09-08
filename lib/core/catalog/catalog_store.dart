@@ -1,15 +1,18 @@
 import 'package:flutter/foundation.dart';
 
+import '../merchant/merchant.dart';
 import '../models/receipt_record.dart';
-import 'catalog_category.dart';
-import 'catalog_position.dart';
-import 'catalog_product.dart';
 import 'assist_apply.dart';
 import 'assist_cluster.dart';
 import 'assist_draft.dart';
+import 'catalog_category.dart';
+import 'catalog_position.dart';
+import 'catalog_product.dart';
 import 'catalog_repository.dart';
 import 'catalog_resolver.dart';
 import 'item_unit.dart';
+import 'name_stem.dart';
+import 'product_kind.dart';
 
 class CatalogStore extends ChangeNotifier {
   CatalogStore({required this._repository});
@@ -20,8 +23,11 @@ class CatalogStore extends ChangeNotifier {
   List<CatalogCategory> categories = const [];
   List<CatalogProduct> products = const [];
   List<CatalogPosition> positions = const [];
+  List<Merchant> merchants = const [];
 
   List<CatalogPosition> get unassigned => [for (final position in positions) if (position.productId == null) position];
+
+  List<CatalogCategory> get topCategories => [for (final category in categories) if (category.isTop) category];
 
   List<UnassignedCluster>? _unassignedClusters;
   Map<String, int>? _positionCounts;
@@ -44,15 +50,11 @@ class CatalogStore extends ChangeNotifier {
     return index;
   }
 
-  Future<void> ingest(List<ReceiptRecord> receipts) async {
-    final names = <String>{};
-    for (final receipt in receipts) {
-      for (final item in receipt.receipt.items) {
-        if (item.description.isNotEmpty) names.add(item.description);
-      }
-    }
-    await _repository.ingest(names);
+  Future<void> ingest(List<ReceiptRecord> receipts, {Iterable<Merchant> merchants = const []}) async {
+    this.merchants = merchants.toList();
+    await _repository.ingestFromReceipts(receipts, this.merchants);
     await reload();
+    await _repository.rebuildPurchases(receipts: receipts, merchants: this.merchants);
   }
 
   Future<void> reload() async {
@@ -66,6 +68,18 @@ class CatalogStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  List<CatalogCategory> childrenOf(String categoryId) {
+    return [for (final category in categories) if (category.parentId == categoryId) category];
+  }
+
+  bool hasChildren(String categoryId) => childrenOf(categoryId).isNotEmpty;
+
+  List<CatalogCategory> assignableCategories() {
+    return [for (final category in categories) if (!hasChildren(category.id)) category];
+  }
+
+  List<CatalogCategory> topCategoriesOnly() => topCategories;
+
   List<CatalogPosition> suggestionsFor(CatalogPosition position) {
     for (final cluster in unassignedClusters) {
       if (cluster.positions.length < 2) continue;
@@ -75,13 +89,34 @@ class CatalogStore extends ChangeNotifier {
     return const [];
   }
 
+  List<CatalogPosition> searchAttachableItems(String productId, String query) {
+    final needle = query.trim().toLowerCase();
+    if (needle.isEmpty) return const [];
+    return [
+      for (final item in positions)
+        if (item.productId != productId && item.displayName.toLowerCase().contains(needle)) item,
+    ];
+  }
+
+  List<CatalogPosition> similarCandidatesFor(String productId) {
+    final product = productById(productId);
+    if (product == null) return const [];
+    final stem = itemNameStem(product.name);
+    if (stem.isEmpty) return const [];
+    return [
+      for (final cluster in unassignedClusters)
+        if (stemsSimilar(itemNameStem(cluster.name), stem)) ...cluster.positions,
+    ];
+  }
+
   Future<CatalogProduct> createProductWithPositions({
     required String name,
     String? categoryId,
     ItemUnit? unit,
+    ProductKind kind = ProductKind.good,
     required List<String> positionIds,
   }) async {
-    final product = await _repository.createProduct(name: name, categoryId: categoryId, unit: unit);
+    final product = await _repository.createProduct(name: name, categoryId: categoryId, unit: unit, kind: kind);
     for (final positionId in positionIds) {
       await _repository.assignPosition(positionId, product.id);
     }
@@ -112,8 +147,9 @@ class CatalogStore extends ChangeNotifier {
     String? categoryId,
     String? positionId,
     ItemUnit? unit,
+    ProductKind kind = ProductKind.good,
   }) async {
-    final product = await _repository.createProduct(name: name, categoryId: categoryId, unit: unit);
+    final product = await _repository.createProduct(name: name, categoryId: categoryId, unit: unit, kind: kind);
     if (positionId != null) {
       await _repository.assignPosition(positionId, product.id);
     }
@@ -133,6 +169,7 @@ class CatalogStore extends ChangeNotifier {
     bool clearCategory = false,
     ItemUnit? unit,
     bool clearUnit = false,
+    ProductKind? kind,
   }) async {
     await _repository.updateProduct(
       id,
@@ -141,6 +178,7 @@ class CatalogStore extends ChangeNotifier {
       clearCategory: clearCategory,
       unit: unit,
       clearUnit: clearUnit,
+      kind: kind,
     );
     await reload();
   }
@@ -161,20 +199,19 @@ class CatalogStore extends ChangeNotifier {
     await reload();
   }
 
-  Future<void> updatePosition(
-    String id, {
-    double? unitSize,
-    bool clearAmount = false,
-    String? brand,
-    bool clearBrand = false,
-  }) async {
-    await _repository.updatePosition(
-      id,
-      unitSize: unitSize,
-      clearAmount: clearAmount,
-      brand: brand,
-      clearBrand: clearBrand,
-    );
+  Future<void> addItemTag(String itemId, String name) async {
+    if (name.trim().isEmpty) return;
+    await _repository.addItemTag(itemId, name);
+    await reload();
+  }
+
+  Future<void> removeItemTag(String itemId, String tagId) async {
+    await _repository.removeItemTag(itemId, tagId);
+    await reload();
+  }
+
+  Future<void> updatePosition(String id, {double? unitSize, bool clearAmount = false}) async {
+    await _repository.updatePosition(id, unitSize: unitSize, clearAmount: clearAmount);
     await reload();
   }
 
@@ -183,9 +220,9 @@ class CatalogStore extends ChangeNotifier {
     await reload();
   }
 
-  Future<void> createCategory(String name) async {
+  Future<void> createCategory(String name, {String? parentId}) async {
     if (name.trim().isEmpty) return;
-    await _repository.createCategory(name);
+    await _repository.createCategory(name, parentId: parentId);
     await reload();
   }
 

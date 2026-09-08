@@ -3,11 +3,17 @@ class CatalogCategory {
     required this.id,
     required this.name,
     required this.sortOrder,
-    required this.isSeed,
+    this.parentId,
+    this.icon,
   });
 
   final String id;
   final String name;
+  final String? parentId;
   final int sortOrder;
-  final bool isSeed;
+  final String? icon;
+
+  bool get isSeed => name.startsWith('#');
+
+  bool get isTop => parentId == null;
 }

@@ -284,11 +284,14 @@ class _CategoriesTab extends StatelessWidget {
         Expanded(
           child: ListView.separated(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            itemCount: state.catalog.categories.length,
+            itemCount: state.catalog.topCategories.length,
             separatorBuilder: (context, index) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
-              final category = state.catalog.categories[index];
-              final count = state.catalog.products.where((product) => product.categoryId == category.id).length;
+              final category = state.catalog.topCategories[index];
+              final childIds = {for (final child in state.catalog.childrenOf(category.id)) child.id};
+              final count = state.catalog.products.where((product) {
+                return product.categoryId == category.id || childIds.contains(product.categoryId);
+              }).length;
               return ListTile(
                 tileColor: Colors.white,
                 shape: RoundedRectangleBorder(

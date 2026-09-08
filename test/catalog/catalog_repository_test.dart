@@ -34,8 +34,12 @@ void main() {
 
   test('seeds categories on a fresh database', () async {
     final categories = await catalog.listCategories();
-    expect(categories.map((e) => e.name), containsAll(['#dairyEggs', '#other']));
+    expect(categories.map((e) => e.name), containsAll(['#dairyEggs', '#other', '#products']));
     expect(categories.every((e) => e.isSeed), isTrue);
+    final products = categories.firstWhere((e) => e.name == '#products');
+    final dairy = categories.firstWhere((e) => e.name == '#dairyEggs');
+    expect(products.parentId, isNull);
+    expect(dairy.parentId, products.id);
   });
 
   test('ingest creates a position with parsed size only once', () async {
@@ -86,13 +90,15 @@ void main() {
     expect((await catalog.listProducts()).single.unit, ItemUnit.piece);
   });
 
-  test('updatePosition can set brand and pack size', () async {
+  test('updatePosition can set pack size and item tags', () async {
     await catalog.ingest(['Молоко Леб 2.5% 1.7л']);
     final id = (await catalog.listPositions()).single.id;
-    await catalog.updatePosition(id, brand: 'Леб');
-    expect((await catalog.listPositions()).single.brand, 'Леб');
-    await catalog.updatePosition(id, clearBrand: true);
-    expect((await catalog.listPositions()).single.brand, isNull);
+    await catalog.updatePosition(id, unitSize: 1.75);
+    expect((await catalog.listPositions()).single.unitSize, 1.75);
+    await catalog.addItemTag(id, 'премиум');
+    expect((await catalog.listPositions()).single.tags.single.name, 'премиум');
+    await catalog.removeItemTag(id, (await catalog.listPositions()).single.tags.single.id);
+    expect((await catalog.listPositions()).single.tags, isEmpty);
   });
 
   test('updateProduct can set and clear the unit', () async {
@@ -229,5 +235,23 @@ void main() {
     expect((await catalogRepo.listProducts()).single.unit, ItemUnit.l);
     expect((await catalogRepo.listPositions()).single.unitSize, 1.5);
     await migrated.close();
+  });
+
+  test('createCategory rejects a grandchild', () async {
+    final top = (await catalog.listCategories()).firstWhere((e) => e.name == '#products');
+    final leaf = (await catalog.listCategories()).firstWhere((e) => e.name == '#dairyEggs');
+    expect(leaf.parentId, top.id);
+    expect(() => catalog.createCategory('Слишком глубоко', parentId: leaf.id), throwsStateError);
+  });
+
+  test('item tags share the dictionary with product tags', () async {
+    await catalog.ingest(['Молоко']);
+    final product = await catalog.createProduct(name: 'Молоко');
+    await catalog.addProductTag(product.id, 'снеки');
+    final item = (await catalog.listPositions()).single;
+    await catalog.addItemTag(item.id, 'снеки');
+    expect((await catalog.listProducts()).single.tags.single.name, 'снеки');
+    expect((await catalog.listPositions()).single.tags.single.name, 'снеки');
+    expect((await catalog.listProducts()).single.tags.single.id, (await catalog.listPositions()).single.tags.single.id);
   });
 }

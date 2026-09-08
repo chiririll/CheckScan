@@ -21,6 +21,7 @@ class ReceiptRecord {
     required this.scannedAt,
     required this.rawQr,
     this.lastStatus = statusOk,
+    this.merchantId,
   });
 
   final String id;
@@ -36,6 +37,7 @@ class ReceiptRecord {
   final DateTime scannedAt;
   final String rawQr;
   final int lastStatus;
+  final String? merchantId;
 
   EqReceipt? _cached;
 
@@ -101,6 +103,7 @@ class ReceiptRecord {
       scannedAt: scannedAt,
       rawQr: rawQr,
       lastStatus: lastStatus ?? this.lastStatus,
+      merchantId: merchantId,
     );
   }
 }

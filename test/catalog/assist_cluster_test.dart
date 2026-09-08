@@ -49,6 +49,27 @@ void main() {
     expect(cluster.hiddenCount, 2);
   });
 
+  test('does not glue two brands that only share the first token', () {
+    const a = CatalogPosition(id: 'a', displayName: 'Haribo Goldbaren 100g');
+    const b = CatalogPosition(id: 'b', displayName: 'Haribo Roulette 25g');
+    final clusters = clusterUnassigned([a, b]);
+    expect(clusters.every((cluster) => cluster.length == 1), isTrue);
+  });
+
+  test('keeps a bus ticket out of a food cluster', () {
+    const milk = CatalogPosition(id: 'm', displayName: 'Молоко 1л');
+    const ticket = CatalogPosition(id: 't', displayName: 'Bulevar Cara Lazara-Šekspirova - Terminal /ком');
+    final clusters = clusterUnassigned([milk, ticket]);
+    expect(clusters, hasLength(2));
+  });
+
+  test('hard-caps a cluster so 40 milks do not become one product', () {
+    final positions = [
+      for (var i = 0; i < 40; i++) CatalogPosition(id: '$i', displayName: 'Молоко $i 1л'),
+    ];
+    expect(clusterUnassigned(positions).every((cluster) => cluster.length <= assistClusterLimit), isTrue);
+  });
+
   test('picks similar products by stem', () {
     const batch = [CatalogPosition(id: 'p', displayName: 'Молоко Леб 2.5% 1.7л')];
     const products = [
