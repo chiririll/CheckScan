@@ -2,6 +2,8 @@
   "@@locale": "ru",
   "appTitle": "CheckScan",
   "tabHome": "Главная",
+  "tabCatalog": "Каталог",
+  "tabList": "Список",
   "tabHistory": "История",
   "scan": "Скан",
   "onboard1Title": "Чеки всегда под рукой",
@@ -283,5 +285,30 @@
   },
   "wasteByLeaf": "Категории",
   "wasteByTag": "Теги",
-  "noUnitPrice": "Нет ₽/ед"
+  "noUnitPrice": "Нет ₽/ед",
+  "listTitle": "Список",
+  "listEmptyTitle": "Пока нечего брать",
+  "listEmptyBody": "Соберите товары и укажите фасовку — здесь появятся упаковки и где дешевле.",
+  "listPacks": "{count, plural, one{{count} упаковка} few{{count} упаковки} many{{count} упаковок} other{{count} упаковки}}",
+  "@listPacks": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "scanNoQr": "Без QR",
+  "manualReceiptTitle": "Ручной чек",
+  "manualMerchant": "Магазин",
+  "manualMerchantHint": "Как на рынке или в магазине",
+  "manualDate": "Дата",
+  "manualAddLine": "Добавить товар",
+  "manualQuantity": "Количество",
+  "manualPrice": "Цена за единицу",
+  "manualEmptyLines": "Добавьте известные товары",
+  "manualSave": "Сохранить",
+  "manualNeedMerchant": "Укажите магазин",
+  "manualNeedLines": "Добавьте хотя бы одну строку",
+  "manualProductHint": "Товар из каталога",
+  "manualNoProducts": "Сначала соберите товары в каталоге",
+  "exportCsv": "Экспорт CSV",
+  "exportCsvSubject": "Категории CheckScan"
 }

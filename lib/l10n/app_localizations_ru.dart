@@ -16,6 +16,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get tabHome => 'Главная';
 
   @override
+  String get tabCatalog => 'Каталог';
+
+  @override
+  String get tabList => 'Список';
+
+  @override
   String get tabHistory => 'История';
 
   @override
@@ -697,4 +703,75 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get noUnitPrice => 'Нет ₽/ед';
+
+  @override
+  String get listTitle => 'Список';
+
+  @override
+  String get listEmptyTitle => 'Пока нечего брать';
+
+  @override
+  String get listEmptyBody =>
+      'Соберите товары и укажите фасовку — здесь появятся упаковки и где дешевле.';
+
+  @override
+  String listPacks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count упаковки',
+      many: '$count упаковок',
+      few: '$count упаковки',
+      one: '$count упаковка',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scanNoQr => 'Без QR';
+
+  @override
+  String get manualReceiptTitle => 'Ручной чек';
+
+  @override
+  String get manualMerchant => 'Магазин';
+
+  @override
+  String get manualMerchantHint => 'Как на рынке или в магазине';
+
+  @override
+  String get manualDate => 'Дата';
+
+  @override
+  String get manualAddLine => 'Добавить товар';
+
+  @override
+  String get manualQuantity => 'Количество';
+
+  @override
+  String get manualPrice => 'Цена за единицу';
+
+  @override
+  String get manualEmptyLines => 'Добавьте известные товары';
+
+  @override
+  String get manualSave => 'Сохранить';
+
+  @override
+  String get manualNeedMerchant => 'Укажите магазин';
+
+  @override
+  String get manualNeedLines => 'Добавьте хотя бы одну строку';
+
+  @override
+  String get manualProductHint => 'Товар из каталога';
+
+  @override
+  String get manualNoProducts => 'Сначала соберите товары в каталоге';
+
+  @override
+  String get exportCsv => 'Экспорт CSV';
+
+  @override
+  String get exportCsvSubject => 'Категории CheckScan';
 }

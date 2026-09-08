@@ -106,6 +106,18 @@ abstract class AppLocalizations {
   /// **'Главная'**
   String get tabHome;
 
+  /// No description provided for @tabCatalog.
+  ///
+  /// In ru, this message translates to:
+  /// **'Каталог'**
+  String get tabCatalog;
+
+  /// No description provided for @tabList.
+  ///
+  /// In ru, this message translates to:
+  /// **'Список'**
+  String get tabList;
+
   /// No description provided for @tabHistory.
   ///
   /// In ru, this message translates to:
@@ -1365,6 +1377,126 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Нет ₽/ед'**
   String get noUnitPrice;
+
+  /// No description provided for @listTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Список'**
+  String get listTitle;
+
+  /// No description provided for @listEmptyTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пока нечего брать'**
+  String get listEmptyTitle;
+
+  /// No description provided for @listEmptyBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Соберите товары и укажите фасовку — здесь появятся упаковки и где дешевле.'**
+  String get listEmptyBody;
+
+  /// No description provided for @listPacks.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} упаковка} few{{count} упаковки} many{{count} упаковок} other{{count} упаковки}}'**
+  String listPacks(int count);
+
+  /// No description provided for @scanNoQr.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без QR'**
+  String get scanNoQr;
+
+  /// No description provided for @manualReceiptTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ручной чек'**
+  String get manualReceiptTitle;
+
+  /// No description provided for @manualMerchant.
+  ///
+  /// In ru, this message translates to:
+  /// **'Магазин'**
+  String get manualMerchant;
+
+  /// No description provided for @manualMerchantHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Как на рынке или в магазине'**
+  String get manualMerchantHint;
+
+  /// No description provided for @manualDate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Дата'**
+  String get manualDate;
+
+  /// No description provided for @manualAddLine.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить товар'**
+  String get manualAddLine;
+
+  /// No description provided for @manualQuantity.
+  ///
+  /// In ru, this message translates to:
+  /// **'Количество'**
+  String get manualQuantity;
+
+  /// No description provided for @manualPrice.
+  ///
+  /// In ru, this message translates to:
+  /// **'Цена за единицу'**
+  String get manualPrice;
+
+  /// No description provided for @manualEmptyLines.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавьте известные товары'**
+  String get manualEmptyLines;
+
+  /// No description provided for @manualSave.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранить'**
+  String get manualSave;
+
+  /// No description provided for @manualNeedMerchant.
+  ///
+  /// In ru, this message translates to:
+  /// **'Укажите магазин'**
+  String get manualNeedMerchant;
+
+  /// No description provided for @manualNeedLines.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавьте хотя бы одну строку'**
+  String get manualNeedLines;
+
+  /// No description provided for @manualProductHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Товар из каталога'**
+  String get manualProductHint;
+
+  /// No description provided for @manualNoProducts.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала соберите товары в каталоге'**
+  String get manualNoProducts;
+
+  /// No description provided for @exportCsv.
+  ///
+  /// In ru, this message translates to:
+  /// **'Экспорт CSV'**
+  String get exportCsv;
+
+  /// No description provided for @exportCsvSubject.
+  ///
+  /// In ru, this message translates to:
+  /// **'Категории CheckScan'**
+  String get exportCsvSubject;
 }
 
 class _AppLocalizationsDelegate

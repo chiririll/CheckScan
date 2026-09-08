@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import '../../core/app_state.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
+import '../catalog/catalog_page.dart';
 import '../history/history_page.dart';
 import '../home/home_page.dart';
+import '../list/list_page.dart';
 import '../scan/scan_page.dart';
 
 class AppShell extends StatefulWidget {
@@ -29,6 +31,8 @@ class _AppShellState extends State<AppShell> {
           index: _tab,
           children: [
             HomePage(state: widget.state),
+            CatalogPage(state: widget.state),
+            ListPage(state: widget.state),
             HistoryPage(state: widget.state),
           ],
         ),
@@ -47,8 +51,10 @@ class _AppShellState extends State<AppShell> {
                 child: Row(
                   children: [
                     _Tab(label: l10n.tabHome, active: _tab == 0, onTap: () => setState(() => _tab = 0)),
+                    _Tab(label: l10n.tabCatalog, active: _tab == 1, onTap: () => setState(() => _tab = 1)),
                     const SizedBox(width: 64),
-                    _Tab(label: l10n.tabHistory, active: _tab == 1, onTap: () => setState(() => _tab = 1)),
+                    _Tab(label: l10n.tabList, active: _tab == 2, onTap: () => setState(() => _tab = 2)),
+                    _Tab(label: l10n.tabHistory, active: _tab == 3, onTap: () => setState(() => _tab = 3)),
                   ],
                 ),
               ),
