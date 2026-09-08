@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
-import '../../core/catalog/category_label.dart';
 import '../../core/format.dart';
-import '../../core/models/receipt_record.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 import '../catalog/catalog_nav.dart';
 import '../catalog/catalog_page.dart';
-import '../catalog/category_page.dart';
-import '../catalog/product_page.dart';
+import '../catalog/unit_labels.dart';
+import '../merchant/merchants_page.dart';
 import '../settings/settings_page.dart';
 import '../widgets/empty_hint.dart';
-import 'home_stats.dart';
+import 'frequent_page.dart';
+import 'home_block.dart';
+import 'home_dashboard.dart';
+import 'home_period.dart';
+import 'prices_page.dart';
+import 'waste_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key, required this.state});
@@ -98,10 +101,10 @@ class _HomeBodyState extends State<_HomeBody> {
                 ? TabBarView(
                     children: [
                       for (final currency in currencies)
-                        _StatsPane(state: widget.state, receipts: receipts, period: _period, currency: currency),
+                        _DashboardPane(state: widget.state, period: _period, currency: currency),
                     ],
                   )
-                : _StatsPane(state: widget.state, receipts: receipts, period: _period, currency: currencies.first),
+                : _DashboardPane(state: widget.state, period: _period, currency: currencies.first),
           ),
         ],
       ),
@@ -146,26 +149,29 @@ class _PeriodBar extends StatelessWidget {
   }
 }
 
-class _StatsPane extends StatelessWidget {
-  const _StatsPane({required this.state, required this.receipts, required this.period, required this.currency});
+class _DashboardPane extends StatelessWidget {
+  const _DashboardPane({required this.state, required this.period, required this.currency});
 
   final AppState state;
-  final List<ReceiptRecord> receipts;
   final HomePeriod period;
   final String currency;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final stats = HomeStats.of(
-      receipts,
+    final dash = HomeDashboard.of(
+      receipts: state.receipts,
+      purchases: state.catalog.purchases,
+      products: state.catalog.products,
+      categories: state.catalog.categories,
+      positions: state.catalog.positions,
+      merchants: state.merchantList,
+      resolver: state.catalog.resolver,
       period: period,
       currency: currency,
       fallbackMerchant: l10n.receiptTitle,
-      resolver: state.catalog.resolver,
-      uncategorized: l10n.uncategorized,
     );
-    if (stats.isEmpty) {
+    if (dash.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(28, 8, 28, 20),
@@ -180,144 +186,89 @@ class _StatsPane extends StatelessWidget {
         ),
       );
     }
-    final maxCount = stats.top.isEmpty ? 1 : stats.top.first.count;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       children: [
         Row(
           children: [
-            Expanded(child: _Metric(value: formatMoney(stats.spent, currency), label: l10n.spent)),
+            Expanded(child: HomeMetric(value: formatMoney(dash.spent, currency), label: l10n.spent)),
             const SizedBox(width: 12),
-            Expanded(child: _Metric(value: '${stats.receiptCount}', label: l10n.receiptCount)),
+            Expanded(child: HomeMetric(value: '${dash.receiptCount}', label: l10n.receiptCount)),
           ],
         ),
-        if (stats.top.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          Text(l10n.mostOften, style: const TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          ...stats.top.map(
-            (e) => _Bar(
-              name: e.name,
-              label: l10n.timesCount(e.count),
-              pct: e.count / maxCount,
-              onTap: e.productId == null
-                  ? null
-                  : () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(builder: (_) => ProductPage(state: state, productId: e.productId!)),
+        const SizedBox(height: 16),
+        HomeBlock(
+          title: l10n.pricesBlock,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => PricesPage(state: state, rows: dash.priceRows, currency: currency)),
+          ),
+          child: dash.prices == null
+              ? HomeBlockHint(l10n.pricesEmptyBody)
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(dash.prices!.productName),
+                    const SizedBox(height: 2),
+                    Text(
+                      formatUnitPrice(dash.prices!.perUnit, dash.prices!.unit, currency, l10n),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
+                    Text(l10n.cheaperAt(dash.prices!.networkName), style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                  ],
+                ),
+        ),
+        const SizedBox(height: 10),
+        HomeBlock(
+          title: l10n.wasteBlock,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => WastePage(state: state, leaves: dash.wasteLeaves, tags: dash.wasteTags, currency: currency),
             ),
           ),
-        ],
-        if (stats.categories.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          Text(l10n.byCategory, style: const TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          ...stats.categories.map((e) {
-            final maxSpent = stats.categories.first.spent;
-            return _Bar(
-              name: categoryLabel(e.name, l10n),
-              label: formatMoney(e.spent, currency),
-              pct: maxSpent == 0 ? 0 : e.spent / maxSpent,
-              onTap: e.categoryId == null
-                  ? null
-                  : () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(builder: (_) => CategoryPage(state: state, categoryId: e.categoryId!)),
-                    ),
-            );
-          }),
-        ],
-        if (stats.cheaper.isNotEmpty && stats.cheaperKey != null) ...[
-          const SizedBox(height: 20),
-          Text(l10n.cheaperWhere(stats.cheaperKey!), style: const TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          ...stats.cheaper.map(
-            (e) => _Compare(
-              store: e.store,
-              price: formatMoney(e.price, currency),
-              best: e.store == stats.cheaper.first.store,
-            ),
+          child: dash.wasteTotal <= 0
+              ? HomeBlockHint(l10n.wasteEmptyBody)
+              : Text(formatMoney(dash.wasteTotal, currency), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+        ),
+        const SizedBox(height: 10),
+        HomeBlock(
+          title: l10n.frequentBlock,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => FrequentPage(state: state, items: dash.frequent)),
           ),
-        ],
+          child: dash.frequent.isEmpty
+              ? HomeBlockHint(l10n.frequentEmptyBody)
+              : Column(
+                  children: [
+                    for (final item in dash.frequent.take(3))
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Row(
+                          children: [
+                            Expanded(child: Text(item.name)),
+                            Text(l10n.timesCount(item.count), style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+        ),
+        const SizedBox(height: 10),
+        HomeBlock(
+          title: l10n.merchantsBlock,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => MerchantsPage(state: state)),
+          ),
+          child: dash.merchants.isEmpty
+              ? HomeBlockHint(l10n.merchantsEmptyBody)
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l10n.merchantsWithoutNetwork(dash.merchants.withoutNetwork)),
+                    Text(l10n.merchantsIgnorePolicy(dash.merchants.ignoreCount), style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                  ],
+                ),
+        ),
       ],
-    );
-  }
-}
-
-class _Metric extends StatelessWidget {
-  const _Metric({required this.value, required this.label});
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 2),
-        Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-      ],
-    );
-  }
-}
-
-class _Bar extends StatelessWidget {
-  const _Bar({required this.name, required this.label, required this.pct, this.onTap});
-  final String name;
-  final String label;
-  final double pct;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final bar = Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(child: Text(name)),
-              Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-            ],
-          ),
-          const SizedBox(height: 4),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(99),
-            child: LinearProgressIndicator(
-              value: pct.clamp(0.05, 1),
-              minHeight: 6,
-              color: AppColors.primary,
-              backgroundColor: const Color(0xFFE4EEEC),
-            ),
-          ),
-        ],
-      ),
-    );
-    if (onTap == null) return bar;
-    return InkWell(onTap: onTap, child: bar);
-  }
-}
-
-class _Compare extends StatelessWidget {
-  const _Compare({required this.store, required this.price, required this.best});
-  final String store;
-  final String price;
-  final bool best;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: best ? const Color(0xFFE4EEEC) : null,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Expanded(child: Text(store, style: TextStyle(fontWeight: best ? FontWeight.w600 : FontWeight.w400))),
-          Text(price, style: const TextStyle(fontWeight: FontWeight.w600)),
-        ],
-      ),
     );
   }
 }

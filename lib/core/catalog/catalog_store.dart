@@ -27,6 +27,7 @@ class CatalogStore extends ChangeNotifier {
   List<Merchant> merchants = const [];
   List<Purchase> purchases = const [];
   List<ReceiptRecord> _receipts = const [];
+  bool _hasReceiptsBound = false;
 
   List<CatalogPosition> get unassigned => [for (final position in positions) if (position.productId == null) position];
 
@@ -56,6 +57,7 @@ class CatalogStore extends ChangeNotifier {
   Future<void> ingest(List<ReceiptRecord> receipts, {Iterable<Merchant> merchants = const []}) async {
     _receipts = List.of(receipts);
     this.merchants = merchants.toList();
+    _hasReceiptsBound = true;
     await _repository.ingestFromReceipts(_receipts, this.merchants);
     await reload();
     await _rebuildPurchases();
@@ -80,6 +82,10 @@ class CatalogStore extends ChangeNotifier {
   }
 
   Future<void> _rebuildPurchases() async {
+    if (!_hasReceiptsBound) {
+      purchases = const [];
+      return;
+    }
     await _repository.rebuildPurchases(receipts: _receipts, merchants: this.merchants);
     purchases = await _repository.listPurchases();
   }

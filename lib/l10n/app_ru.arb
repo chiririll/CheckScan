@@ -18,7 +18,7 @@
   "settingsTitle": "Настройки",
   "receiptTitle": "Чек",
   "emptyHomeTitle": "Пока нет статистики",
-  "emptyHomeBody": "Отсканируйте первый чек — появятся траты, топ покупок и сравнение магазинов.",
+  "emptyHomeBody": "Отсканируйте первый чек — появятся цены, траты зря, темп и магазины.",
   "emptyHistoryTitle": "Пока нет чеков",
   "emptyHistoryBody": "Нажмите круглую кнопку внизу и наведите камеру на QR.",
   "spent": "Потрачено",
@@ -237,5 +237,51 @@
   "seedCategoryProducts": "Продукты",
   "seedCategoryHousehold": "Для дома",
   "seedCategoryCafe": "Кафе",
-  "seedCategoryTransport": "Транспорт"
+  "seedCategoryTransport": "Транспорт",
+  "pricesBlock": "Цены",
+  "wasteBlock": "Траты зря",
+  "frequentBlock": "Чаще всего",
+  "merchantsBlock": "Магазины",
+  "pricePerUnit": "{price}/{unit}",
+  "@pricePerUnit": {
+    "placeholders": {
+      "price": { "type": "String" },
+      "unit": { "type": "String" }
+    }
+  },
+  "cheaperAt": "дешевле в {store}",
+  "@cheaperAt": {
+    "placeholders": {
+      "store": { "type": "String" }
+    }
+  },
+  "pricesEmptyTitle": "Нет цены за единицу",
+  "pricesEmptyBody": "Укажите фасовку и единицу товара — сравним ₽/кг и ₽/л, а не пачки.",
+  "wasteEmptyTitle": "Пока нечего считать",
+  "wasteEmptyBody": "Повесьте товары на нижние категории или теги.",
+  "frequentEmptyTitle": "Пока нет темпа",
+  "frequentEmptyBody": "Соберите товары из чеков — здесь будет, что берут чаще.",
+  "merchantsWithoutNetwork": "{count} без сети",
+  "@merchantsWithoutNetwork": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "merchantsIgnorePolicy": "{count} не разбирать",
+  "@merchantsIgnorePolicy": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "merchantsEmptyBody": "Магазины появятся из чеков.",
+  "priceDynamics": "Динамика",
+  "referencePack": "Эталон {pack}",
+  "@referencePack": {
+    "placeholders": {
+      "pack": { "type": "String" }
+    }
+  },
+  "wasteByLeaf": "Категории",
+  "wasteByTag": "Теги",
+  "noUnitPrice": "Нет ₽/ед"
 }

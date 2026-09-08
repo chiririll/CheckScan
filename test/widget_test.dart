@@ -4,7 +4,7 @@ import 'package:checkscan/core/format.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
 import 'package:checkscan/core/scan/native_adapter.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
-import 'package:checkscan/features/home/home_stats.dart';
+import 'package:checkscan/features/home/home_period.dart';
 import 'package:eq_models/eq_models.dart';
 
 import 'scan/fake_native_adapter.dart';
@@ -111,7 +111,10 @@ void main() {
     await tester.pump();
     expect(find.text('Потрачено'), findsOneWidget);
     expect(find.text('Чеков'), findsOneWidget);
-    expect(find.text('Молоко 1 л'), findsOneWidget);
+    expect(find.text('Цены'), findsOneWidget);
+    expect(find.text('Траты зря'), findsOneWidget);
+    expect(find.text('Чаще всего'), findsOneWidget);
+    expect(find.text('Магазины'), findsOneWidget);
 
     await tester.tap(find.text('История'));
     await tester.pump();
@@ -153,7 +156,7 @@ void main() {
     expect(find.text('₽'), findsOneWidget);
     expect(find.text('дин.'), findsOneWidget);
     expect(find.text(formatMoney(1247, 'RUB')), findsOneWidget);
-    expect(find.text('Молоко 1 л'), findsOneWidget);
+    expect(find.text('Цены'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Предыдущий период'));
     await tester.pump();
@@ -170,7 +173,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text(formatMonthYear(HomePeriod.current(now).asDate)), findsOneWidget);
     expect(find.text(formatMoney(500, 'RSD')), findsWidgets);
-    expect(find.text('Hleb'), findsOneWidget);
+    expect(find.text('Цены'), findsOneWidget);
   });
 
   testWidgets('home opens catalog from the app bar', (tester) async {

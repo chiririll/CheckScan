@@ -205,7 +205,7 @@ abstract class AppLocalizations {
   /// No description provided for @emptyHomeBody.
   ///
   /// In ru, this message translates to:
-  /// **'Отсканируйте первый чек — появятся траты, топ покупок и сравнение магазинов.'**
+  /// **'Отсканируйте первый чек — появятся цены, траты зря, темп и магазины.'**
   String get emptyHomeBody;
 
   /// No description provided for @emptyHistoryTitle.
@@ -1245,6 +1245,126 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Транспорт'**
   String get seedCategoryTransport;
+
+  /// No description provided for @pricesBlock.
+  ///
+  /// In ru, this message translates to:
+  /// **'Цены'**
+  String get pricesBlock;
+
+  /// No description provided for @wasteBlock.
+  ///
+  /// In ru, this message translates to:
+  /// **'Траты зря'**
+  String get wasteBlock;
+
+  /// No description provided for @frequentBlock.
+  ///
+  /// In ru, this message translates to:
+  /// **'Чаще всего'**
+  String get frequentBlock;
+
+  /// No description provided for @merchantsBlock.
+  ///
+  /// In ru, this message translates to:
+  /// **'Магазины'**
+  String get merchantsBlock;
+
+  /// No description provided for @pricePerUnit.
+  ///
+  /// In ru, this message translates to:
+  /// **'{price}/{unit}'**
+  String pricePerUnit(String price, String unit);
+
+  /// No description provided for @cheaperAt.
+  ///
+  /// In ru, this message translates to:
+  /// **'дешевле в {store}'**
+  String cheaperAt(String store);
+
+  /// No description provided for @pricesEmptyTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет цены за единицу'**
+  String get pricesEmptyTitle;
+
+  /// No description provided for @pricesEmptyBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Укажите фасовку и единицу товара — сравним ₽/кг и ₽/л, а не пачки.'**
+  String get pricesEmptyBody;
+
+  /// No description provided for @wasteEmptyTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пока нечего считать'**
+  String get wasteEmptyTitle;
+
+  /// No description provided for @wasteEmptyBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Повесьте товары на нижние категории или теги.'**
+  String get wasteEmptyBody;
+
+  /// No description provided for @frequentEmptyTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пока нет темпа'**
+  String get frequentEmptyTitle;
+
+  /// No description provided for @frequentEmptyBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Соберите товары из чеков — здесь будет, что берут чаще.'**
+  String get frequentEmptyBody;
+
+  /// No description provided for @merchantsWithoutNetwork.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count} без сети'**
+  String merchantsWithoutNetwork(int count);
+
+  /// No description provided for @merchantsIgnorePolicy.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count} не разбирать'**
+  String merchantsIgnorePolicy(int count);
+
+  /// No description provided for @merchantsEmptyBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Магазины появятся из чеков.'**
+  String get merchantsEmptyBody;
+
+  /// No description provided for @priceDynamics.
+  ///
+  /// In ru, this message translates to:
+  /// **'Динамика'**
+  String get priceDynamics;
+
+  /// No description provided for @referencePack.
+  ///
+  /// In ru, this message translates to:
+  /// **'Эталон {pack}'**
+  String referencePack(String pack);
+
+  /// No description provided for @wasteByLeaf.
+  ///
+  /// In ru, this message translates to:
+  /// **'Категории'**
+  String get wasteByLeaf;
+
+  /// No description provided for @wasteByTag.
+  ///
+  /// In ru, this message translates to:
+  /// **'Теги'**
+  String get wasteByTag;
+
+  /// No description provided for @noUnitPrice.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет ₽/ед'**
+  String get noUnitPrice;
 }
 
 class _AppLocalizationsDelegate

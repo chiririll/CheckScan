@@ -68,7 +68,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get emptyHomeBody =>
-      'Отсканируйте первый чек — появятся траты, топ покупок и сравнение магазинов.';
+      'Отсканируйте первый чек — появятся цены, траты зря, темп и магазины.';
 
   @override
   String get emptyHistoryTitle => 'Пока нет чеков';
@@ -625,4 +625,76 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get seedCategoryTransport => 'Транспорт';
+
+  @override
+  String get pricesBlock => 'Цены';
+
+  @override
+  String get wasteBlock => 'Траты зря';
+
+  @override
+  String get frequentBlock => 'Чаще всего';
+
+  @override
+  String get merchantsBlock => 'Магазины';
+
+  @override
+  String pricePerUnit(String price, String unit) {
+    return '$price/$unit';
+  }
+
+  @override
+  String cheaperAt(String store) {
+    return 'дешевле в $store';
+  }
+
+  @override
+  String get pricesEmptyTitle => 'Нет цены за единицу';
+
+  @override
+  String get pricesEmptyBody =>
+      'Укажите фасовку и единицу товара — сравним ₽/кг и ₽/л, а не пачки.';
+
+  @override
+  String get wasteEmptyTitle => 'Пока нечего считать';
+
+  @override
+  String get wasteEmptyBody => 'Повесьте товары на нижние категории или теги.';
+
+  @override
+  String get frequentEmptyTitle => 'Пока нет темпа';
+
+  @override
+  String get frequentEmptyBody =>
+      'Соберите товары из чеков — здесь будет, что берут чаще.';
+
+  @override
+  String merchantsWithoutNetwork(int count) {
+    return '$count без сети';
+  }
+
+  @override
+  String merchantsIgnorePolicy(int count) {
+    return '$count не разбирать';
+  }
+
+  @override
+  String get merchantsEmptyBody => 'Магазины появятся из чеков.';
+
+  @override
+  String get priceDynamics => 'Динамика';
+
+  @override
+  String referencePack(String pack) {
+    return 'Эталон $pack';
+  }
+
+  @override
+  String get wasteByLeaf => 'Категории';
+
+  @override
+  String get wasteByTag => 'Теги';
+
+  @override
+  String get noUnitPrice => 'Нет ₽/ед';
 }

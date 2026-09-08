@@ -15,6 +15,7 @@ import 'catalog_nav.dart';
 import 'catalog_trail.dart';
 import 'category_picker.dart';
 import 'product_item_search.dart';
+import 'product_prices.dart';
 import 'unit_labels.dart';
 
 class ProductPage extends StatelessWidget {
@@ -132,6 +133,7 @@ class ProductPage extends StatelessWidget {
                 onRemove: (tagId) => state.catalog.removeTag(product.id, tagId),
                 addLabel: l10n.addTag,
               ),
+              ProductPrices(state: state, product: product),
               const SizedBox(height: 16),
               Text(l10n.itemsSection, style: const TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),

@@ -35,3 +35,7 @@ String formatPositionPack(CatalogPosition position, CatalogProduct? product, App
 String formatPositionMeta(CatalogPosition position, CatalogProduct? product, AppLocalizations l10n) {
   return formatPositionPack(position, product, l10n);
 }
+
+String formatUnitPrice(double amount, ItemUnit unit, String currency, AppLocalizations l10n) {
+  return l10n.pricePerUnit(formatMoney(amount, currency), unitLabel(unit, l10n));
+}
