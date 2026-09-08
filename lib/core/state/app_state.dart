@@ -1,8 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:uuid/uuid.dart';
+
 import '../catalog/catalog_repository.dart';
 import '../catalog/catalog_store.dart';
+import '../manual/manual_receipt.dart';
 import '../merchant/merchant.dart';
 import '../merchant/merchant_repository.dart';
 import '../models/receipt_record.dart';
@@ -132,5 +135,39 @@ class AppState extends ChangeNotifier {
     final done = await _session.refreshPending();
     await reload();
     return done;
+  }
+
+  Future<ReceiptRecord> saveManualReceipt({
+    required String merchantName,
+    required DateTime issuedAt,
+    required List<ManualLine> lines,
+    String currency = 'RUB',
+  }) async {
+    final items = [for (final line in lines) line.asItem];
+    final wanted = {for (final line in lines) line.description: line.productId};
+    final receipt = withProviderLabel(
+      buildManualReceipt(
+        id: const Uuid().v4(),
+        issuedAt: issuedAt,
+        merchantName: merchantName.trim(),
+        items: items,
+        currency: currency,
+      ),
+      manualProviderId,
+    );
+    final saved = await _repository.upsertParsed(
+      qrHash: manualStorageKey(receipt),
+      adapterId: manualProviderId,
+      rawQr: '',
+      receipt: receipt,
+      lastStatus: statusOk,
+    );
+    await reload();
+    for (final entry in wanted.entries) {
+      final hit = catalog.resolver.resolve(entry.key);
+      if (hit == null || hit.position.productId == entry.value) continue;
+      await catalog.assignPosition(hit.position.id, entry.value);
+    }
+    return byId(saved.id) ?? saved;
   }
 }

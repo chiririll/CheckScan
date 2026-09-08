@@ -8,6 +8,7 @@ import '../../core/models/receipt_status.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 import '../receipt_detail/receipt_page.dart';
+import 'manual_receipt_page.dart';
 import 'widgets/scan_frame.dart';
 
 class ScanPage extends StatefulWidget {
@@ -138,6 +139,24 @@ class _ScanPageState extends State<ScanPage> {
     await _handleRaw(raw);
   }
 
+  Future<void> _openManual() async {
+    if (_busy) return;
+    await _controller.stop();
+    if (!mounted) return;
+    final id = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => ManualReceiptPage(state: widget.state), fullscreenDialog: true),
+    );
+    if (!mounted) return;
+    if (id != null) {
+      Navigator.of(context).pop();
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => ReceiptPage(state: widget.state, receiptId: id)),
+      );
+      return;
+    }
+    await _controller.start();
+  }
+
   Future<void> _ensureCamera() async {
     final status = await Permission.camera.status;
     if (status.isGranted) return;
@@ -197,6 +216,11 @@ class _ScanPageState extends State<ScanPage> {
                       IconButton(
                         onPressed: () => Navigator.pop(context),
                         icon: const Icon(Icons.close, color: Colors.white),
+                      ),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: _busy ? null : _openManual,
+                        child: Text(l10n.scanNoQr, style: const TextStyle(color: Colors.white)),
                       ),
                     ],
                   ),
