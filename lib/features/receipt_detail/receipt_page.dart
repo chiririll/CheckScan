@@ -19,8 +19,6 @@ class ReceiptPage extends StatefulWidget {
 }
 
 class _ReceiptPageState extends State<ReceiptPage> {
-  bool _busy = false;
-
   ReceiptRecord? get _record => widget.state.byId(widget.receiptId);
 
   Future<void> _confirmDelete() async {
@@ -52,7 +50,6 @@ class _ReceiptPageState extends State<ReceiptPage> {
   Future<void> _refresh() async {
     final current = _record;
     if (current == null) return;
-    setState(() => _busy = true);
     try {
       await widget.state.refreshReceipt(current);
     } catch (_) {
@@ -60,8 +57,6 @@ class _ReceiptPageState extends State<ReceiptPage> {
         final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.parseErrorBody)));
       }
-    } finally {
-      if (mounted) setState(() => _busy = false);
     }
   }
 
@@ -85,14 +80,11 @@ class _ReceiptPageState extends State<ReceiptPage> {
             title: _ReceiptCrumbs(l10n: l10n),
             actions: [
               PopupMenuButton<String>(
-                enabled: !_busy,
                 tooltip: l10n.receiptActions,
                 onSelected: (value) {
-                  if (value == 'refresh') _refresh();
                   if (value == 'delete') _confirmDelete();
                 },
                 itemBuilder: (context) => [
-                  PopupMenuItem(value: 'refresh', child: Text(l10n.refreshReceipt)),
                   PopupMenuItem(
                     value: 'delete',
                     child: Text(l10n.deleteReceipt, style: const TextStyle(color: Color(0xFFC62828))),
@@ -101,49 +93,46 @@ class _ReceiptPageState extends State<ReceiptPage> {
               ),
             ],
           ),
-          body: Column(
-            children: [
-              if (_busy) const LinearProgressIndicator(minHeight: 2),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          body: RefreshIndicator(
+            onRefresh: _refresh,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18))),
-                        if (record.providerLabel.isNotEmpty) _Chip(record.providerLabel),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(formatDateTime(when), style: TextStyle(color: Colors.grey.shade600)),
-                    const SizedBox(height: 8),
-                    Text(
-                      formatMoney(record.grandTotal, record.currency),
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.fade,
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
-                    ),
-                    if (record.status == ReceiptStatus.error) ...[
-                      const SizedBox(height: 12),
-                      Text(l10n.parseErrorBody, style: TextStyle(color: Colors.grey.shade700)),
-                    ] else if (receipt.items.isEmpty) ...[
-                      const SizedBox(height: 12),
-                      Text(
-                        record.itemsUnavailable || record.status == ReceiptStatus.ok
-                            ? l10n.noItemsBanner
-                            : l10n.missingItemsHint,
-                        style: TextStyle(color: Colors.grey.shade700),
-                      ),
-                    ],
-                    if (receipt.items.isNotEmpty) ReceiptItemList(state: widget.state, record: record),
-                    const SizedBox(height: 8),
-                    const Divider(),
-                    ReceiptMetadataTile(record: record),
+                    Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18))),
+                    if (record.providerLabel.isNotEmpty) _Chip(record.providerLabel),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(formatDateTime(when), style: TextStyle(color: Colors.grey.shade600)),
+                const SizedBox(height: 8),
+                Text(
+                  formatMoney(record.grandTotal, record.currency),
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.fade,
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+                ),
+                if (record.status == ReceiptStatus.error) ...[
+                  const SizedBox(height: 12),
+                  Text(l10n.parseErrorBody, style: TextStyle(color: Colors.grey.shade700)),
+                ] else if (receipt.items.isEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    record.itemsUnavailable || record.status == ReceiptStatus.ok
+                        ? l10n.noItemsBanner
+                        : l10n.missingItemsHint,
+                    style: TextStyle(color: Colors.grey.shade700),
+                  ),
+                ],
+                if (receipt.items.isNotEmpty) ReceiptItemList(state: widget.state, record: record),
+                const SizedBox(height: 8),
+                const Divider(),
+                ReceiptMetadataTile(record: record),
+              ],
+            ),
           ),
         );
       },

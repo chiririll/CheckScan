@@ -89,7 +89,7 @@ void main() {
     expect(find.text('• Молоко Леб 0.5л'), findsOneWidget);
     expect(find.text('и ещё 1'), findsOneWidget);
     expect(find.text('В товар'), findsNothing);
-    expect(find.text('Каталог'), findsWidgets);
+    expect(find.text('Не разобрано'), findsWidgets);
     expect(find.text('Промпт'), findsOneWidget);
     expect(find.text('Вставить'), findsOneWidget);
     await tester.tap(find.text('Товары').first);

@@ -100,6 +100,14 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('refresh is a pull gesture and is not in the overflow menu', (tester) async {
+    await openReceipt(tester);
+    expect(find.byType(RefreshIndicator), findsOneWidget);
+    await openActions(tester);
+    expect(find.text('Обновить данные'), findsNothing);
+    expect(find.text('Удалить'), findsWidgets);
+  });
+
   testWidgets('overflow delete asks for confirmation and cancel keeps the receipt', (tester) async {
     await openReceipt(tester);
     expect(find.text('История'), findsOneWidget);

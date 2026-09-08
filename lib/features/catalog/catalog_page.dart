@@ -62,24 +62,30 @@ class _CatalogPageState extends State<CatalogPage> with SingleTickerProviderStat
               CatalogCrumb(label: l10n.catalogTitle),
               CatalogCrumb(label: _tabLabel(l10n)),
             ],
-            trailing: _tabs.index != 0
-                ? const []
-                : [
-                    TextButton(
-                      onPressed: widget.state.catalog.unassigned.isEmpty
-                          ? null
-                          : () => copyAssistPrompt(context, widget.state),
-                      child: Text(l10n.assistCopyShort),
-                    ),
-                    TextButton(
-                      onPressed: widget.state.catalog.unassigned.isEmpty
-                          ? null
-                          : () => pasteAssistJson(context, widget.state),
-                      child: Text(l10n.assistPasteShort),
-                    ),
-                  ],
           ),
         ),
+        actions: [
+          AnimatedBuilder(
+            animation: Listenable.merge([_tabs, widget.state.catalog]),
+            builder: (context, _) {
+              if (_tabs.index != 0) return const SizedBox.shrink();
+              final enabled = widget.state.catalog.unassigned.isNotEmpty;
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton(
+                    onPressed: enabled ? () => copyAssistPrompt(context, widget.state) : null,
+                    child: Text(l10n.assistCopyShort),
+                  ),
+                  TextButton(
+                    onPressed: enabled ? () => pasteAssistJson(context, widget.state) : null,
+                    child: Text(l10n.assistPasteShort),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
         bottom: TabBar(
           controller: _tabs,
           labelColor: AppColors.primary,

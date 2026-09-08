@@ -1095,6 +1095,156 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Нечего применять'**
   String get assistErrorNothing;
+
+  /// No description provided for @catalogAncestors.
+  ///
+  /// In ru, this message translates to:
+  /// **'Назад по каталогу'**
+  String get catalogAncestors;
+
+  /// No description provided for @productKind.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тип'**
+  String get productKind;
+
+  /// No description provided for @productKindGood.
+  ///
+  /// In ru, this message translates to:
+  /// **'Товар'**
+  String get productKindGood;
+
+  /// No description provided for @productKindService.
+  ///
+  /// In ru, this message translates to:
+  /// **'Услуга'**
+  String get productKindService;
+
+  /// No description provided for @itemTags.
+  ///
+  /// In ru, this message translates to:
+  /// **'Теги названия'**
+  String get itemTags;
+
+  /// No description provided for @itemSearchHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Найти название'**
+  String get itemSearchHint;
+
+  /// No description provided for @similarItems.
+  ///
+  /// In ru, this message translates to:
+  /// **'Похожие'**
+  String get similarItems;
+
+  /// No description provided for @attachItem.
+  ///
+  /// In ru, this message translates to:
+  /// **'Привязать'**
+  String get attachItem;
+
+  /// No description provided for @itemAssignedElsewhere.
+  ///
+  /// In ru, this message translates to:
+  /// **'Уже в другом товаре'**
+  String get itemAssignedElsewhere;
+
+  /// No description provided for @merchantsTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Магазины'**
+  String get merchantsTitle;
+
+  /// No description provided for @merchantPolicy.
+  ///
+  /// In ru, this message translates to:
+  /// **'Состав чека'**
+  String get merchantPolicy;
+
+  /// No description provided for @merchantPolicyParse.
+  ///
+  /// In ru, this message translates to:
+  /// **'Разбирать'**
+  String get merchantPolicyParse;
+
+  /// No description provided for @merchantPolicyIgnore.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не разбирать'**
+  String get merchantPolicyIgnore;
+
+  /// No description provided for @merchantNetwork.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сеть'**
+  String get merchantNetwork;
+
+  /// No description provided for @merchantNoNetwork.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без сети'**
+  String get merchantNoNetwork;
+
+  /// No description provided for @merchantCategory.
+  ///
+  /// In ru, this message translates to:
+  /// **'Категория чека'**
+  String get merchantCategory;
+
+  /// No description provided for @merchantAliases.
+  ///
+  /// In ru, this message translates to:
+  /// **'Как в чеке'**
+  String get merchantAliases;
+
+  /// No description provided for @addAlias.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить название'**
+  String get addAlias;
+
+  /// No description provided for @addChildCategory.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подкатегория'**
+  String get addChildCategory;
+
+  /// No description provided for @parentCategory.
+  ///
+  /// In ru, this message translates to:
+  /// **'Родитель'**
+  String get parentCategory;
+
+  /// No description provided for @noParentCategory.
+  ///
+  /// In ru, this message translates to:
+  /// **'Верхний уровень'**
+  String get noParentCategory;
+
+  /// No description provided for @seedCategoryProducts.
+  ///
+  /// In ru, this message translates to:
+  /// **'Продукты'**
+  String get seedCategoryProducts;
+
+  /// No description provided for @seedCategoryHousehold.
+  ///
+  /// In ru, this message translates to:
+  /// **'Для дома'**
+  String get seedCategoryHousehold;
+
+  /// No description provided for @seedCategoryCafe.
+  ///
+  /// In ru, this message translates to:
+  /// **'Кафе'**
+  String get seedCategoryCafe;
+
+  /// No description provided for @seedCategoryTransport.
+  ///
+  /// In ru, this message translates to:
+  /// **'Транспорт'**
+  String get seedCategoryTransport;
 }
 
 class _AppLocalizationsDelegate

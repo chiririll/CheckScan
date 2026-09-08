@@ -550,4 +550,79 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get assistErrorNothing => 'Нечего применять';
+
+  @override
+  String get catalogAncestors => 'Назад по каталогу';
+
+  @override
+  String get productKind => 'Тип';
+
+  @override
+  String get productKindGood => 'Товар';
+
+  @override
+  String get productKindService => 'Услуга';
+
+  @override
+  String get itemTags => 'Теги названия';
+
+  @override
+  String get itemSearchHint => 'Найти название';
+
+  @override
+  String get similarItems => 'Похожие';
+
+  @override
+  String get attachItem => 'Привязать';
+
+  @override
+  String get itemAssignedElsewhere => 'Уже в другом товаре';
+
+  @override
+  String get merchantsTitle => 'Магазины';
+
+  @override
+  String get merchantPolicy => 'Состав чека';
+
+  @override
+  String get merchantPolicyParse => 'Разбирать';
+
+  @override
+  String get merchantPolicyIgnore => 'Не разбирать';
+
+  @override
+  String get merchantNetwork => 'Сеть';
+
+  @override
+  String get merchantNoNetwork => 'Без сети';
+
+  @override
+  String get merchantCategory => 'Категория чека';
+
+  @override
+  String get merchantAliases => 'Как в чеке';
+
+  @override
+  String get addAlias => 'Добавить название';
+
+  @override
+  String get addChildCategory => 'Подкатегория';
+
+  @override
+  String get parentCategory => 'Родитель';
+
+  @override
+  String get noParentCategory => 'Верхний уровень';
+
+  @override
+  String get seedCategoryProducts => 'Продукты';
+
+  @override
+  String get seedCategoryHousehold => 'Для дома';
+
+  @override
+  String get seedCategoryCafe => 'Кафе';
+
+  @override
+  String get seedCategoryTransport => 'Транспорт';
 }
