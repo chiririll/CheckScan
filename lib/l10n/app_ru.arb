@@ -204,6 +204,7 @@
   "appLanguageName": "русский",
   "assistCopyPrompt": "Скопировать промпт",
   "assistPasteReply": "Вставить ответ",
+  "assistPasteHint": "Вставьте ответ",
   "assistCopyShort": "Промпт",
   "assistPasteShort": "Вставить",
   "assistCopied": "Промпт скопирован",

@@ -31,8 +31,8 @@ const _eggsMarkdown = '''
 
 void _expectRealLlmGroups(AssistParsedReply parsed) {
   expect(parsed.groups.map((group) => group.productName), ['Фасоль', 'Айвар', 'Печенье']);
-  expect(parsed.groups[0].lines.single, contains('PASULJ CRVENI'));
-  expect(parsed.groups[1].lines.single, contains('AJVAR DOMA'));
+  expect(parsed.groups[0].lines.single, '25016: PASULJ CRVENI  400G LIM. BONDUELLE KONZERVA/KOM');
+  expect(parsed.groups[1].lines.single, '28011: AJVAR DOMA\uFFFDI LJUTI BA\uFFFD BA\uFFFD 350G/KOM');
   expect(parsed.groups[2].lines, [
     '28130: KEKS NOBLICE THINS BANINI 170G/KOM',
     'Biskvit Jaffa 300g/KOM',
@@ -56,25 +56,19 @@ void main() {
     final parsed = parseAssistReply(_eggsMarkdown);
     expect(parsed.groups.map((group) => group.productName), ['Яйца', 'Растительное масло']);
     expect(parsed.groups[0].lines, hasLength(6));
+    expect(parsed.groups[0].lines.first, '28900: JAJA M GRUPE 10/1 BJEKIC/Kom');
     expect(parsed.groups[0].lines, contains(kokos));
-    expect(parsed.groups[1].lines.single, contains('ULJE SUNCOKRETOVO'));
+    expect(parsed.groups[1].lines.single, '27001: ULJE SUNCOKRETOVO 1L/KOM');
     expect(assistLinePrefix('### Яйца')?.type, '#');
     expect(assistLinePrefix('* $kokos')?.type, '*');
+    expect(assistLinePrefix('* $kokos')?.text, kokos);
   });
 
-  test('generic pair Товар: vs dash is two prefix types', () {
-    const raw = '''
-Товар: Фасоль
-- 25016: PASULJ CRVENI  400G LIM. BONDUELLE KONZERVA/KOM
-Товар: Айвар
-- 28011: AJVAR DOMAĆI LJUTI BAČ BAČ 350G/KOM
-''';
-    expect(assistLinePrefix('Товар: Фасоль')?.type, ':');
+  test('colon words and cashier ids are not prefixes', () {
+    expect(assistLinePrefix('Товар: Фасоль'), isNull);
+    expect(assistLinePrefix('25016: PASULJ CRVENI'), isNull);
     expect(assistLinePrefix('- 25016: PASULJ')?.type, '-');
-    final parsed = parseAssistReply(raw);
-    expect(parsed.groups.map((group) => group.productName), ['Фасоль', 'Айвар']);
-    expect(parsed.groups[0].lines.single, contains('PASULJ CRVENI'));
-    expect(parsed.groups[1].lines.single, contains('AJVAR'));
+    expect(assistLinePrefix('- 25016: PASULJ')?.text, '25016: PASULJ');
   });
 
   test('first prefix wins when stars are titles and hashes are items', () {
@@ -88,7 +82,8 @@ void main() {
     final parsed = parseAssistReply(raw);
     expect(parsed.groups.map((group) => group.productName), ['Яйца', 'Растительное масло']);
     expect(parsed.groups[0].lines, contains('Kokos.jaja 10 1 M Maxi/KOM'));
-    expect(parsed.groups[1].lines.single, contains('ULJE SUNCOKRETOVO'));
+    expect(parsed.groups[0].lines.first, '28900: JAJA M GRUPE 10/1 BJEKIC/Kom');
+    expect(parsed.groups[1].lines.single, '27001: ULJE SUNCOKRETOVO 1L/KOM');
   });
 
   test('preamble before the first prefixed line is ignored', () {
@@ -101,7 +96,7 @@ void main() {
 ''';
     final parsed = parseAssistReply(raw);
     expect(parsed.groups.single.productName, 'Яйца');
-    expect(parsed.groups.single.lines.single, contains('JAJA M GRUPE'));
+    expect(parsed.groups.single.lines.single, '28900: JAJA M GRUPE 10/1 BJEKIC/Kom');
   });
 
   test('empty or no prefixes yields no groups', () {
@@ -122,5 +117,39 @@ void main() {
     final parsed = parseAssistReply(raw);
     expect(parsed.groups.single.productName, 'Фасоль');
     expect(parsed.groups.single.lines.single, '12: PASULJ CRVENI 400G');
+  });
+
+  test('# and ### are the same prefix type', () {
+    const raw = '''
+# Фасоль
+* 25016: PASULJ CRVENI  400G LIM. BONDUELLE KONZERVA/KOM
+### Айвар
+* 28011: AJVAR DOMAĆI LJUTI BAČ BAČ 350G/KOM
+''';
+    expect(assistLinePrefix('# Фасоль')?.type, '#');
+    expect(assistLinePrefix('### Айвар')?.type, '#');
+    final parsed = parseAssistReply(raw);
+    expect(parsed.groups.map((group) => group.productName), ['Фасоль', 'Айвар']);
+    expect(parsed.groups[0].lines.single, '25016: PASULJ CRVENI  400G LIM. BONDUELLE KONZERVA/KOM');
+    expect(parsed.groups[1].lines.single, '28011: AJVAR DOMAĆI LJUTI BAČ BAČ 350G/KOM');
+  });
+
+  test('detect prefix type before peeling the marker', () {
+    const raw = '* 25016: PASULJ CRVENI';
+    final marked = assistLinePrefix(raw);
+    expect(marked?.type, '*');
+    expect(marked?.text, '25016: PASULJ CRVENI');
+    expect(assistLinePrefix(marked!.text), isNull);
+    expect(assistLinePrefix('25016: PASULJ CRVENI'), isNull);
+  });
+
+  test('wrapping fence, NBSP heading, and chat preamble still parse', () {
+    final inner = _realLlmReply.replaceFirst('### Фасоль', '###\u00A0Фасоль');
+    _expectRealLlmGroups(parseAssistReply('Конечно!\n\n```\n$inner\n```\n'));
+  });
+
+  test('non-empty JSON leftover does not swallow markdown groups', () {
+    final parsed = parseAssistReply('{"products":[{"name":"Мусор","positions":["x"]}]}\n$_realLlmReply');
+    _expectRealLlmGroups(parsed);
   });
 }

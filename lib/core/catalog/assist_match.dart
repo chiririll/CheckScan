@@ -1,4 +1,5 @@
 import 'assist_draft.dart';
+import 'assist_log.dart';
 import 'assist_parse.dart';
 import 'catalog_position.dart';
 import 'name_normalizer.dart';
@@ -33,14 +34,29 @@ class _Claim {
   final double confidence;
 }
 
-final _leadingId = RegExp(r'^(\S+?)\s*[:\-–]\s+');
-final _nameAfterId = RegExp(r'^\S+?\s*[:\-–]\s+(.+)$');
+/// Leading cashier / catalog id, with or without a following name.
+/// Does not rewrite the stored line — only used to claim a position.
+final _leadingId = RegExp(r'^(\S+?)\s*[:\-–](?:\s+|$)');
+final _nameAfterId = RegExp(r'^\S+?\s*[:\-–]\s*(.+)$');
 final _firstToken = RegExp(r'^(\S+)(?:\s+|$)');
 
 AssistParseResult reviewAssistReply(String raw, List<CatalogPosition> unassigned) {
-  if (raw.trim().isEmpty) return const AssistParseResult.fail(AssistParseError.empty);
-  final parsed = parseAssistReply(raw);
-  if (parsed.groups.isEmpty) return const AssistParseResult.fail(AssistParseError.noProducts);
+  assistLog('review rawLen=${raw.length} unassigned=${unassigned.length}');
+  if (raw.trim().isEmpty) {
+    assistLog('fail AssistParseError.empty / assistErrorEmpty');
+    return const AssistParseResult.fail(AssistParseError.empty);
+  }
+  late final AssistParsedReply parsed;
+  try {
+    parsed = parseAssistReply(raw);
+  } catch (error) {
+    assistLog('parse threw: $error → AssistParseError.noProducts / assistErrorNoProducts');
+    return const AssistParseResult.fail(AssistParseError.noProducts);
+  }
+  if (parsed.groups.isEmpty) {
+    assistLog('fail AssistParseError.noProducts / assistErrorNoProducts');
+    return const AssistParseResult.fail(AssistParseError.noProducts);
+  }
   final draft = matchAssistGroups(parsed.groups, unassigned);
   final merged = parsed.orphans.isEmpty
       ? draft
@@ -51,7 +67,15 @@ AssistParseResult reviewAssistReply(String raw, List<CatalogPosition> unassigned
             for (final line in parsed.orphans) AssistUnmatchedLine(raw: line),
           ],
         );
-  if (merged.isEmpty) return const AssistParseResult.fail(AssistParseError.nothingToApply);
+  if (merged.isEmpty) {
+    assistLog('fail AssistParseError.nothingToApply / assistErrorNothing');
+    return const AssistParseResult.fail(AssistParseError.nothingToApply);
+  }
+  final assigned = [for (final product in merged.products) ...product.positions].length;
+  assistLog(
+    'review ok products=${merged.products.length} assigned=$assigned '
+    'unmatched=${merged.unmatched.length} canApply=${merged.canApply}',
+  );
   return AssistParseResult.ok(merged);
 }
 
@@ -99,13 +123,12 @@ AssistDraft matchAssistGroups(
     );
   }
 
-  return AssistDraft(
-    products: [
-      for (var i = 0; i < groups.length; i++)
-        AssistDraftProduct(name: groups[i].productName, positions: byGroup[i] ?? const []),
-    ],
-    unmatched: unmatched,
-  );
+  final products = [
+    for (var i = 0; i < groups.length; i++)
+      AssistDraftProduct(name: groups[i].productName, positions: byGroup[i] ?? const []),
+  ];
+  assistLog('match assigned=${taken.length} unmatched=${unmatched.length}');
+  return AssistDraft(products: products, unmatched: unmatched);
 }
 
 AssistLineMatch? matchAssistLine(
@@ -162,7 +185,11 @@ String? _leadingToken(String line) {
   final colon = _leadingId.firstMatch(line);
   if (colon != null) return colon[1];
   final space = _firstToken.firstMatch(line);
-  return space?[1];
+  var token = space?[1];
+  if (token != null && token.endsWith(':')) {
+    token = token.substring(0, token.length - 1);
+  }
+  return token;
 }
 
 String _nameFromLine(String line) {

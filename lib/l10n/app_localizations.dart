@@ -1042,6 +1042,12 @@ abstract class AppLocalizations {
   /// **'Вставить ответ'**
   String get assistPasteReply;
 
+  /// No description provided for @assistPasteHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вставьте ответ'**
+  String get assistPasteHint;
+
   /// No description provided for @assistCopyShort.
   ///
   /// In ru, this message translates to:

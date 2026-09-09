@@ -525,6 +525,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get assistPasteReply => 'Вставить ответ';
 
   @override
+  String get assistPasteHint => 'Вставьте ответ';
+
+  @override
   String get assistCopyShort => 'Промпт';
 
   @override

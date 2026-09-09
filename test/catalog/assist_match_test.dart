@@ -50,6 +50,25 @@ void main() {
     expect(hit.confidence, 1);
   });
 
+  test('cashier id on the position line matches and stays on the stored line', () {
+    const beans = CatalogPosition(
+      id: '25016',
+      displayName: 'PASULJ CRVENI  400G LIM. BONDUELLE KONZERVA/KOM',
+    );
+    const line = '25016: PASULJ CRVENI  400G LIM. BONDUELLE KONZERVA/KOM';
+    final hit = matchAssistLine(line, const [beans, _cookies]);
+    expect(hit!.position.id, '25016');
+    expect(hit.confidence, 1);
+
+    final draft = matchAssistGroups(
+      const [AssistParsedGroup(productName: 'Фасоль', lines: [line])],
+      const [beans],
+    );
+    expect(draft.products.single.positions.single.rawLine, line);
+    expect(draft.products.single.positions.single.rawLine, contains('25016:'));
+    expect(draft.products.single.positions.single.displayName, beans.displayName);
+  });
+
   test('one item is not assigned to two products', () {
     final draft = matchAssistGroups(
       const [

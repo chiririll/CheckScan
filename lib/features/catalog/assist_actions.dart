@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/app_state.dart';
+import '../../core/catalog/assist_clipboard.dart';
 import '../../core/catalog/assist_draft.dart';
+import '../../core/catalog/assist_log.dart';
 import '../../core/catalog/assist_match.dart';
 import '../../core/catalog/assist_prompt.dart';
 import '../../l10n/app_localizations.dart';
+import 'assist_paste_sheet.dart';
 import 'assist_review_page.dart';
 
 Future<void> copyAssistPrompt(BuildContext context, AppState state) async {
@@ -19,15 +22,45 @@ Future<void> copyAssistPrompt(BuildContext context, AppState state) async {
 
 Future<void> pasteAssistReply(BuildContext context, AppState state) async {
   final l10n = AppLocalizations.of(context);
-  final data = await Clipboard.getData(Clipboard.kTextPlain);
-  final result = reviewAssistReply(data?.text ?? '', state.catalog.unassigned);
-  if (!context.mounted) return;
-  if (!result.isOk) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_pasteError(l10n, result.error!))));
+  assistLog('paste tap');
+  await WidgetsBinding.instance.endOfFrame;
+  await Future<void>.delayed(const Duration(milliseconds: 50));
+  if (!context.mounted) {
+    assistLog('paste abort: unmounted after menu');
     return;
   }
-  await Navigator.of(context).push(
-    MaterialPageRoute<void>(builder: (_) => AssistReviewPage(state: state, draft: result.draft!)),
+
+  final clip = await resolveAssistPaste();
+  if (!context.mounted) return;
+
+  final first = reviewAssistReply(clip, state.catalog.unassigned);
+  if (!context.mounted) return;
+  if (first.isOk) {
+    assistLog('clipboard ok → review');
+    await _openReview(context, state, first.draft!);
+    return;
+  }
+
+  assistLog('clipboard fail ${first.error} / ${_pasteError(l10n, first.error!)} → paste sheet');
+  final draft = await showAssistPasteSheet(
+    context: context,
+    unassigned: state.catalog.unassigned,
+    initial: clip,
+    initialError: _pasteError(l10n, first.error!),
+  );
+  if (!context.mounted) return;
+  if (draft == null) {
+    assistLog('paste sheet cancelled');
+    return;
+  }
+  assistLog('sheet returned draft → review');
+  await _openReview(context, state, draft);
+}
+
+Future<void> _openReview(BuildContext context, AppState state, AssistDraft draft) {
+  assistLog('open review products=${draft.products.length} unmatched=${draft.unmatched.length}');
+  return Navigator.of(context).push(
+    MaterialPageRoute<void>(builder: (_) => AssistReviewPage(state: state, draft: draft)),
   );
 }
 
