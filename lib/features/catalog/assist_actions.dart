@@ -12,7 +12,7 @@ import 'assist_review_page.dart';
 
 Future<void> copyAssistPrompt(BuildContext context, AppState state) async {
   final l10n = AppLocalizations.of(context);
-  final batch = nextAssistBatch(state.catalog.unassigned);
+  final batch = nextAssistBatch(state.catalog.unassigned, ignoreIds: state.catalog.suggestionIgnore.clusterItemIds);
   if (batch.isEmpty) return;
   final text = buildAssistPrompt(
     languageName: l10n.appLanguageName,

@@ -70,6 +70,14 @@ void main() {
     expect(clusterUnassigned(positions).every((cluster) => cluster.length <= assistClusterLimit), isTrue);
   });
 
+  test('ignored ids do not join an auto-cluster', () {
+    const milkA = CatalogPosition(id: 'a', displayName: 'Молоко Леб 2.5% 1.7л');
+    const milkB = CatalogPosition(id: 'b', displayName: 'МОЛОКО ЛЕБ 2,5% 0,93Л');
+    final clusters = clusterUnassigned([milkA, milkB], ignoreIds: {'b'});
+    expect(clusters, hasLength(2));
+    expect(clusters.every((cluster) => cluster.length == 1), isTrue);
+  });
+
   test('picks similar products by stem', () {
     const batch = [CatalogPosition(id: 'p', displayName: 'Молоко Леб 2.5% 1.7л')];
     const products = [

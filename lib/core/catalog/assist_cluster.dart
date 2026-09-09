@@ -76,18 +76,24 @@ String proposedClusterName(List<CatalogPosition> cluster) {
   return titleCaseStem(ranked.first.key);
 }
 
-List<UnassignedCluster> buildUnassignedClusters(List<CatalogPosition> positions) {
+List<UnassignedCluster> buildUnassignedClusters(List<CatalogPosition> positions, {Set<String> ignoreIds = const {}}) {
   return [
-    for (final group in clusterUnassigned(positions))
+    for (final group in clusterUnassigned(positions, ignoreIds: ignoreIds))
       UnassignedCluster(name: proposedClusterName(group), positions: group),
   ];
 }
 
-List<List<CatalogPosition>> clusterUnassigned(List<CatalogPosition> positions) {
+List<List<CatalogPosition>> clusterUnassigned(List<CatalogPosition> positions, {Set<String> ignoreIds = const {}}) {
   if (positions.isEmpty) return const [];
-  final goods = [for (final position in positions) if (!looksLikeService(position.displayName)) position];
-  final services = [for (final position in positions) if (looksLikeService(position.displayName)) position];
-  return [..._clusterPool(goods), ..._clusterPool(services)];
+  final active = [for (final position in positions) if (!ignoreIds.contains(position.id)) position];
+  final ignored = [for (final position in positions) if (ignoreIds.contains(position.id)) position];
+  final goods = [for (final position in active) if (!looksLikeService(position.displayName)) position];
+  final services = [for (final position in active) if (looksLikeService(position.displayName)) position];
+  return [
+    ..._clusterPool(goods),
+    ..._clusterPool(services),
+    for (final position in ignored) [position],
+  ];
 }
 
 List<List<CatalogPosition>> _clusterPool(List<CatalogPosition> positions) {
@@ -134,8 +140,8 @@ List<List<CatalogPosition>> _clusterPool(List<CatalogPosition> positions) {
   return clusters;
 }
 
-List<CatalogPosition> nextAssistBatch(List<CatalogPosition> unassigned) {
-  final clusters = clusterUnassigned(unassigned);
+List<CatalogPosition> nextAssistBatch(List<CatalogPosition> unassigned, {Set<String> ignoreIds = const {}}) {
+  final clusters = clusterUnassigned(unassigned, ignoreIds: ignoreIds);
   if (clusters.isEmpty) return const [];
   final first = clusters.first;
   if (first.length <= assistBatchLimit) return first;

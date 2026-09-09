@@ -4,6 +4,7 @@ import '../../core/app_state.dart';
 import '../../core/catalog/catalog_position.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
+import 'catalog_search_field.dart';
 
 class ProductItemSearch extends StatefulWidget {
   const ProductItemSearch({super.key, required this.state, required this.productId});
@@ -33,14 +34,9 @@ class _ProductItemSearchState extends State<ProductItemSearch> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextField(
+        CatalogSearchField(
           controller: _query,
-          decoration: InputDecoration(
-            hintText: l10n.itemSearchHint,
-            prefixIcon: const Icon(Icons.search),
-            isDense: true,
-            border: const OutlineInputBorder(),
-          ),
+          hintText: l10n.itemSearchHint,
           onChanged: (_) => setState(() {}),
         ),
         if (hits.isNotEmpty) ...[
@@ -61,6 +57,7 @@ class _ProductItemSearchState extends State<ProductItemSearch> {
               item: item,
               elsewhere: false,
               onAttach: () => catalog.assignPosition(item.id, widget.productId),
+              onDismiss: () => catalog.dismissProductSuggestion(productId: widget.productId, itemId: item.id),
             ),
         ],
       ],
@@ -69,11 +66,12 @@ class _ProductItemSearchState extends State<ProductItemSearch> {
 }
 
 class _AttachRow extends StatelessWidget {
-  const _AttachRow({required this.item, required this.elsewhere, required this.onAttach});
+  const _AttachRow({required this.item, required this.elsewhere, required this.onAttach, this.onDismiss});
 
   final CatalogPosition item;
   final bool elsewhere;
   final VoidCallback onAttach;
+  final VoidCallback? onDismiss;
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +81,19 @@ class _AttachRow extends StatelessWidget {
       dense: true,
       title: Text(item.displayName),
       subtitle: elsewhere ? Text(l10n.itemAssignedElsewhere, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)) : null,
-      trailing: TextButton(onPressed: onAttach, child: Text(l10n.attachItem, style: const TextStyle(color: AppColors.primary))),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextButton(onPressed: onAttach, child: Text(l10n.attachItem, style: const TextStyle(color: AppColors.primary))),
+          if (onDismiss != null)
+            IconButton(
+              tooltip: l10n.dismissSuggestion,
+              visualDensity: VisualDensity.compact,
+              onPressed: onDismiss,
+              icon: const Icon(Icons.close, size: 18),
+            ),
+        ],
+      ),
     );
   }
 }

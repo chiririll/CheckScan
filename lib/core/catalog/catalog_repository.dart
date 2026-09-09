@@ -13,6 +13,7 @@ import 'name_normalizer.dart';
 import 'product_kind.dart';
 import 'purchase.dart';
 import 'purchase_cache.dart';
+import 'suggestion_ignore.dart';
 import 'unit_parser.dart';
 
 class CatalogRepository {
@@ -382,6 +383,39 @@ class CatalogRepository {
       receipts: receipts,
       resolver: await buildResolver(),
       ignoreMerchantIds: ignoreMerchantIdsOf(merchants),
+    );
+  }
+
+  Future<SuggestionIgnore> listSuggestionIgnores() async {
+    final db = await _db;
+    final clusterRows = await db.query('cluster_ignore');
+    final productRows = await db.query('product_suggestion_ignore');
+    return SuggestionIgnore(
+      clusterItemIds: {for (final row in clusterRows) '${row['item_id']}'},
+      productItemKeys: {
+        for (final row in productRows) SuggestionIgnore.productKey('${row['product_id']}', '${row['item_id']}'),
+      },
+    );
+  }
+
+  Future<void> ignoreClusterItem(String itemId) async {
+    await (await _db).insert('cluster_ignore', {'item_id': int.parse(itemId)}, conflictAlgorithm: ConflictAlgorithm.ignore);
+  }
+
+  Future<void> ignoreClusterItems(Iterable<String> itemIds) async {
+    final db = await _db;
+    final batch = db.batch();
+    for (final itemId in itemIds) {
+      batch.insert('cluster_ignore', {'item_id': int.parse(itemId)}, conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
+    await batch.commit(noResult: true);
+  }
+
+  Future<void> ignoreProductSuggestion({required String productId, required String itemId}) async {
+    await (await _db).insert(
+      'product_suggestion_ignore',
+      {'product_id': int.parse(productId), 'item_id': int.parse(itemId)},
+      conflictAlgorithm: ConflictAlgorithm.ignore,
     );
   }
 

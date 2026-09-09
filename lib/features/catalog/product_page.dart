@@ -16,6 +16,7 @@ import 'catalog_trail.dart';
 import 'category_picker.dart';
 import 'product_item_search.dart';
 import 'product_prices.dart';
+import 'product_receipts_page.dart';
 import 'unit_labels.dart';
 
 class ProductPage extends StatelessWidget {
@@ -38,33 +39,25 @@ class ProductPage extends StatelessWidget {
         final fromCategory = fromCategoryId == null ? null : state.catalog.categoryById(fromCategoryId!);
         final positions = [for (final position in state.catalog.positions) if (position.productId == product.id) position];
         return Scaffold(
-          appBar: AppBar(
-            title: CatalogTrail(
-              crumbs: [
-                CatalogCrumb(label: l10n.catalogTitle, onTap: () => openCatalog(context, state)),
-                if (fromCategory != null) ...[
-                  CatalogCrumb(label: l10n.catalogCategories, onTap: () => openCatalog(context, state, tab: 2)),
-                  CatalogCrumb(label: categoryTitle(fromCategory, l10n), onTap: () => Navigator.pop(context)),
-                ] else
-                  CatalogCrumb(label: l10n.catalogProducts, onTap: () => openCatalog(context, state, tab: 1)),
-                CatalogCrumb(label: product.name),
-              ],
-            ),
+          appBar: CatalogAppBar(
+            title: product.name,
+            ancestors: [
+              CatalogCrumb(label: l10n.catalogTitle, onTap: () => openCatalog(context, state)),
+              if (fromCategory != null) ...[
+                CatalogCrumb(label: l10n.catalogCategories, onTap: () => openCatalog(context, state, tab: 2)),
+                CatalogCrumb(label: categoryTitle(fromCategory, l10n), onTap: () => Navigator.pop(context)),
+              ] else
+                CatalogCrumb(label: l10n.catalogProducts, onTap: () => openCatalog(context, state, tab: 1)),
+            ],
             actions: [
-              IconButton(
-                tooltip: l10n.deleteProduct,
-                icon: const Icon(Icons.delete_outline),
-                onPressed: () async {
-                  final ok = await confirmAction(
-                    context,
-                    title: l10n.deleteProductTitle,
-                    body: l10n.deleteProductBody,
-                    confirm: l10n.deleteProduct,
-                  );
-                  if (!ok || !context.mounted) return;
-                  await state.catalog.deleteProduct(product.id);
-                  if (context.mounted) Navigator.pop(context);
-                },
+              CatalogAction(
+                label: l10n.productReceipts,
+                onSelected: () => _openReceipts(context, product.id),
+              ),
+              CatalogAction(
+                label: l10n.deleteProduct,
+                destructive: true,
+                onSelected: () => _deleteProduct(context, product.id),
               ),
             ],
           ),
@@ -85,6 +78,11 @@ class ProductPage extends StatelessWidget {
                 title: Text(l10n.productCategory),
                 subtitle: Text(_categorySubtitle(product.categoryId, l10n)),
                 onTap: () => _pickCategory(context, product.id, product.categoryId),
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(l10n.productReceipts),
+                onTap: () => _openReceipts(context, product.id),
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
@@ -146,6 +144,27 @@ class ProductPage extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _openReceipts(BuildContext context, String productId) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ProductReceiptsPage(state: state, productId: productId),
+      ),
+    );
+  }
+
+  Future<void> _deleteProduct(BuildContext context, String productId) async {
+    final l10n = AppLocalizations.of(context);
+    final ok = await confirmAction(
+      context,
+      title: l10n.deleteProductTitle,
+      body: l10n.deleteProductBody,
+      confirm: l10n.deleteProduct,
+    );
+    if (!ok || !context.mounted) return;
+    await state.catalog.deleteProduct(productId);
+    if (context.mounted) Navigator.pop(context);
   }
 
   Future<void> _pickCategory(BuildContext context, String productId, String? currentId) async {

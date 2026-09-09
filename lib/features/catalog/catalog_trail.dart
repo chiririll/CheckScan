@@ -9,46 +9,100 @@ class CatalogCrumb {
   final VoidCallback? onTap;
 }
 
-class CatalogTrail extends StatelessWidget {
-  const CatalogTrail({super.key, required this.crumbs});
+class CatalogAction {
+  const CatalogAction({
+    required this.label,
+    required this.onSelected,
+    this.destructive = false,
+    this.enabled = true,
+  });
 
-  final List<CatalogCrumb> crumbs;
+  final String label;
+  final VoidCallback onSelected;
+  final bool destructive;
+  final bool enabled;
+}
+
+/// App bar: current name as title, one overflow with ancestors and page actions.
+class CatalogAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const CatalogAppBar({
+    super.key,
+    required this.title,
+    this.ancestors = const [],
+    this.actions = const [],
+    this.bottom,
+  });
+
+  final String title;
+  final List<CatalogCrumb> ancestors;
+  final List<CatalogAction> actions;
+  final PreferredSizeWidget? bottom;
+
+  bool get _hasMenu => ancestors.isNotEmpty || actions.isNotEmpty;
+
+  @override
+  Size get preferredSize => Size.fromHeight(kToolbarHeight + (bottom?.preferredSize.height ?? 0));
 
   @override
   Widget build(BuildContext context) {
-    if (crumbs.isEmpty) return const SizedBox.shrink();
+    return AppBar(
+      title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+      actions: [
+        if (_hasMenu) CatalogOverflowMenu(ancestors: ancestors, actions: actions),
+      ],
+      bottom: bottom,
+    );
+  }
+}
+
+class CatalogOverflowMenu extends StatelessWidget {
+  const CatalogOverflowMenu({super.key, this.ancestors = const [], this.actions = const []});
+
+  final List<CatalogCrumb> ancestors;
+  final List<CatalogAction> actions;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final current = crumbs.last;
-    final ancestors = crumbs.length <= 1 ? const <CatalogCrumb>[] : crumbs.sublist(0, crumbs.length - 1);
-    return Row(
-      children: [
-        if (ancestors.isNotEmpty)
-          PopupMenuButton<int>(
-            tooltip: l10n.catalogAncestors,
-            padding: EdgeInsets.zero,
-            onSelected: (index) => ancestors[index].onTap?.call(),
-            itemBuilder: (context) => [
-              for (var i = 0; i < ancestors.length; i++)
-                PopupMenuItem(
-                  value: i,
-                  enabled: ancestors[i].onTap != null,
-                  child: Text(ancestors[i].label),
-                ),
-            ],
-            child: Padding(
-              padding: const EdgeInsets.only(right: 4),
-              child: Icon(Icons.more_horiz, color: Colors.grey.shade700),
+    return PopupMenuButton<_CatalogMenuChoice>(
+      tooltip: l10n.catalogMore,
+      icon: const Icon(Icons.more_vert),
+      onSelected: (choice) {
+        if (choice.actionIndex != null) {
+          actions[choice.actionIndex!].onSelected();
+        } else if (choice.ancestorIndex != null) {
+          ancestors[choice.ancestorIndex!].onTap?.call();
+        }
+      },
+      itemBuilder: (context) => [
+        for (var i = 0; i < ancestors.length; i++)
+          PopupMenuItem(
+            value: _CatalogMenuChoice.ancestor(i),
+            enabled: ancestors[i].onTap != null,
+            child: Text(ancestors[i].label),
+          ),
+        if (ancestors.isNotEmpty && actions.isNotEmpty) const PopupMenuDivider(),
+        for (var i = 0; i < actions.length; i++)
+          PopupMenuItem(
+            value: _CatalogMenuChoice.action(i),
+            enabled: actions[i].enabled,
+            child: Text(
+              actions[i].label,
+              style: actions[i].destructive ? const TextStyle(color: Color(0xFFC62828)) : null,
             ),
           ),
-        Expanded(
-          child: Text(
-            current.label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-          ),
-        ),
       ],
     );
   }
+}
+
+class _CatalogMenuChoice {
+  const _CatalogMenuChoice._({this.ancestorIndex, this.actionIndex});
+
+  const _CatalogMenuChoice.ancestor(int index) : this._(ancestorIndex: index);
+
+  const _CatalogMenuChoice.action(int index) : this._(actionIndex: index);
+
+  final int? ancestorIndex;
+  final int? actionIndex;
 }

@@ -8,6 +8,7 @@ import '../../theme.dart';
 import '../widgets/empty_hint.dart';
 import 'assist_actions.dart';
 import 'catalog_dialogs.dart';
+import 'catalog_search_field.dart';
 import 'catalog_trail.dart';
 import 'category_page.dart';
 import 'draft_product_page.dart';
@@ -52,73 +53,45 @@ class _CatalogPageState extends State<CatalogPage> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 0,
-        title: AnimatedBuilder(
-          animation: Listenable.merge([_tabs, widget.state.catalog]),
-          builder: (context, _) => CatalogTrail(
-            crumbs: [
-              CatalogCrumb(label: l10n.catalogTitle),
-              CatalogCrumb(label: _tabLabel(l10n)),
-            ],
-          ),
-        ),
-        actions: [
-          AnimatedBuilder(
-            animation: Listenable.merge([_tabs, widget.state.catalog]),
-            builder: (context, _) {
-              if (_tabs.index != 0) return const SizedBox.shrink();
-              final enabled = widget.state.catalog.unassigned.isNotEmpty;
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextButton(
-                    onPressed: enabled ? () => copyAssistPrompt(context, widget.state) : null,
-                    child: Text(l10n.assistCopyShort),
-                  ),
-                  TextButton(
-                    onPressed: enabled ? () => pasteAssistJson(context, widget.state) : null,
-                    child: Text(l10n.assistPasteShort),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabs,
-          labelColor: AppColors.primary,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: AppColors.primary,
-          tabs: [
-            Tab(text: l10n.catalogUnassigned),
-            Tab(text: l10n.catalogProducts),
-            Tab(text: l10n.catalogCategories),
-          ],
-        ),
-      ),
-      body: ListenableBuilder(
-        listenable: widget.state.catalog,
-        builder: (context, _) {
-          return Column(
-            children: [
-              AnimatedBuilder(
-                animation: _tabs,
-                builder: (context, child) => _tabs.index < 2 ? child! : const SizedBox.shrink(),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                  child: TextField(
-                    controller: _query,
-                    decoration: InputDecoration(
-                      hintText: l10n.catalogSearch,
-                      prefixIcon: const Icon(Icons.search),
-                      isDense: true,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
+    return ListenableBuilder(
+      listenable: Listenable.merge([_tabs, widget.state.catalog]),
+      builder: (context, _) {
+        return Scaffold(
+          appBar: CatalogAppBar(
+            title: l10n.catalogTitle,
+            actions: [
+              if (_tabs.index == 0) ...[
+                CatalogAction(
+                  label: l10n.assistCopyShort,
+                  enabled: widget.state.catalog.unassigned.isNotEmpty,
+                  onSelected: () => copyAssistPrompt(context, widget.state),
                 ),
-              ),
+                CatalogAction(
+                  label: l10n.assistPasteShort,
+                  enabled: widget.state.catalog.unassigned.isNotEmpty,
+                  onSelected: () => pasteAssistJson(context, widget.state),
+                ),
+              ],
+            ],
+            bottom: TabBar(
+              controller: _tabs,
+              labelColor: AppColors.primary,
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: AppColors.primary,
+              tabs: [
+                Tab(text: l10n.catalogUnassigned),
+                Tab(text: l10n.catalogProducts),
+                Tab(text: l10n.catalogCategories),
+              ],
+            ),
+          ),
+          body: Column(
+            children: [
+              if (_tabs.index < 2)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: CatalogSearchField(controller: _query, hintText: l10n.catalogSearch),
+                ),
               Expanded(
                 child: TabBarView(
                   controller: _tabs,
@@ -130,18 +103,10 @@ class _CatalogPageState extends State<CatalogPage> with SingleTickerProviderStat
                 ),
               ),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
-  }
-
-  String _tabLabel(AppLocalizations l10n) {
-    return switch (_tabs.index) {
-      1 => l10n.catalogProducts,
-      2 => l10n.catalogCategories,
-      _ => l10n.catalogUnassigned,
-    };
   }
 }
 
@@ -192,31 +157,58 @@ class _ClusterCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         side: const BorderSide(color: Color(0xFFE4E4E4)),
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: () => openDraftProduct(context: context, state: state, positions: cluster.positions),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(cluster.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 6),
-              for (final position in cluster.preview)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: Text('• ${position.displayName}'),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 4, 4, 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () => openDraftProduct(context: context, state: state, positions: cluster.positions),
+                    child: Text(cluster.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  ),
                 ),
-              if (cluster.hiddenCount > 0)
-                Padding(
-                  padding: const EdgeInsets.only(top: 2),
+                if (cluster.positions.length > 1)
+                  IconButton(
+                    key: const ValueKey<String>('dismiss-cluster'),
+                    tooltip: l10n.dismissSuggestion,
+                    onPressed: () => state.catalog.dismissCluster(cluster.positions.map((item) => item.id)),
+                    icon: const Icon(Icons.close, size: 20),
+                  ),
+              ],
+            ),
+            for (final position in cluster.preview)
+              Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => openDraftProduct(context: context, state: state, positions: cluster.positions),
+                      child: Text('• ${position.displayName}'),
+                    ),
+                  ),
+                  if (cluster.positions.length > 1)
+                    IconButton(
+                      key: ValueKey<String>('dismiss-item-${position.id}'),
+                      tooltip: l10n.dismissSuggestion,
+                      onPressed: () => state.catalog.dismissClusterItem(position.id),
+                      icon: const Icon(Icons.close, size: 18),
+                    ),
+                ],
+              ),
+            if (cluster.hiddenCount > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 2, left: 8),
+                child: InkWell(
+                  onTap: () => openDraftProduct(context: context, state: state, positions: cluster.positions),
                   child: Text(
                     l10n.clusterAndMore(cluster.hiddenCount),
                     style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                   ),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );

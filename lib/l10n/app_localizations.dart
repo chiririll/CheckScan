@@ -1114,6 +1114,30 @@ abstract class AppLocalizations {
   /// **'Назад по каталогу'**
   String get catalogAncestors;
 
+  /// No description provided for @catalogMore.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ещё'**
+  String get catalogMore;
+
+  /// No description provided for @productReceipts.
+  ///
+  /// In ru, this message translates to:
+  /// **'В чеках'**
+  String get productReceipts;
+
+  /// No description provided for @productReceiptsEmptyTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пока нет чеков'**
+  String get productReceiptsEmptyTitle;
+
+  /// No description provided for @productReceiptsEmptyBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этот товар ещё не встречался в сохранённых чеках.'**
+  String get productReceiptsEmptyBody;
+
   /// No description provided for @productKind.
   ///
   /// In ru, this message translates to:
@@ -1149,6 +1173,12 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Похожие'**
   String get similarItems;
+
+  /// No description provided for @dismissSuggestion.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не предлагать'**
+  String get dismissSuggestion;
 
   /// No description provided for @attachItem.
   ///

@@ -10,6 +10,7 @@ import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 import 'catalog_dialogs.dart';
 import 'catalog_nav.dart';
+import 'catalog_search_field.dart';
 import 'catalog_trail.dart';
 import 'category_picker.dart';
 import 'unit_labels.dart';
@@ -102,15 +103,12 @@ class _DraftProductPageState extends State<DraftProductPage> {
         final positions = _selectedPositions();
         final canSave = !_saving && _name.text.trim().isNotEmpty && positions.isNotEmpty;
         return Scaffold(
-          appBar: AppBar(
-            titleSpacing: 0,
-            title: CatalogTrail(
-              crumbs: [
-                CatalogCrumb(label: l10n.catalogTitle, onTap: () => openCatalog(context, widget.state)),
-                CatalogCrumb(label: l10n.catalogUnassigned, onTap: () => Navigator.pop(context)),
-                CatalogCrumb(label: _name.text.trim().isEmpty ? l10n.newProduct : _name.text.trim()),
-              ],
-            ),
+          appBar: CatalogAppBar(
+            title: _name.text.trim().isEmpty ? l10n.newProduct : _name.text.trim(),
+            ancestors: [
+              CatalogCrumb(label: l10n.catalogTitle, onTap: () => openCatalog(context, widget.state)),
+              CatalogCrumb(label: l10n.catalogUnassigned, onTap: () => Navigator.pop(context)),
+            ],
           ),
           body: ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -148,7 +146,11 @@ class _DraftProductPageState extends State<DraftProductPage> {
                 _DraftPositionRow(
                   state: widget.state,
                   position: position,
-                  onRemove: () => setState(() => _ids.remove(position.id)),
+                  onRemove: () {
+                    final others = [for (final id in _ids) if (id != position.id) id];
+                    setState(() => _ids.remove(position.id));
+                    if (others.isNotEmpty) widget.state.catalog.dismissClusterItem(position.id);
+                  },
                 ),
               Align(
                 alignment: Alignment.centerLeft,
@@ -294,15 +296,10 @@ class _AddPositionSheetState extends State<_AddPositionSheet> {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                child: TextField(
+                child: CatalogSearchField(
                   controller: _query,
+                  hintText: l10n.catalogSearch,
                   autofocus: true,
-                  decoration: InputDecoration(
-                    hintText: l10n.catalogSearch,
-                    prefixIcon: const Icon(Icons.search),
-                    isDense: true,
-                    border: const OutlineInputBorder(),
-                  ),
                   onChanged: (_) => setState(() {}),
                 ),
               ),

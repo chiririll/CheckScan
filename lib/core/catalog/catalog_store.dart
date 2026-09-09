@@ -14,6 +14,7 @@ import 'item_unit.dart';
 import 'name_stem.dart';
 import 'product_kind.dart';
 import 'purchase.dart';
+import 'suggestion_ignore.dart';
 
 class CatalogStore extends ChangeNotifier {
   CatalogStore({required this._repository});
@@ -26,6 +27,7 @@ class CatalogStore extends ChangeNotifier {
   List<CatalogPosition> positions = const [];
   List<Merchant> merchants = const [];
   List<Purchase> purchases = const [];
+  SuggestionIgnore suggestionIgnore = const SuggestionIgnore();
   List<ReceiptRecord> _receipts = const [];
   bool _hasReceiptsBound = false;
 
@@ -38,7 +40,7 @@ class CatalogStore extends ChangeNotifier {
   int? _countsStamp;
 
   List<UnassignedCluster> get unassignedClusters {
-    return _unassignedClusters ??= buildUnassignedClusters(unassigned);
+    return _unassignedClusters ??= buildUnassignedClusters(unassigned, ignoreIds: suggestionIgnore.clusterItemIds);
   }
 
   int? _pendingTab;
@@ -74,6 +76,7 @@ class CatalogStore extends ChangeNotifier {
     categories = await _repository.listCategories();
     products = await _repository.listProducts();
     positions = await _repository.listPositions();
+    suggestionIgnore = await _repository.listSuggestionIgnores();
     resolver = await _repository.buildResolver();
     _unassignedClusters = null;
     _positionCounts = null;
@@ -132,8 +135,25 @@ class CatalogStore extends ChangeNotifier {
     if (stem.isEmpty) return const [];
     return [
       for (final cluster in unassignedClusters)
-        if (stemsSimilar(itemNameStem(cluster.name), stem)) ...cluster.positions,
+        if (stemsSimilar(itemNameStem(cluster.name), stem))
+          for (final item in cluster.positions)
+            if (!suggestionIgnore.ignoresProduct(productId, item.id)) item,
     ];
+  }
+
+  Future<void> dismissClusterItem(String itemId) async {
+    await _repository.ignoreClusterItem(itemId);
+    await reload();
+  }
+
+  Future<void> dismissCluster(Iterable<String> itemIds) async {
+    await _repository.ignoreClusterItems(itemIds);
+    await reload();
+  }
+
+  Future<void> dismissProductSuggestion({required String productId, required String itemId}) async {
+    await _repository.ignoreProductSuggestion(productId: productId, itemId: itemId);
+    await reload();
   }
 
   Future<CatalogProduct> createProductWithPositions({

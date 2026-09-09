@@ -28,18 +28,19 @@ class CategoryPage extends StatelessWidget {
         }
         final children = state.catalog.childrenOf(category.id);
         final products = [for (final product in state.catalog.products) if (product.categoryId == category.id) product];
-        final crumbs = [
-          CatalogCrumb(label: l10n.catalogTitle, onTap: () => openCatalog(context, state)),
-          CatalogCrumb(label: l10n.catalogCategories, onTap: () => openCatalog(context, state, tab: 2)),
-          if (category.parentId != null)
-            CatalogCrumb(
-              label: categoryTitle(state.catalog.categoryById(category.parentId!) ?? category, l10n),
-              onTap: () => Navigator.pop(context),
-            ),
-          CatalogCrumb(label: categoryTitle(category, l10n)),
-        ];
         return Scaffold(
-          appBar: AppBar(title: CatalogTrail(crumbs: crumbs)),
+          appBar: CatalogAppBar(
+            title: categoryTitle(category, l10n),
+            ancestors: [
+              CatalogCrumb(label: l10n.catalogTitle, onTap: () => openCatalog(context, state)),
+              CatalogCrumb(label: l10n.catalogCategories, onTap: () => openCatalog(context, state, tab: 2)),
+              if (category.parentId != null)
+                CatalogCrumb(
+                  label: categoryTitle(state.catalog.categoryById(category.parentId!) ?? category, l10n),
+                  onTap: () => Navigator.pop(context),
+                ),
+            ],
+          ),
           body: children.isNotEmpty
               ? _ChildList(state: state, children: children)
               : products.isEmpty

@@ -26,14 +26,12 @@ class _AssistReviewPageState extends State<AssistReviewPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: CatalogTrail(
-          crumbs: [
-            CatalogCrumb(label: l10n.catalogTitle, onTap: () => openCatalog(context, widget.state)),
-            CatalogCrumb(label: l10n.catalogUnassigned, onTap: () => Navigator.pop(context)),
-            CatalogCrumb(label: l10n.assistReview),
-          ],
-        ),
+      appBar: CatalogAppBar(
+        title: l10n.assistReview,
+        ancestors: [
+          CatalogCrumb(label: l10n.catalogTitle, onTap: () => openCatalog(context, widget.state)),
+          CatalogCrumb(label: l10n.catalogUnassigned, onTap: () => Navigator.pop(context)),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),

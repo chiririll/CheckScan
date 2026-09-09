@@ -84,16 +84,26 @@ void main() {
     await tester.pumpWidget(app(CatalogPage(state: state)));
     await tester.pump();
     expect(find.text('Молоко Леб'), findsOneWidget);
+    final search = tester.widget<TextField>(find.byType(TextField));
+    expect(search.decoration?.filled, isTrue);
+    expect(search.decoration?.fillColor, Colors.white);
     expect(find.text('• Молоко Леб 2.5% 1.7л'), findsOneWidget);
     expect(find.text('• МОЛОКО ЛЕБ 2,5% 0,93Л'), findsOneWidget);
     expect(find.text('• Молоко Леб 0.5л'), findsOneWidget);
     expect(find.text('и ещё 1'), findsOneWidget);
     expect(find.text('В товар'), findsNothing);
     expect(find.text('Не разобрано'), findsWidgets);
+    expect(find.text('Промпт'), findsNothing);
+    expect(find.text('Вставить'), findsNothing);
+    await tester.tap(find.byTooltip('Ещё'));
+    await tester.pumpAndSettle();
     expect(find.text('Промпт'), findsOneWidget);
     expect(find.text('Вставить'), findsOneWidget);
+    await tester.tapAt(const Offset(8, 8));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Товары').first);
     await tester.pump();
+    expect(find.byTooltip('Ещё'), findsNothing);
     expect(find.text('Промпт'), findsNothing);
     expect(find.text('Вставить'), findsNothing);
   });
@@ -106,10 +116,10 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.byType(DraftProductPage), findsOneWidget);
     expect(find.text('Создать товар'), findsOneWidget);
-    expect(find.byIcon(Icons.close), findsNWidgets(4));
-    await tester.tap(find.byIcon(Icons.close).first);
+    expect(find.descendant(of: find.byType(DraftProductPage), matching: find.byIcon(Icons.close)), findsNWidgets(4));
+    await tester.tap(find.descendant(of: find.byType(DraftProductPage), matching: find.byIcon(Icons.close)).first);
     await tester.pump();
-    expect(find.byIcon(Icons.close), findsNWidgets(3));
+    expect(find.descendant(of: find.byType(DraftProductPage), matching: find.byIcon(Icons.close)), findsNWidgets(3));
   });
 
   test('createProductWithPositions assigns the cluster', () async {

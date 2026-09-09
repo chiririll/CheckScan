@@ -561,6 +561,19 @@ class AppLocalizationsRu extends AppLocalizations {
   String get catalogAncestors => 'Назад по каталогу';
 
   @override
+  String get catalogMore => 'Ещё';
+
+  @override
+  String get productReceipts => 'В чеках';
+
+  @override
+  String get productReceiptsEmptyTitle => 'Пока нет чеков';
+
+  @override
+  String get productReceiptsEmptyBody =>
+      'Этот товар ещё не встречался в сохранённых чеках.';
+
+  @override
   String get productKind => 'Тип';
 
   @override
@@ -577,6 +590,9 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get similarItems => 'Похожие';
+
+  @override
+  String get dismissSuggestion => 'Не предлагать';
 
   @override
   String get attachItem => 'Привязать';
