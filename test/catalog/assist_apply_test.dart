@@ -3,13 +3,17 @@ import 'dart:io';
 import 'package:checkscan/core/catalog/assist_apply.dart';
 import 'package:checkscan/core/catalog/assist_draft.dart';
 import 'package:checkscan/core/catalog/catalog_repository.dart';
-import 'package:checkscan/core/catalog/item_unit.dart';
-import 'package:checkscan/core/storage/database.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+import 'package:checkscan/core/storage/database.dart';
+
 int _seq = 0;
+
+AssistMatchedPosition _hit(String id, String name) {
+  return AssistMatchedPosition(positionId: id, displayName: name, confidence: 1, rawLine: name);
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -32,74 +36,56 @@ void main() {
     await database.close();
   });
 
-  test('creates a product with category, unit and assigned positions', () async {
-    await catalog.ingest(['Молоко Леб 2.5% 1.7л']);
-    final position = (await catalog.listPositions()).single;
-    final dairy = (await catalog.listCategories()).firstWhere((e) => e.name == '#dairyEggs');
-    await applyAssistDraftToRepo(
-      repository: catalog,
-      products: const [],
-      draft: AssistDraft(
-        products: [
-          AssistDraftProduct(
-            name: 'Молоко',
-            existingCategoryId: dairy.id,
-            unit: ItemUnit.l,
-            positions: [AssistDraftPosition(id: position.id, unitSize: 1.7)],
-          ),
-        ],
-      ),
-    );
-    final product = (await catalog.listProducts()).single;
-    expect(product.name, 'Молоко');
-    expect(product.categoryId, dairy.id);
-    expect(product.unit, ItemUnit.l);
-    expect((await catalog.listPositions()).single.productId, product.id);
-    expect((await catalog.listPositions()).single.unitSize, 1.7);
-  });
-
-  test('does not overwrite unit or name of an existing product', () async {
-    await catalog.ingest(['Молоко Леб 2.5% 1.7л']);
-    final position = (await catalog.listPositions()).single;
-    final existing = await catalog.createProduct(name: 'Молоко', unit: ItemUnit.piece);
-    await applyAssistDraftToRepo(
-      repository: catalog,
-      products: [existing],
-      draft: AssistDraft(
-        products: [
-          AssistDraftProduct(
-            name: 'Milk',
-            existingProductId: existing.id,
-            unit: ItemUnit.l,
-            positions: [AssistDraftPosition(id: position.id)],
-          ),
-        ],
-      ),
-    );
-    final product = (await catalog.listProducts()).single;
-    expect(product.name, 'Молоко');
-    expect(product.unit, ItemUnit.piece);
-    expect((await catalog.listPositions()).single.productId, existing.id);
-  });
-
-  test('skips a removed new category and a removed product', () async {
-    await catalog.ingest(['Молоко Леб 2.5% 1.7л', 'Пельмени 400г']);
+  test('apply creates products and assigns matched positions', () async {
+    await catalog.ingest(['Молоко Леб 2.5% 1.7л', 'Хлеб дарницкий']);
     final positions = await catalog.listPositions();
-    final milk = positions.firstWhere((e) => e.displayName.startsWith('Молоко'));
+    final milk = positions.firstWhere((item) => item.displayName.startsWith('Молоко'));
+    final bread = positions.firstWhere((item) => item.displayName.startsWith('Хлеб'));
+    await applyAssistDraftToRepo(
+      repository: catalog,
+      draft: AssistDraft(
+        products: [
+          AssistDraftProduct(name: 'Молоко', positions: [_hit(milk.id, milk.displayName)]),
+          AssistDraftProduct(name: 'Хлеб', positions: [_hit(bread.id, bread.displayName)]),
+        ],
+      ),
+    );
+    final products = await catalog.listProducts();
+    expect(products.map((item) => item.name), containsAll(['Молоко', 'Хлеб']));
+    final assigned = {for (final item in await catalog.listPositions()) item.id: item.productId};
+    expect(assigned[milk.id], isNotNull);
+    expect(assigned[bread.id], isNotNull);
+    expect(assigned[milk.id], isNot(assigned[bread.id]));
+  });
+
+  test('cancel-equivalent empty draft does not create products', () async {
+    await catalog.ingest(['Молоко Леб 2.5% 1.7л']);
+    final position = (await catalog.listPositions()).single;
     var draft = AssistDraft(
-      newCategories: const [AssistNewCategory(key: 'заморозка', name: 'Заморозка')],
+      products: [AssistDraftProduct(name: 'Молоко', positions: [_hit(position.id, position.displayName)])],
+    );
+    draft = draft.withoutProduct(0);
+    await applyAssistDraftToRepo(repository: catalog, draft: draft);
+    expect(await catalog.listProducts(), isEmpty);
+    expect((await catalog.listPositions()).single.productId, isNull);
+  });
+
+  test('removed position is not assigned', () async {
+    await catalog.ingest(['Молоко Леб 2.5% 1.7л', 'МОЛОКО ЛЕБ 0.93Л']);
+    final positions = await catalog.listPositions();
+    var draft = AssistDraft(
       products: [
         AssistDraftProduct(
-          name: 'Пельмени',
-          newCategoryKey: 'заморозка',
-          positions: [AssistDraftPosition(id: positions.firstWhere((e) => e.displayName.startsWith('Пельмени')).id)],
+          name: 'Молоко',
+          positions: [for (final item in positions) _hit(item.id, item.displayName)],
         ),
-        AssistDraftProduct(name: 'Молоко', unit: ItemUnit.l, positions: [AssistDraftPosition(id: milk.id)]),
       ],
     );
-    draft = draft.withoutCategory('заморозка').withoutProduct(0);
-    await applyAssistDraftToRepo(repository: catalog, products: const [], draft: draft);
-    expect((await catalog.listCategories()).any((e) => e.name == 'Заморозка'), isFalse);
+    draft = draft.withoutPosition(0, positions.first.id);
+    await applyAssistDraftToRepo(repository: catalog, draft: draft);
     expect((await catalog.listProducts()).single.name, 'Молоко');
+    final left = await catalog.listPositions();
+    expect(left.firstWhere((item) => item.id == positions.first.id).productId, isNull);
+    expect(left.firstWhere((item) => item.id == positions.last.id).productId, isNotNull);
   });
 }

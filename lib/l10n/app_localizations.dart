@@ -1036,11 +1036,11 @@ abstract class AppLocalizations {
   /// **'Скопировать промпт'**
   String get assistCopyPrompt;
 
-  /// No description provided for @assistPasteJson.
+  /// No description provided for @assistPasteReply.
   ///
   /// In ru, this message translates to:
-  /// **'Вставить JSON'**
-  String get assistPasteJson;
+  /// **'Вставить ответ'**
+  String get assistPasteReply;
 
   /// No description provided for @assistCopyShort.
   ///
@@ -1072,17 +1072,11 @@ abstract class AppLocalizations {
   /// **'Применить'**
   String get assistApply;
 
-  /// No description provided for @assistNewCategories.
+  /// No description provided for @assistUnmatched.
   ///
   /// In ru, this message translates to:
-  /// **'Новые категории'**
-  String get assistNewCategories;
-
-  /// No description provided for @assistSkippedSome.
-  ///
-  /// In ru, this message translates to:
-  /// **'Часть строк пропущена'**
-  String get assistSkippedSome;
+  /// **'Не удалось сопоставить'**
+  String get assistUnmatched;
 
   /// No description provided for @assistErrorEmpty.
   ///
@@ -1090,16 +1084,10 @@ abstract class AppLocalizations {
   /// **'Буфер пуст'**
   String get assistErrorEmpty;
 
-  /// No description provided for @assistErrorNotJson.
-  ///
-  /// In ru, this message translates to:
-  /// **'Это не JSON'**
-  String get assistErrorNotJson;
-
   /// No description provided for @assistErrorNoProducts.
   ///
   /// In ru, this message translates to:
-  /// **'Нет списка товаров'**
+  /// **'Не удалось разобрать ответ'**
   String get assistErrorNoProducts;
 
   /// No description provided for @assistErrorNothing.

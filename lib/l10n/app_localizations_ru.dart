@@ -522,7 +522,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get assistCopyPrompt => 'Скопировать промпт';
 
   @override
-  String get assistPasteJson => 'Вставить JSON';
+  String get assistPasteReply => 'Вставить ответ';
 
   @override
   String get assistCopyShort => 'Промпт';
@@ -540,19 +540,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get assistApply => 'Применить';
 
   @override
-  String get assistNewCategories => 'Новые категории';
-
-  @override
-  String get assistSkippedSome => 'Часть строк пропущена';
+  String get assistUnmatched => 'Не удалось сопоставить';
 
   @override
   String get assistErrorEmpty => 'Буфер пуст';
 
   @override
-  String get assistErrorNotJson => 'Это не JSON';
-
-  @override
-  String get assistErrorNoProducts => 'Нет списка товаров';
+  String get assistErrorNoProducts => 'Не удалось разобрать ответ';
 
   @override
   String get assistErrorNothing => 'Нечего применять';

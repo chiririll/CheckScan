@@ -1,87 +1,40 @@
-import 'catalog_category.dart';
 import 'catalog_position.dart';
-import 'catalog_product.dart';
-import 'item_unit.dart';
 
-class AssistCategoryHint {
-  const AssistCategoryHint({required this.id, required this.label});
+const assistPromptItemsPlaceholder = '{ items }';
+const assistPromptLanguagePlaceholder = '{language}';
 
-  final String id;
-  final String label;
+/// Live `ru` prompt. Do not rephrase.
+const assistPromptRu =
+    'Можешь объединить позиции по товарам? Название товаров должно отражать только общий класс товара, все бренды в один товар, единица измерения в товар не пишется. Названия товаров пиши на русском. Формат ответа - товары со списком позиций, без пояснений и лишней информации. Названия позиций не меняются\n'
+    '\n'
+    '{ items }';
+
+/// Same instructions for later locales: product-name language is a placeholder.
+const assistPromptLocalized =
+    'Can you group the positions by product? Product names should reflect only the general product class, put every brand into one product, and do not write the unit of measure into the product name. Write product names in {language}. Response format: products with a list of positions, no explanations or extra information. Do not change position names.\n'
+    '\n'
+    '{ items }';
+
+String formatAssistPromptItems(Iterable<CatalogPosition> positions) {
+  return [for (final position in positions) '${position.id}: ${position.displayName}'].join('\n');
 }
 
-List<AssistCategoryHint> assistCategoryHints(
-  List<CatalogCategory> categories,
-  String Function(CatalogCategory category) labelOf,
-) {
-  final parents = {for (final category in categories) if (category.parentId != null) category.parentId!};
-  return [
-    for (final category in categories)
-      if (!parents.contains(category.id))
-        AssistCategoryHint(id: category.isSeed ? category.name : category.id, label: labelOf(category)),
-  ];
+String fillAssistPrompt(String template, {required String items, String? languageName}) {
+  var text = template.replaceAll(assistPromptItemsPlaceholder, items);
+  if (languageName != null) {
+    text = text.replaceAll(assistPromptLanguagePlaceholder, languageName);
+  }
+  return text;
 }
 
-String buildAssistPrompt({
-  required String languageName,
-  required List<AssistCategoryHint> categories,
-  required List<CatalogProduct> products,
-  required List<CatalogPosition> positions,
-}) {
-  final buffer = StringBuffer()
-    ..writeln('Разбери позиции чека в каталог.')
-    ..writeln('Язык приложения: $languageName. Названия товаров (products[].name) пиши на этом языке, без фасовки.')
-    ..writeln('Названия позиций из чека не меняй и не переводи.')
-    ..writeln('В category пиши id из списка ниже, не подпись. Новую категорию создавай только если ни одна не подходит — имя на языке приложения. Только низ или верх без детей.')
-    ..writeln('Единицы: ${[for (final unit in ItemUnit.values) unit.name].join(', ')}.')
-    ..writeln()
-    ..writeln('Категории:');
-  for (final category in categories) {
-    buffer.writeln('- id: ${category.id} | ${category.label}');
-  }
-  buffer.writeln();
-  if (products.isNotEmpty) {
-    buffer.writeln('Уже есть похожие товары:');
-    for (final product in products) {
-      buffer.writeln(
-        '- id: ${product.id} | ${product.name}'
-        '${product.unit == null ? '' : ' | unit: ${product.unit!.name}'}'
-        '${product.categoryId == null ? '' : ' | categoryId: ${product.categoryId}'}',
-      );
-    }
-    buffer.writeln();
-  }
-  buffer
-    ..writeln('Позиции:')
-    ..writeln('[');
-  for (var i = 0; i < positions.length; i++) {
-    final position = positions[i];
-    final size = position.unitSize;
-    buffer.write('  {"id": "${position.id}", "name": ${_jsonString(position.displayName)}');
-    if (size != null) buffer.write(', "unitSize": $size');
-    buffer.write('}');
-    if (i != positions.length - 1) buffer.write(',');
-    buffer.writeln();
-  }
-  buffer
-    ..writeln(']')
-    ..writeln()
-    ..writeln('Верни только JSON:')
-    ..writeln('{')
-    ..writeln('  "categories": [{"name": "Новая категория"}],')
-    ..writeln('  "products": [')
-    ..writeln('    {')
-    ..writeln('      "name": "Товар",')
-    ..writeln('      "category": "#dairyEggs",')
-    ..writeln('      "unit": "l",')
-    ..writeln('      "existingProductId": null,')
-      ..writeln('      "positions": [{"id": "<id из списка>", "unitSize": 1.7}]')
-    ..writeln('    }')
-    ..writeln('  ]')
-    ..writeln('}');
-  return buffer.toString();
+String buildAssistPrompt(List<CatalogPosition> positions) {
+  return fillAssistPrompt(assistPromptRu, items: formatAssistPromptItems(positions));
 }
 
-String _jsonString(String value) {
-  return '"${value.replaceAll(r'\', r'\\').replaceAll('"', r'\"')}"';
+String buildAssistPromptLocalized({required String languageName, required List<CatalogPosition> positions}) {
+  return fillAssistPrompt(
+    assistPromptLocalized,
+    items: formatAssistPromptItems(positions),
+    languageName: languageName,
+  );
 }

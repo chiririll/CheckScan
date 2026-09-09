@@ -69,7 +69,7 @@ class _CatalogPageState extends State<CatalogPage> with SingleTickerProviderStat
                 CatalogAction(
                   label: l10n.assistPasteShort,
                   enabled: widget.state.catalog.unassigned.isNotEmpty,
-                  onSelected: () => pasteAssistJson(context, widget.state),
+                  onSelected: () => pasteAssistReply(context, widget.state),
                 ),
               ],
             ],

@@ -1,96 +1,83 @@
-import 'item_unit.dart';
+enum AssistParseError { empty, noProducts, nothingToApply }
 
-enum AssistParseError { empty, notJson, noProducts, nothingToApply }
+class AssistMatchedPosition {
+  const AssistMatchedPosition({
+    required this.positionId,
+    required this.displayName,
+    required this.confidence,
+    required this.rawLine,
+  });
 
-class AssistNewCategory {
-  const AssistNewCategory({required this.key, required this.name});
-
-  final String key;
-  final String name;
+  final String positionId;
+  final String displayName;
+  final double confidence;
+  final String rawLine;
 }
 
-class AssistDraftPosition {
-  const AssistDraftPosition({required this.id, this.unitSize});
+class AssistUnmatchedLine {
+  const AssistUnmatchedLine({required this.raw});
 
-  final String id;
-  final double? unitSize;
+  final String raw;
 }
 
 class AssistDraftProduct {
-  const AssistDraftProduct({
-    required this.name,
-    this.existingProductId,
-    this.existingCategoryId,
-    this.newCategoryKey,
-    this.unit,
-    this.positions = const [],
-  });
+  const AssistDraftProduct({required this.name, this.positions = const []});
 
   final String name;
-  final String? existingProductId;
-  final String? existingCategoryId;
-  final String? newCategoryKey;
-  final ItemUnit? unit;
-  final List<AssistDraftPosition> positions;
+  final List<AssistMatchedPosition> positions;
 
-  AssistDraftProduct copyWith({
-    String? existingCategoryId,
-    String? newCategoryKey,
-    bool clearCategory = false,
-    List<AssistDraftPosition>? positions,
-  }) {
-    return AssistDraftProduct(
-      name: name,
-      existingProductId: existingProductId,
-      existingCategoryId: clearCategory ? null : (existingCategoryId ?? this.existingCategoryId),
-      newCategoryKey: clearCategory ? null : (newCategoryKey ?? this.newCategoryKey),
-      unit: unit,
-      positions: positions ?? this.positions,
-    );
+  AssistDraftProduct copyWith({String? name, List<AssistMatchedPosition>? positions}) {
+    return AssistDraftProduct(name: name ?? this.name, positions: positions ?? this.positions);
   }
 }
 
 class AssistDraft {
-  const AssistDraft({this.newCategories = const [], this.products = const [], this.skippedCount = 0});
+  const AssistDraft({this.products = const [], this.unmatched = const []});
 
-  final List<AssistNewCategory> newCategories;
   final List<AssistDraftProduct> products;
-  final int skippedCount;
+  final List<AssistUnmatchedLine> unmatched;
 
-  bool get isEmpty => newCategories.isEmpty && products.isEmpty;
+  bool get isEmpty => products.isEmpty && unmatched.isEmpty;
 
-  AssistDraft withoutCategory(String key) {
+  bool get canApply => products.any((product) => product.positions.isNotEmpty);
+
+  AssistDraft renameProduct(int index, String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return this;
     return AssistDraft(
-      newCategories: [for (final category in newCategories) if (category.key != key) category],
       products: [
-        for (final product in products)
-          product.newCategoryKey == key ? product.copyWith(clearCategory: true) : product,
+        for (var i = 0; i < products.length; i++) i == index ? products[i].copyWith(name: trimmed) : products[i],
       ],
-      skippedCount: skippedCount,
+      unmatched: unmatched,
     );
   }
 
   AssistDraft withoutProduct(int index) {
     return AssistDraft(
-      newCategories: newCategories,
       products: [for (var i = 0; i < products.length; i++) if (i != index) products[i]],
-      skippedCount: skippedCount,
+      unmatched: unmatched,
     );
   }
 
   AssistDraft withoutPosition(int productIndex, String positionId) {
     return AssistDraft(
-      newCategories: newCategories,
       products: [
         for (var i = 0; i < products.length; i++)
           if (i == productIndex)
             products[i].copyWith(
-              positions: [for (final position in products[i].positions) if (position.id != positionId) position],
+              positions: [for (final position in products[i].positions) if (position.positionId != positionId) position],
             )
           else
             products[i],
       ],
-      skippedCount: skippedCount,
+      unmatched: unmatched,
+    );
+  }
+
+  AssistDraft withoutUnmatched(int index) {
+    return AssistDraft(
+      products: products,
+      unmatched: [for (var i = 0; i < unmatched.length; i++) if (i != index) unmatched[i]],
     );
   }
 }

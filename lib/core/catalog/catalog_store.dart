@@ -263,7 +263,7 @@ class CatalogStore extends ChangeNotifier {
   }
 
   Future<void> applyAssistDraft(AssistDraft draft) async {
-    await applyAssistDraftToRepo(repository: _repository, draft: draft, products: products);
+    await applyAssistDraftToRepo(repository: _repository, draft: draft);
     await _afterCatalogChange();
   }
 
