@@ -16,72 +16,34 @@ class AssistParsedReply {
   bool get isEmpty => groups.isEmpty;
 }
 
-final _headingMarks = RegExp(r'^#{1,6}\s+');
-final _bulletMarks = RegExp(r'^[*+\-•–—]\s+');
-final _numberedList = RegExp(r'^\d+[.)]\s+');
-final _boldWrap = RegExp(r'\*{1,2}([^*]+)\*{1,2}');
-final _italicWrap = RegExp(r'_{1,2}([^_]+)_{1,2}');
-final _labelPrefix = RegExp(r'^(товар|product|категория|группа)\s*[:\-–]\s*', caseSensitive: false);
 final _fence = RegExp(r'^```');
-final _packSize = RegExp(
-  r'\d+(?:[.,]\d+)?\s*(?:г|гр|g|кг|kg|мл|ml|л|l|шт|kom|ком|уп)',
-  caseSensitive: false,
-);
-final _idThenName = RegExp(r'^(\S{1,16})\s*[:\-–]\s+(.+)$');
-final _latinCapsWord = RegExp(r'[A-Z]{3,}');
-final _letter = RegExp(r'\p{L}', unicode: true);
-final _preamble = RegExp(
-  r'^(вот|конечно|ниже|результат|группировка|хорошо|ок|here|sure|okay|ok|the|i)\b',
-  caseSensitive: false,
-);
+final _punctRun = RegExp(r'^([^\s\p{L}\p{N}])\1*\s+(.*)$', unicode: true);
+final _numbered = RegExp(r'^\d+([.)])\s+(.*)$');
+final _letterLabel = RegExp(r'^(\p{L}+)\s*:\s+(.*)$', unicode: true);
+
+/// Leading marker on a line, if any.
+///
+/// Type is the marker family, not a hardcoded role: a run of the same
+/// punctuation (`###` and `#` → `#`; `*` → `*`), a numbered delimiter
+/// (`1.` / `2.` → `.`), or a letter word plus colon (`Товар:` → `:`).
+({String type, String text})? assistLinePrefix(String raw) {
+  final line = raw.trim();
+  if (line.isEmpty || _fence.hasMatch(line)) return null;
+  final punct = _punctRun.firstMatch(line);
+  if (punct != null) return (type: punct[1]!, text: punct[2]!.trim());
+  final numbered = _numbered.firstMatch(line);
+  if (numbered != null) return (type: numbered[1]!, text: numbered[2]!.trim());
+  final label = _letterLabel.firstMatch(line);
+  if (label != null) return (type: ':', text: label[2]!.trim());
+  return null;
+}
 
 String cleanAssistLine(String raw) {
-  var line = raw.trim();
+  final marked = assistLinePrefix(raw);
+  if (marked != null) return marked.text;
+  final line = raw.trim();
   if (line.isEmpty || _fence.hasMatch(line)) return '';
-  line = line.replaceFirst(_headingMarks, '');
-  line = line.replaceFirst(_bulletMarks, '');
-  line = line.replaceFirst(_numberedList, '');
-  line = line.replaceAllMapped(_boldWrap, (match) => match[1] ?? '');
-  line = line.replaceAllMapped(_italicWrap, (match) => match[1] ?? '');
-  line = line.replaceFirst(_labelPrefix, '');
-  return line.trim();
-}
-
-bool looksLikePositionLine(String line) {
-  if (line.isEmpty) return false;
-  if (_packSize.hasMatch(line)) return true;
-  if (line.length >= 28) return true;
-  final id = _idThenName.firstMatch(line);
-  if (id != null) {
-    final prefix = id[1]!;
-    final rest = id[2]!;
-    if (RegExp(r'^\d+$').hasMatch(prefix) && rest.isNotEmpty) return true;
-    if (rest.length >= 16) return true;
-  }
-  return _latinCapsWord.allMatches(line).length >= 2 && line.length >= 12;
-}
-
-bool looksLikePreamble(String line) {
-  if (_preamble.hasMatch(line)) return true;
-  if (line.length > 48 && line.contains(' ')) return true;
-  return RegExp(r'[.!?]$').hasMatch(line) && line.length > 24;
-}
-
-bool looksLikeProductTitle(String line) {
-  if (line.isEmpty || looksLikePositionLine(line) || looksLikePreamble(line)) return false;
-  if (line.length > 42) return false;
-  final words = [for (final part in line.split(RegExp(r'\s+'))) if (part.isNotEmpty) part];
-  if (words.isEmpty || words.length > 5) return false;
-  if (RegExp(r'[.!?]$').hasMatch(line) && words.length > 2) return false;
-  var letters = 0;
-  var chars = 0;
-  for (final rune in line.runes) {
-    final ch = String.fromCharCode(rune);
-    if (ch.trim().isEmpty) continue;
-    chars += 1;
-    if (_letter.hasMatch(ch)) letters += 1;
-  }
-  return chars > 0 && letters / chars >= 0.7;
+  return line;
 }
 
 AssistParsedReply parseAssistReply(String raw) {
@@ -89,7 +51,7 @@ AssistParsedReply parseAssistReply(String raw) {
   if (fromJson != null) return fromJson;
 
   final groups = <AssistParsedGroup>[];
-  final orphans = <String>[];
+  String? productType;
   String? currentName;
   var currentLines = <String>[];
 
@@ -102,36 +64,26 @@ AssistParsedReply parseAssistReply(String raw) {
   }
 
   for (final rawLine in raw.split(RegExp(r'\r?\n'))) {
-    final line = cleanAssistLine(rawLine);
-    if (line.isEmpty) continue;
-    if (looksLikePositionLine(line)) {
-      if (currentName == null) {
-        orphans.add(line);
-      } else {
-        currentLines.add(line);
-      }
+    final trimmed = rawLine.trim();
+    if (trimmed.isEmpty || _fence.hasMatch(trimmed)) continue;
+
+    final marked = assistLinePrefix(trimmed);
+    if (marked == null) {
+      if (currentName != null) currentLines.add(trimmed);
       continue;
     }
-    if (looksLikePreamble(line)) continue;
-    if (looksLikeProductTitle(line)) {
-      if (currentName != null && currentLines.isEmpty) {
-        currentName = line;
-      } else {
-        flush();
-        currentName = line;
-        currentLines = [];
-      }
-      continue;
-    }
-    if (currentName != null) {
-      currentLines.add(line);
+
+    productType ??= marked.type;
+    if (marked.type == productType) {
+      flush();
+      currentName = marked.text;
+      currentLines = [];
+    } else if (currentName != null) {
+      currentLines.add(marked.text);
     }
   }
   flush();
-  return AssistParsedReply(
-    groups: [for (final group in groups) if (group.lines.isNotEmpty) group],
-    orphans: orphans,
-  );
+  return AssistParsedReply(groups: [for (final group in groups) if (group.lines.isNotEmpty) group]);
 }
 
 AssistParsedReply? _tryParseJson(String raw) {
