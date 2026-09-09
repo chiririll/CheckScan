@@ -1,6 +1,22 @@
 import 'package:checkscan/core/catalog/assist_parse.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+const _realLlmReply = '''
+### Фасоль
+
+* 25016: PASULJ CRVENI  400G LIM. BONDUELLE KONZERVA/KOM
+
+### Айвар
+
+* 28011: AJVAR DOMA\uFFFDI LJUTI BA\uFFFD BA\uFFFD 350G/KOM
+
+### Печенье
+
+* 28130: KEKS NOBLICE THINS BANINI 170G/KOM
+* Biskvit Jaffa 300g/KOM
+* Jaffa kolaci brownie 75g/KOM
+''';
+
 const _eggsMarkdown = '''
 ### Яйца
 * 28900: JAJA M GRUPE 10/1 BJEKIC/Kom
@@ -13,7 +29,28 @@ const _eggsMarkdown = '''
 * 27001: ULJE SUNCOKRETOVO 1L/KOM
 ''';
 
+void _expectRealLlmGroups(AssistParsedReply parsed) {
+  expect(parsed.groups.map((group) => group.productName), ['Фасоль', 'Айвар', 'Печенье']);
+  expect(parsed.groups[0].lines.single, contains('PASULJ CRVENI'));
+  expect(parsed.groups[1].lines.single, contains('AJVAR DOMA'));
+  expect(parsed.groups[2].lines, [
+    '28130: KEKS NOBLICE THINS BANINI 170G/KOM',
+    'Biskvit Jaffa 300g/KOM',
+    'Jaffa kolaci brownie 75g/KOM',
+  ]);
+}
+
 void main() {
+  test('real LLM markdown with blank lines is three products', () {
+    expect(assistLinePrefix('### Фасоль')?.type, '#');
+    expect(assistLinePrefix('* 25016: PASULJ')?.type, '*');
+    expect(assistLinePrefix('25016: PASULJ CRVENI'), isNull);
+    _expectRealLlmGroups(parseAssistReply(_realLlmReply));
+    _expectRealLlmGroups(parseAssistReply('  \n$_realLlmReply\n  '));
+    _expectRealLlmGroups(parseAssistReply(_realLlmReply.replaceAll('\n', '\r\n')));
+    _expectRealLlmGroups(parseAssistReply(_realLlmReply.replaceAll('\n', '\r')));
+  });
+
   test('first markdown heading type is product, other prefix is position', () {
     const kokos = 'Kokos.jaja 10 1 M Maxi/KOM';
     final parsed = parseAssistReply(_eggsMarkdown);
@@ -71,6 +108,11 @@ void main() {
     expect(parseAssistReply('').groups, isEmpty);
     expect(parseAssistReply('просто текст без товаров').groups, isEmpty);
     expect(parseAssistReply('{"products":[]}').groups, isEmpty);
+  });
+
+  test('empty JSON preamble does not swallow markdown groups', () {
+    final parsed = parseAssistReply('{"products":[]}\n$_realLlmReply');
+    _expectRealLlmGroups(parsed);
   });
 
   test('accepts a trivial products JSON list', () {

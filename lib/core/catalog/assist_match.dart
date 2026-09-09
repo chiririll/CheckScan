@@ -102,7 +102,7 @@ AssistDraft matchAssistGroups(
   return AssistDraft(
     products: [
       for (var i = 0; i < groups.length; i++)
-        if (byGroup[i] case final positions?) AssistDraftProduct(name: groups[i].productName, positions: positions),
+        AssistDraftProduct(name: groups[i].productName, positions: byGroup[i] ?? const []),
     ],
     unmatched: unmatched,
   );

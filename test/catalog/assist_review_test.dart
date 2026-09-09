@@ -125,6 +125,33 @@ void main() {
     expect(state.catalog.unassigned.any((item) => item.displayName.startsWith('Молоко')), isFalse);
   });
 
+  testWidgets('review lists parsed products even when none matched', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ru'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        home: AssistReviewPage(
+          state: state,
+          draft: const AssistDraft(
+            products: [
+              AssistDraftProduct(name: 'Фасоль'),
+              AssistDraftProduct(name: 'Айвар'),
+              AssistDraftProduct(name: 'Печенье'),
+            ],
+            unmatched: [AssistUnmatchedLine(raw: '25016: PASULJ CRVENI  400G LIM. BONDUELLE KONZERVA/KOM')],
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('Фасоль'), findsOneWidget);
+    expect(find.text('Айвар'), findsOneWidget);
+    expect(find.text('Печенье'), findsOneWidget);
+    expect(find.text('Не удалось сопоставить'), findsOneWidget);
+    expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Применить')).onPressed, isNull);
+  });
+
   testWidgets('cancel leaves the catalog unchanged', (tester) async {
     await openReview(tester);
     expect(find.text('Применить'), findsOneWidget);
