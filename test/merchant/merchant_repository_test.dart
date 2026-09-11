@@ -38,11 +38,16 @@ void main() {
     await database.close();
   });
 
-  test('seeds known merchants and resolves an alias to Maxi', () async {
+  test('starts with no merchants', () async {
+    expect(await merchants.listAll(), isEmpty);
+  });
+
+  test('resolve creates a merchant from the receipt name', () async {
     final id = await merchants.resolve(name: 'DELHAIZE SERBIA DOO BEOGRAD');
     final merchant = await merchants.findById(id);
-    expect(merchant?.name, 'Maxi');
+    expect(merchant?.name, 'DELHAIZE SERBIA DOO BEOGRAD');
     expect(merchant?.policy, MerchantPolicy.parse);
+    expect(await merchants.resolve(name: 'DELHAIZE SERBIA DOO BEOGRAD'), id);
   });
 
   test('ignore policy keeps receipt lines out of the catalog', () async {

@@ -1,7 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../../catalog/category_seeder.dart';
-import '../../merchant/merchant_seeder.dart';
 import 'migration.dart';
 
 final v6CatalogModel = Migration(version: 6, up: migrateToCatalogModel);
@@ -115,7 +114,6 @@ Future<void> _ensureSatellites(DatabaseExecutor db) async {
   if (await tableExists(db, 'receipts') && !await columnExists(db, 'receipts', 'merchant_id')) {
     await db.execute('ALTER TABLE receipts ADD COLUMN merchant_id INTEGER');
   }
-  await seedKnownMerchants(db);
 }
 
 class _LegacySnapshot {

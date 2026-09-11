@@ -2,7 +2,6 @@ import 'package:sqflite/sqflite.dart';
 
 import '../storage/database.dart';
 import 'merchant.dart';
-import 'merchant_seeder.dart';
 
 class MerchantRepository {
   MerchantRepository({required this.database});
@@ -106,9 +105,5 @@ class MerchantRepository {
       'tax_id': trimmedTax,
       'merchant_id': int.parse(merchantId),
     }, conflictAlgorithm: ConflictAlgorithm.ignore);
-  }
-
-  Future<void> seedIfNeeded() async {
-    await seedKnownMerchants(await _db);
   }
 }
