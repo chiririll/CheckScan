@@ -48,6 +48,7 @@ void main() {
         id: 'r1',
         issuedAt: DateTime(2026, 8, 1),
         currency: 'RUB',
+        scale: 2,
         type: 'sale',
         merchantName: 'Магнит',
         total: 9000,

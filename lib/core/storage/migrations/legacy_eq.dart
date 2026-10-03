@@ -1,5 +1,11 @@
 import 'package:receipt_model/receipt_model.dart';
 
+/// ISO 4217 minor-unit digits that differ from 2. Only legacy data needs this:
+/// new receipts carry the scale their provider set.
+const _isoScale = {'JPY': 0, 'KRW': 0, 'VND': 0, 'BHD': 3, 'KWD': 3, 'OMR': 3, 'TND': 3};
+
+int legacyScale(String currency) => _isoScale[currency.toUpperCase()] ?? 2;
+
 /// Converts a stored eQ 1.0 receipt (`{eq_version, receipt}` or the bare receipt)
 /// into the CheckScan format. Used only by the v8 migration.
 Receipt receiptFromEq(Map<String, dynamic> json) {
@@ -7,12 +13,13 @@ Receipt receiptFromEq(Map<String, dynamic> json) {
   final merchant = body['merchant'] is Map ? Map<String, dynamic>.from(body['merchant'] as Map) : const {};
   final totals = body['totals'] is Map ? Map<String, dynamic>.from(body['totals'] as Map) : const {};
   final currency = '${body['currency'] ?? 'RUB'}';
-  final exp = minorExponent(currency);
+  final exp = legacyScale(currency);
   final rawItems = body['items'];
   return Receipt(
     id: '${body['id'] ?? ''}',
     issuedAt: DateTime.tryParse('${body['issued_at']}') ?? DateTime.now(),
     currency: currency,
+    scale: exp,
     type: '${body['receipt_type'] ?? 'sale'}',
     merchantName: merchant['name']?.toString(),
     taxId: merchant['tax_id']?.toString(),

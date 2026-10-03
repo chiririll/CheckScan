@@ -1,3 +1,5 @@
+import 'package:receipt_model/receipt_model.dart';
+
 import '../../core/merchant/merchant.dart';
 import '../../core/models/receipt_record.dart';
 import 'home_period.dart';
@@ -23,7 +25,12 @@ class MerchantTeaser {
 
 /// Home screen figures for one month and one currency.
 class HomeDashboard {
-  const HomeDashboard({required this.spent, required this.receiptCount, required this.merchants});
+  const HomeDashboard({
+    required this.spent,
+    required this.spentScale,
+    required this.receiptCount,
+    required this.merchants,
+  });
 
   factory HomeDashboard.of({
     required List<ReceiptRecord> receipts,
@@ -35,15 +42,19 @@ class HomeDashboard {
       for (final receipt in receipts)
         if (receipt.currency == currency && period.contains(receipt.at)) receipt,
     ];
+    // Providers of one currency may differ in precision: sum at the finest scale.
+    final scale = scoped.fold<int>(0, (finest, receipt) => receipt.scale > finest ? receipt.scale : finest);
     return HomeDashboard(
-      spent: scoped.fold<int>(0, (sum, receipt) => sum + receipt.total),
+      spent: scoped.fold<int>(0, (sum, receipt) => sum + rescaleMinor(receipt.total, receipt.scale, scale)),
+      spentScale: scale,
       receiptCount: scoped.length,
       merchants: MerchantTeaser.of(merchants),
     );
   }
 
-  /// Minor units.
+  /// Total of the period, counting 10^-[spentScale] currency units.
   final int spent;
+  final int spentScale;
   final int receiptCount;
   final MerchantTeaser merchants;
 

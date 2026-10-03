@@ -24,17 +24,19 @@ class ReceiptItemList extends StatelessWidget {
         const Divider(),
         Text(l10n.itemsSection, style: AppText.title),
         const SizedBox(height: 8),
-        for (final item in items) _ItemRow(item: item, currency: record.currency),
+        for (final item in items) _ItemRow(item: item, receipt: record.receipt),
       ],
     );
   }
 }
 
 class _ItemRow extends StatelessWidget {
-  const _ItemRow({required this.item, required this.currency});
+  const _ItemRow({required this.item, required this.receipt});
 
   final ReceiptItem item;
-  final String currency;
+  final Receipt receipt;
+
+  String _money(int minor) => formatMoney(minor, scale: receipt.scale, currency: receipt.currency);
 
   @override
   Widget build(BuildContext context) {
@@ -50,13 +52,13 @@ class _ItemRow extends StatelessWidget {
               children: [
                 Text(item.name),
                 Text(
-                  l10n.qtyPrice(formatQty(item.quantity), formatMoney(item.price, currency)),
+                  l10n.qtyPrice(formatQty(item.quantity), _money(item.price)),
                   style: const TextStyle(color: AppColors.muted, fontSize: 12),
                 ),
               ],
             ),
           ),
-          Text(formatMoney(item.sum, currency), style: AppText.title),
+          Text(_money(item.sum), style: AppText.title),
         ],
       ),
     );

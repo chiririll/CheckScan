@@ -34,6 +34,7 @@ class _SlowNetworkAdapter extends FakeNativeAdapter {
         id: 'ru-rich',
         issuedAt: DateTime(2026, 8, 28, 18, 42),
         currency: 'RUB',
+        scale: 2,
         type: 'sale',
         merchantName: 'Пятёрочка',
         total: 124700,

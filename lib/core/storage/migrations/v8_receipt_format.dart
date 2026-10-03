@@ -63,7 +63,8 @@ Receipt _convert(Map<String, Object?> row) {
     final decoded = jsonDecode(payload);
     if (decoded is Map) {
       final json = Map<String, dynamic>.from(decoded);
-      return Receipt.isReceiptJson(json) ? Receipt.fromJson(json) : receiptFromEq(json);
+      // A payload already in the CheckScan format may predate `scale`.
+      return Receipt.isReceiptJson(json) ? Receipt.fromJson({'scale': legacyScale('${json['currency']}'), ...json}) : receiptFromEq(json);
     }
   } catch (_) {}
   // Unreadable payload: keep what the columns know.
@@ -72,7 +73,8 @@ Receipt _convert(Map<String, Object?> row) {
     id: row.str('id'),
     issuedAt: row.date('issued_at') ?? row.date('scanned_at') ?? DateTime.now(),
     currency: currency,
-    total: legacyMinor(row['grand_total'], minorExponent(currency)),
+    scale: legacyScale(currency),
+    total: legacyMinor(row['grand_total'], legacyScale(currency)),
     merchantName: row.optStr('merchant_name'),
   );
 }

@@ -16,7 +16,7 @@ Lint: [analysis_options.yaml](analysis_options.yaml).
 | [lib/core/merchant/](lib/core/merchant/) | Merchants: repository and `MerchantStore` |
 | [lib/core/util/](lib/core/util/) | Collection helpers (`firstWhereOrNull`, `groupBy`) |
 | [lib/features/](lib/features/) | Screens by feature; shared widgets in `widgets/` |
-| [packages/receipt_model](packages/receipt_model/) | Receipt JSON (`format: checkscan.receipt`); money is `int` minor units, never `double` |
+| [packages/receipt_model](packages/receipt_model/) | Receipt JSON (`format: checkscan.receipt`); money is `int` with a provider-set `scale`, never `double` |
 | [test/](test/) | Dart tests (`flutter test`) |
 
 Providers and FFI: [CheckScanProviders](https://github.com/chiririll/CheckScanProviders) (`providers_native` git dep, `ref` in [pubspec.yaml](pubspec.yaml)). Native `.so` comes from that repo's GitHub Release.
@@ -37,7 +37,7 @@ QR formats and provider IDs live in CheckScanProviders. Do not add Dart-side ada
 - Android first. UI is Russian only (`ru`). Strings: [lib/l10n/app_ru.arb](lib/l10n/app_ru.arb); gen config: [l10n.yaml](l10n.yaml).
 - Provider changes go in CheckScanProviders. Bump the `providers_native` git `ref` here after a release.
 - Settings schema comes from CheckScanProviders `checkscan_settings`. Persist locally and `configure` the native library. Do not hardcode API names or tokens.
-- Money is integer minor units end to end (`receipt_model`: `parseMinor`, `minorExponent`; `formatMoney` takes `int`). Never store or compute money as `double`.
+- Money is an `int` scaled by the receipt's `scale`, which the provider sets (CheckScanProviders). Never derive the scale from the currency and never store or compute money as `double`; `formatMoney` takes the amount and its `scale`, mixed scales go through `rescaleMinor`.
 - New code needs tests. Dart: [test/](test/) (`flutter test`; scan path uses [fake_native_adapter.dart](test/scan/fake_native_adapter.dart)).
 - Keep files small. Split growing files into modules; split a module when it starts doing more than one job.
 - Before adding or bumping a Flutter/Dart plugin, look up the current stable version on [pub.dev](https://pub.dev) (or `flutter pub outdated`) and use that constraint. Do not pick a remembered older version. Confirm it matches this repo's Flutter/Android (AGP) bounds.

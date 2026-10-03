@@ -11,13 +11,14 @@ import 'migrations/v5_position_brand.dart';
 import 'migrations/v6_catalog_model.dart';
 import 'migrations/v7_suggestion_ignore.dart';
 import 'migrations/v8_receipt_format.dart';
+import 'migrations/v9_receipt_scale.dart';
 
 export 'migrations/v1_receipts.dart' show createReceiptsTable;
 export 'migrations/v3_catalog.dart' show createCatalogTables;
 export 'migrations/v4_product_units.dart' show migrateCatalogUnitsToProducts;
 export 'migrations/v5_position_brand.dart' show migratePositionBrand;
 
-const checkScanDbVersion = 8;
+const checkScanDbVersion = 9;
 
 final checkScanMigrations = [
   v1Receipts,
@@ -28,6 +29,7 @@ final checkScanMigrations = [
   v6CatalogModel,
   v7SuggestionIgnore,
   v8ReceiptFormat,
+  v9ReceiptScale,
 ];
 
 class CheckScanDatabase {

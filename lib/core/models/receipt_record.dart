@@ -13,6 +13,7 @@ class ReceiptRecord {
     required this.issuedAt,
     required this.merchantName,
     required this.total,
+    required this.scale,
     required this.currency,
     required this.itemCount,
     required this.payload,
@@ -28,8 +29,11 @@ class ReceiptRecord {
   final ReceiptStatus status;
   final DateTime? issuedAt;
   final String? merchantName;
-  /// Receipt total in the currency's minor units.
+  /// Receipt total, counting 10^-[scale] units of [currency].
   final int total;
+
+  /// Decimal digits of [total], as set by the provider.
+  final int scale;
   final String currency;
   final int itemCount;
   final String payload;
@@ -59,6 +63,7 @@ class ReceiptRecord {
         id: id,
         issuedAt: at,
         currency: currency.isEmpty ? 'RUB' : currency,
+        scale: scale,
         total: total,
         merchantName: merchantName,
       );

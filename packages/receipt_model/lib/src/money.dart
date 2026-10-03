@@ -1,17 +1,3 @@
-/// ISO 4217 exponents that differ from the default of 2.
-const _minorDigits = {
-  'JPY': 0,
-  'KRW': 0,
-  'VND': 0,
-  'BHD': 3,
-  'KWD': 3,
-  'OMR': 3,
-  'TND': 3,
-};
-
-/// Decimal digits of the currency's minor unit (RUB, RSD: 2).
-int minorExponent(String currency) => _minorDigits[currency.toUpperCase()] ?? 2;
-
 final _decimal = RegExp(r'^([+-]?)(\d*)(?:[.,](\d*))?$');
 
 /// Reads "1247.5", "-3", "1247,50" into minor units with [exp] fraction digits.
@@ -32,6 +18,22 @@ int? parseMinor(String raw, int exp) {
   var value = int.parse(digits) + (roundUp ? 1 : 0);
   if (match[1] == '-') value = -value;
   return value;
+}
+
+/// Moves [value] from [fromScale] to [toScale] decimal digits, rounding half away
+/// from zero when digits are dropped.
+int rescaleMinor(int value, int fromScale, int toScale) {
+  var result = value;
+  for (var scale = fromScale; scale < toScale; scale++) {
+    result *= 10;
+  }
+  if (fromScale <= toScale) return result;
+  var divisor = 1;
+  for (var scale = fromScale; scale > toScale; scale--) {
+    divisor *= 10;
+  }
+  final half = divisor ~/ 2;
+  return result < 0 ? -((-result + half) ~/ divisor) : (result + half) ~/ divisor;
 }
 
 /// Splits [minor] into whole units and the zero-padded fraction for display.

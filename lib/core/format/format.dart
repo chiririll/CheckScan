@@ -8,9 +8,10 @@ final _dateTime = DateFormat('d MMMM y, HH:mm', 'ru');
 
 const _currencySymbols = {'RUB': '₽', 'RSD': 'дин.'};
 
-/// [minor] is in the currency's minor units. Whole amounts drop the fraction: "1 247 ₽", "178,50 ₽".
-String formatMoney(int minor, [String currency = 'RUB']) {
-  final parts = splitMinor(minor, minorExponent(currency));
+/// [minor] counts 10^-[scale] units of [currency]. Whole amounts drop the fraction:
+/// "1 247 ₽", "178,50 ₽".
+String formatMoney(int minor, {required int scale, String currency = 'RUB'}) {
+  final parts = splitMinor(minor, scale);
   final whole = _grouped.format(parts.whole);
   final hasFraction = parts.fraction.isNotEmpty && int.parse(parts.fraction) != 0;
   final amount = hasFraction ? '$whole,${parts.fraction}' : whole;

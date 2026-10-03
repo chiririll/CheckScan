@@ -34,14 +34,16 @@ void main() {
     expect(splitMinor(99, 0), (negative: false, whole: 99, fraction: ''));
   });
 
-  test('minorExponent defaults to 2', () {
-    expect(minorExponent('RUB'), 2);
-    expect(minorExponent('rsd'), 2);
-    expect(minorExponent('JPY'), 0);
+  test('rescaleMinor moves between precisions without floats', () {
+    expect(rescaleMinor(1247, 0, 2), 124700);
+    expect(rescaleMinor(12345678, 4, 2), 123457);
+    expect(rescaleMinor(-150, 2, 0), -2);
+    expect(rescaleMinor(42, 2, 2), 42);
   });
 
   test('decodes what the native library returns for an eQ QR', () {
     final receipt = Receipt.fromJson(_nativeReceipt('resolve_eq_payload.json'));
+    expect(receipt.scale, 2);
     expect(receipt.total, 124700);
     expect(receipt.merchantName, 'Пятёрочка');
     expect(receipt.items.single.name, 'Молоко 1 л');
@@ -67,6 +69,11 @@ void main() {
     expect(again.total, original.total);
     expect(again.items.single.sum, 17800);
     expect(again.issuedAt, original.issuedAt);
+  });
+
+  test('refuses a receipt without the provider scale', () {
+    final json = _nativeReceipt('resolve_eq_payload.json')..remove('scale');
+    expect(() => Receipt.fromJson(json), throwsFormatException);
   });
 
   test('refuses eQ and other formats', () {

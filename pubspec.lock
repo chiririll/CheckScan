@@ -545,11 +545,11 @@ packages:
     dependency: "direct main"
     description:
       path: "adapters/flutter"
-      ref: "v0.3.0"
-      resolved-ref: c9825abff027a43270b21174d45bef988ef20479
+      ref: "v0.3.1"
+      resolved-ref: "0bfce7973b873ec914075c0e460be9dd1c59818c"
       url: "git@github.com:chiririll/CheckScanProviders.git"
     source: git
-    version: "0.3.0"
+    version: "0.3.1"
   pub_semver:
     dependency: transitive
     description:

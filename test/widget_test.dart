@@ -30,6 +30,7 @@ ReceiptRecord _sampleReceipt({DateTime? issuedAt}) {
     id: 'r1',
     issuedAt: issuedAt ?? DateTime(2026, 8, 28, 18, 42),
     currency: 'RUB',
+    scale: 2,
     type: 'sale',
     merchantName: 'Пятёрочка',
     total: 124700,
@@ -45,6 +46,7 @@ ReceiptRecord _sampleReceipt({DateTime? issuedAt}) {
     merchantName: receipt.merchantName,
     total: receipt.total,
     currency: receipt.currency,
+    scale: 2,
     itemCount: receipt.items.length,
     payload: labeled.encode(),
     scannedAt: DateTime(2026, 8, 28, 18, 50),
@@ -131,6 +133,7 @@ void main() {
       id: 'r2',
       issuedAt: issued,
       currency: 'RSD',
+      scale: 2,
       type: 'sale',
       merchantName: 'Maxi',
       total: 50000,
@@ -145,6 +148,7 @@ void main() {
       merchantName: rsdReceipt.merchantName,
       total: rsdReceipt.total,
       currency: rsdReceipt.currency,
+      scale: 2,
       itemCount: rsdReceipt.items.length,
       payload: rsdReceipt.encode(),
       scannedAt: issued,
@@ -156,7 +160,7 @@ void main() {
 
     expect(find.text('₽'), findsOneWidget);
     expect(find.text('дин.'), findsOneWidget);
-    expect(find.text(formatMoney(124700, 'RUB')), findsOneWidget);
+    expect(find.text(formatMoney(124700, scale: 2, currency: 'RUB')), findsOneWidget);
 
     await tester.tap(find.byTooltip('Предыдущий период'));
     await tester.pump();
@@ -174,6 +178,6 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.text(formatMonthYear(HomePeriod.current(now).asDate)), findsOneWidget);
-    expect(find.text(formatMoney(50000, 'RSD')), findsWidgets);
+    expect(find.text(formatMoney(50000, scale: 2, currency: 'RSD')), findsWidgets);
   });
 }

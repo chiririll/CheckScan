@@ -157,7 +157,7 @@ class _DashboardPane extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(child: HomeMetric(value: formatMoney(dash.spent, currency), label: l10n.spent)),
+            Expanded(child: HomeMetric(value: formatMoney(dash.spent, scale: dash.spentScale, currency: currency), label: l10n.spent)),
             const SizedBox(width: 12),
             Expanded(child: HomeMetric(value: '${dash.receiptCount}', label: l10n.receiptCount)),
           ],

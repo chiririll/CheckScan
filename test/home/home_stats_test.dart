@@ -1,5 +1,6 @@
 import 'package:checkscan/core/format/format.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
+import 'package:checkscan/features/home/home_dashboard.dart';
 import 'package:checkscan/features/home/home_period.dart';
 import 'package:receipt_model/receipt_model.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,11 +10,13 @@ ReceiptRecord _receipt({
   required String currency,
   required DateTime issuedAt,
   required int total,
+  int scale = 2,
 }) {
   final receipt = Receipt(
     id: id,
     issuedAt: issuedAt,
     currency: currency,
+    scale: scale,
     type: 'sale',
     merchantName: 'Магазин',
     total: total,
@@ -28,6 +31,7 @@ ReceiptRecord _receipt({
     merchantName: 'Магазин',
     total: total,
     currency: currency,
+    scale: scale,
     itemCount: 1,
     payload: receipt.encode(),
     scannedAt: issuedAt,
@@ -60,5 +64,21 @@ void main() {
     expect(formatCurrencyLabel('RUB'), '₽');
     expect(formatCurrencyLabel('RSD'), 'дин.');
     expect(formatCurrencyLabel('EUR'), 'EUR');
+  });
+
+  test('spent sums receipts of one currency at the finest provider scale', () {
+    final dash = HomeDashboard.of(
+      receipts: [
+        _receipt(id: 'kopecks', currency: 'RUB', issuedAt: DateTime(2026, 8, 1), total: 8999),
+        _receipt(id: 'rubles', currency: 'RUB', issuedAt: DateTime(2026, 8, 2), total: 100, scale: 0),
+        _receipt(id: 'other', currency: 'RSD', issuedAt: DateTime(2026, 8, 3), total: 5000),
+      ],
+      merchants: const [],
+      period: const HomePeriod(year: 2026, month: 8),
+      currency: 'RUB',
+    );
+    expect(dash.spentScale, 2);
+    expect(dash.spent, 18999);
+    expect(dash.receiptCount, 2);
   });
 }
