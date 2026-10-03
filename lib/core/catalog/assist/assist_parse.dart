@@ -91,12 +91,6 @@ String _peelPrefix(String line, String type) {
   return line.substring(match.end).trim();
 }
 
-String cleanAssistLine(String raw) {
-  final marked = assistLinePrefix(raw);
-  if (marked != null) return marked.text;
-  return _keptLine(raw);
-}
-
 AssistParsedReply parseAssistReply(String raw) {
   try {
     return _parseAssistReply(raw);

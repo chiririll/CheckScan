@@ -69,19 +69,22 @@ void main() {
     expect(jsonDecode(jsonl.trim()), containsPair('eq_version', '1.0.0'));
   });
 
-  test('writeEqJsonlFile writes the named file', () async {
+  test('shareEqJsonl writes the named file and shares it', () async {
     final dir = Directory.systemTemp.createTempSync('checkscan_export_');
     addTearDown(() {
       if (dir.existsSync()) dir.deleteSync(recursive: true);
     });
 
-    final file = await writeEqJsonlFile(
+    String? shared;
+    await shareEqJsonl(
       receipts: [_record(id: 'a', payload: '{"id":"a"}')],
-      directory: dir,
+      subject: 'eQ',
       now: DateTime(2026, 9, 2),
+      temporaryDirectory: () async => dir,
+      shareFile: (path, subject) async => shared = path,
     );
 
-    expect(p.basename(file.path), 'checkscan-eq-2026-09-02.jsonl');
-    expect(file.readAsStringSync(), '{"id":"a"}\n');
+    expect(p.basename(shared!), 'checkscan-eq-2026-09-02.jsonl');
+    expect(File(shared!).readAsStringSync(), '{"id":"a"}\n');
   });
 }

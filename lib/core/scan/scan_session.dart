@@ -55,9 +55,8 @@ class ScanSession {
     return saved.record;
   }
 
-  Future<int> refreshPending({
-    void Function(int done, int total)? onProgress,
-  }) async {
+  /// Retries every retryable receipt; stops early once the provider rate-limits.
+  Future<int> refreshPending() async {
     final pending = (await repository.listAll()).where((row) => row.canRetry).toList();
     var done = 0;
     for (final record in pending) {
@@ -65,7 +64,6 @@ class ScanSession {
         final updated = await refresh(record);
         if (updated == null) continue;
         done += 1;
-        onProgress?.call(done, pending.length);
         if (updated.lastStatus == statusRateLimited) break;
       } catch (_) {}
     }

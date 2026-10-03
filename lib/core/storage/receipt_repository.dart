@@ -27,8 +27,6 @@ class ReceiptRepository {
 
   Future<ReceiptRecord?> findByHash(String qrHash) => _findOne('qr_hash = ?', qrHash);
 
-  Future<ReceiptRecord?> findById(String id) => _findOne('id = ?', id);
-
   Future<List<ReceiptRecord>> listAll() async {
     final rows = await (await _db).query('receipts', orderBy: 'COALESCE(issued_at, scanned_at) DESC');
     return rows.map(_fromRow).toList();
@@ -67,8 +65,6 @@ class ReceiptRepository {
     await _upsert(record);
     return record;
   }
-
-  Future<void> replace(ReceiptRecord record) => _upsert(record);
 
   Future<void> deleteById(String id) async {
     await (await _db).transaction((txn) async {

@@ -35,10 +35,9 @@ mixin PositionTable on CatalogTables, TagTable {
   Future<int> ingest(Iterable<String> descriptions) async {
     var created = 0;
     await (await db).transaction((txn) async {
+      final known = {for (final row in await txn.query('item_alias', columns: ['raw_name'])) row.str('raw_name')};
       for (final raw in descriptions) {
-        if (raw.isEmpty) continue;
-        final existing = await txn.query('item_alias', where: 'raw_name = ?', whereArgs: [raw], limit: 1);
-        if (existing.isNotEmpty) continue;
+        if (raw.isEmpty || !known.add(raw)) continue;
         final id = await _insertItem(txn, raw);
         await txn.insert('item_alias', {
           'raw_name': raw,

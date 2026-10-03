@@ -35,8 +35,6 @@ class MerchantRepository {
     ];
   }
 
-  Future<Merchant?> findById(String id) async => (await listAll()).firstWhereOrNull((merchant) => merchant.id == id);
-
   /// Merchant id for a receipt: by tax id, then by name, else a new merchant.
   Future<String> resolve({String? name, String? taxId}) async {
     final trimmedTax = trimmedOrNull(taxId);

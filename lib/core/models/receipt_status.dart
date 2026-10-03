@@ -3,7 +3,6 @@ import 'package:eq_models/eq_models.dart';
 enum ReceiptStatus { ok, incomplete, error }
 
 const providerLabelExtension = 'checkscan.provider_label';
-const rateLimitedExtension = 'checkscan.rate_limited';
 const itemsUnavailableExtension = 'checkscan.items_unavailable';
 
 const statusOk = 200;

@@ -1,7 +1,6 @@
 import '../model/catalog_position.dart';
 
 const assistPromptItemsPlaceholder = '{ items }';
-const assistPromptLanguagePlaceholder = '{language}';
 
 /// Live `ru` prompt. Do not rephrase.
 const assistPromptRu =
@@ -9,32 +8,8 @@ const assistPromptRu =
     '\n'
     '{ items }';
 
-/// Same instructions for later locales: product-name language is a placeholder.
-const assistPromptLocalized =
-    'Can you group the positions by product? Product names should reflect only the general product class, put every brand into one product, and do not write the unit of measure into the product name. Write product names in {language}. Response format: products with a list of positions, no explanations or extra information. Do not change position names.\n'
-    '\n'
-    '{ items }';
-
-String formatAssistPromptItems(Iterable<CatalogPosition> positions) {
-  return [for (final position in positions) '${position.id}: ${position.displayName}'].join('\n');
-}
-
-String fillAssistPrompt(String template, {required String items, String? languageName}) {
-  var text = template.replaceAll(assistPromptItemsPlaceholder, items);
-  if (languageName != null) {
-    text = text.replaceAll(assistPromptLanguagePlaceholder, languageName);
-  }
-  return text;
-}
-
+/// Prompt with one `id: name` line per position.
 String buildAssistPrompt(List<CatalogPosition> positions) {
-  return fillAssistPrompt(assistPromptRu, items: formatAssistPromptItems(positions));
-}
-
-String buildAssistPromptLocalized({required String languageName, required List<CatalogPosition> positions}) {
-  return fillAssistPrompt(
-    assistPromptLocalized,
-    items: formatAssistPromptItems(positions),
-    languageName: languageName,
-  );
+  final items = [for (final position in positions) '${position.id}: ${position.displayName}'].join('\n');
+  return assistPromptRu.replaceAll(assistPromptItemsPlaceholder, items);
 }

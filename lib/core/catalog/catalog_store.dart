@@ -86,6 +86,15 @@ class CatalogStore extends ChangeNotifier {
 
   // Loading.
 
+  /// Fast start: shows what the DB already holds, including the cached purchases.
+  /// Call [ingest] afterwards to pick up names and purchases the cache missed.
+  Future<void> restore(List<ReceiptRecord> receipts, {Iterable<Merchant> merchants = const []}) async {
+    _receipts = List.of(receipts);
+    _merchants = merchants.toList();
+    purchases = await _repository.listPurchases();
+    await reload();
+  }
+
   /// Binds receipts, creates positions for new names, and rebuilds purchases.
   Future<void> ingest(List<ReceiptRecord> receipts, {Iterable<Merchant> merchants = const []}) async {
     _receipts = List.of(receipts);

@@ -53,19 +53,55 @@ class AppState extends ChangeNotifier {
 
   bool get onboardingDone => _onboarding.done;
 
+  /// Catalog syncs run one at a time so a startup sync cannot interleave with a post-scan one.
+  Future<void> _syncQueue = Future.value();
+
+  /// Startup in two phases. [ready] flips as soon as stored data is on screen, so the
+  /// scanner is usable at once; loading the native library for the settings schema
+  /// and re-syncing the catalog finish in the background. Completes after both.
   Future<void> load() async {
+    final watch = Stopwatch()..start();
     try {
-      await _onboarding.load();
-      await settings.load();
-      settingFields = await _adapter.settings();
+      await Future.wait([_onboarding.load(), settings.load()]);
       _adapter.configure(settings.snapshot());
-      await reload();
+      receipts = await _repository.listAll();
+      await merchants.reload();
+      await catalog.restore(receipts, merchants: merchants.all);
       loadError = null;
     } catch (error) {
       loadError = '$error';
     }
     ready = true;
     notifyListeners();
+    debugPrint('[checkscan] startup ready in ${watch.elapsedMilliseconds} ms');
+    if (loadError != null) return;
+
+    await Future.wait([_loadSettingFields(), _syncCatalog()]);
+    debugPrint('[checkscan] startup synced in ${watch.elapsedMilliseconds} ms');
+  }
+
+  /// The stored catalog is already shown; this only adds names and purchases it missed.
+  Future<void> _syncCatalog() async {
+    try {
+      await _sync(() => catalog.ingest(receipts, merchants: merchants.all));
+    } catch (error) {
+      debugPrint('[checkscan] catalog sync failed: $error');
+    }
+  }
+
+  Future<void> _loadSettingFields() async {
+    try {
+      settingFields = await _adapter.settings();
+      notifyListeners();
+    } catch (error) {
+      debugPrint('[checkscan] settings schema failed: $error');
+    }
+  }
+
+  Future<void> _sync(Future<void> Function() task) {
+    final run = _syncQueue.then((_) => task());
+    _syncQueue = run.catchError((_) {});
+    return run;
   }
 
   @override
@@ -92,10 +128,12 @@ class AppState extends ChangeNotifier {
   // Receipts.
 
   /// Re-reads receipts and merchants and re-derives the catalog from them.
-  Future<void> reload() async {
-    receipts = await _repository.listAll();
-    await merchants.reload();
-    await catalog.ingest(receipts, merchants: merchants.all);
+  Future<void> reload() {
+    return _sync(() async {
+      receipts = await _repository.listAll();
+      await merchants.reload();
+      await catalog.ingest(receipts, merchants: merchants.all);
+    });
   }
 
   ReceiptRecord? byId(String id) => receipts.firstWhereOrNull((receipt) => receipt.id == id);

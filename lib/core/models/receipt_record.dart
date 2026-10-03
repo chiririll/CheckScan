@@ -81,37 +81,5 @@ class ReceiptRecord {
 
   bool get missingRemoteItems => status != ReceiptStatus.ok && itemCount == 0;
 
-  bool get rateLimited => lastStatus == statusRateLimited || receiptFlag(receipt, rateLimitedExtension);
-
-  bool get needsSecret => lastStatus == statusNeedsSecret;
-
   bool get itemsUnavailable => receiptFlag(receipt, itemsUnavailableExtension);
-
-  ReceiptRecord copyWith({
-    ReceiptStatus? status,
-    DateTime? issuedAt,
-    String? merchantName,
-    double? grandTotal,
-    String? currency,
-    int? itemCount,
-    String? payload,
-    int? lastStatus,
-  }) {
-    return ReceiptRecord(
-      id: id,
-      qrHash: qrHash,
-      adapterId: adapterId,
-      status: status ?? this.status,
-      issuedAt: issuedAt ?? this.issuedAt,
-      merchantName: merchantName ?? this.merchantName,
-      grandTotal: grandTotal ?? this.grandTotal,
-      currency: currency ?? this.currency,
-      itemCount: itemCount ?? this.itemCount,
-      payload: payload ?? this.payload,
-      scannedAt: scannedAt,
-      rawQr: rawQr,
-      lastStatus: lastStatus ?? this.lastStatus,
-      merchantId: merchantId,
-    );
-  }
 }

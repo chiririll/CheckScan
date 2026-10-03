@@ -50,8 +50,6 @@ String assistHtmlToPrefixed(String html) {
   return lines.join('\n');
 }
 
-bool assistHasLinePrefix(String text) => assistFirstPrefixType(text) != null;
-
 String? assistFirstPrefixType(String text) {
   for (final line in text.split(_lineBreaks)) {
     final marked = assistLinePrefix(line);

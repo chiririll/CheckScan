@@ -151,17 +151,20 @@ void main() {
     );
   });
 
-  test('writeCategoryCsvFile uses the calendar date', () async {
+  test('shareCategoryCsv names the file by the calendar date', () async {
     final dir = Directory.systemTemp.createTempSync('checkscan_csv_');
     addTearDown(() {
       if (dir.existsSync()) dir.deleteSync(recursive: true);
     });
-    final file = await writeCategoryCsvFile(
+    String? shared;
+    await shareCategoryCsv(
       rows: const [],
-      directory: dir,
+      subject: 'csv',
       now: DateTime(2026, 9, 8),
+      temporaryDirectory: () async => dir,
+      shareFile: (path, subject) async => shared = path,
     );
-    expect(p.basename(file.path), 'checkscan-categories-2026-09-08.csv');
-    expect(file.readAsStringSync(), 'date,merchant,category_key,category,amount,currency,items\n');
+    expect(p.basename(shared!), 'checkscan-categories-2026-09-08.csv');
+    expect(File(shared!).readAsStringSync(), 'date,merchant,category_key,category,amount,currency,items\n');
   });
 }

@@ -25,10 +25,10 @@ AppState _state({bool onboardingDone = false, List<ReceiptRecord> receipts = con
     ..receipts = receipts;
 }
 
-ReceiptRecord _sampleReceipt() {
+ReceiptRecord _sampleReceipt({DateTime? issuedAt}) {
   final receipt = EqReceipt(
     id: 'r1',
-    issuedAt: DateTime(2026, 8, 28, 18, 42),
+    issuedAt: issuedAt ?? DateTime(2026, 8, 28, 18, 42),
     currency: 'RUB',
     receiptType: 'sale',
     merchantName: 'Пятёрочка',
@@ -111,7 +111,7 @@ void main() {
 
   testWidgets('home and history show receipt numbers', (tester) async {
     final now = DateTime.now();
-    final currentMonth = _sampleReceipt().copyWith(issuedAt: DateTime(now.year, now.month, 1, 12));
+    final currentMonth = _sampleReceipt(issuedAt: DateTime(now.year, now.month, 1, 12));
     await tester.pumpWidget(CheckScanApp(state: _state(onboardingDone: true, receipts: [currentMonth])));
     await tester.pump();
     expect(find.text('Потрачено'), findsOneWidget);
@@ -134,7 +134,7 @@ void main() {
   testWidgets('home splits stats by currency tabs and keeps period shared', (tester) async {
     final now = DateTime.now();
     final issued = DateTime(now.year, now.month, 10, 12);
-    final rub = _sampleReceipt().copyWith(issuedAt: issued);
+    final rub = _sampleReceipt(issuedAt: issued);
     final rsdReceipt = EqReceipt(
       id: 'r2',
       issuedAt: issued,

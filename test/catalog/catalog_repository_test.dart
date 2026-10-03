@@ -35,7 +35,7 @@ void main() {
   test('seeds categories on a fresh database', () async {
     final categories = await catalog.listCategories();
     expect(categories.map((e) => e.name), containsAll(['#dairyEggs', '#other', '#products']));
-    expect(categories.every((e) => e.isSeed), isTrue);
+    expect(categories.every((e) => e.name.startsWith('#')), isTrue);
     final products = categories.firstWhere((e) => e.name == '#products');
     final dairy = categories.firstWhere((e) => e.name == '#dairyEggs');
     expect(products.parentId, isNull);

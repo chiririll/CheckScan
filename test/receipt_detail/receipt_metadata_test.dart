@@ -49,7 +49,7 @@ void main() {
           taxId: '7707083893',
           extensions: {
             providerLabelExtension: 'RU',
-            rateLimitedExtension: true,
+            'checkscan.rate_limited': true,
             'checkscan.qr_raw': 'qr-payload',
             'extra': {
               'fn': '8710000100905518',

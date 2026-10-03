@@ -1,12 +1,10 @@
 import 'dart:math' as math;
 
 import '../model/catalog_position.dart';
-import '../model/catalog_product.dart';
 import '../text/name_stem.dart';
 import '../text/service_name.dart';
 import '../text/similarity.dart';
 
-const assistBatchLimit = 24;
 const assistClusterLimit = 24;
 const clusterPreviewLimit = 3;
 
@@ -132,28 +130,4 @@ List<List<CatalogPosition>> _clusterPool(List<CatalogPosition> positions) {
   }
   clusters.sort((a, b) => b.length.compareTo(a.length));
   return clusters;
-}
-
-List<CatalogPosition> nextAssistBatch(List<CatalogPosition> unassigned, {Set<String> ignoreIds = const {}}) {
-  final clusters = clusterUnassigned(unassigned, ignoreIds: ignoreIds);
-  if (clusters.isEmpty) return const [];
-  return clusters.first.take(assistBatchLimit).toList();
-}
-
-List<CatalogPosition> clusterPeers(CatalogPosition position, List<CatalogPosition> positions) {
-  final pool = [for (final item in positions) if (item.productId == position.productId) item];
-  for (final cluster in clusterUnassigned(pool)) {
-    if (cluster.length < 2) continue;
-    if (!cluster.any((item) => item.id == position.id)) continue;
-    return [for (final item in cluster) if (item.id != position.id) item];
-  }
-  return const [];
-}
-
-List<CatalogProduct> similarProductsFor(List<CatalogPosition> batch, List<CatalogProduct> products) {
-  final stems = {for (final position in batch) itemNameStem(position.displayName)}.difference({''});
-  return [
-    for (final product in products)
-      if (stems.any((stem) => stemsSimilar(stem, itemNameStem(product.name)))) product,
-  ];
 }

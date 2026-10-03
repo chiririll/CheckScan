@@ -4,14 +4,6 @@ import '../models/receipt_record.dart';
 import 'eq_jsonl.dart';
 import 'export_file.dart';
 
-Future<File> writeEqJsonlFile({
-  required Iterable<ReceiptRecord> receipts,
-  required Directory directory,
-  DateTime? now,
-}) {
-  return writeExportFile(directory, eqJsonlFileName(now), encodeEqJsonl(receipts));
-}
-
 Future<void> shareEqJsonl({
   required Iterable<ReceiptRecord> receipts,
   required String subject,

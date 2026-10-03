@@ -5,7 +5,6 @@ final _day = DateFormat('d MMMM', 'ru');
 final _dayYear = DateFormat('d MMMM y', 'ru');
 final _monthYear = DateFormat('LLLL y', 'ru');
 final _dateTime = DateFormat('d MMMM y, HH:mm', 'ru');
-final _time = DateFormat('HH:mm');
 
 const _currencySymbols = {'RUB': '₽', 'RSD': 'дин.'};
 
@@ -24,8 +23,6 @@ String formatDayHeader(DateTime date) => _dayYear.format(date);
 String formatDayShort(DateTime date) => _day.format(date);
 
 String formatDateTime(DateTime date) => _dateTime.format(date);
-
-String formatTime(DateTime date) => _time.format(date);
 
 String formatQty(double qty) {
   if (qty == qty.roundToDouble()) return qty.toInt().toString();

@@ -102,7 +102,6 @@ void main() {
 
     await repository.deleteById(saved.id);
 
-    expect(await repository.findById(saved.id), isNull);
     expect(await repository.listAll(), isEmpty);
   });
 }

@@ -18,23 +18,4 @@ class CatalogProduct {
   final ItemUnit? unit;
   final ProductKind kind;
   final List<CatalogTag> tags;
-
-  CatalogProduct copyWith({
-    String? name,
-    String? categoryId,
-    bool clearCategory = false,
-    ItemUnit? unit,
-    bool clearUnit = false,
-    ProductKind? kind,
-    List<CatalogTag>? tags,
-  }) {
-    return CatalogProduct(
-      id: id,
-      name: name ?? this.name,
-      categoryId: clearCategory ? null : (categoryId ?? this.categoryId),
-      unit: clearUnit ? null : (unit ?? this.unit),
-      kind: kind ?? this.kind,
-      tags: tags ?? this.tags,
-    );
-  }
 }

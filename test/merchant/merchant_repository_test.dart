@@ -44,7 +44,7 @@ void main() {
 
   test('resolve creates a merchant from the receipt name', () async {
     final id = await merchants.resolve(name: 'DELHAIZE SERBIA DOO BEOGRAD');
-    final merchant = await merchants.findById(id);
+    final merchant = (await merchants.listAll()).where((m) => m.id == id).firstOrNull;
     expect(merchant?.name, 'DELHAIZE SERBIA DOO BEOGRAD');
     expect(merchant?.policy, MerchantPolicy.parse);
     expect(await merchants.resolve(name: 'DELHAIZE SERBIA DOO BEOGRAD'), id);

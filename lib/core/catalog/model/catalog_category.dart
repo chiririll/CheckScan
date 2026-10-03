@@ -13,7 +13,5 @@ class CatalogCategory {
   final int sortOrder;
   final String? icon;
 
-  bool get isSeed => name.startsWith('#');
-
   bool get isTop => parentId == null;
 }
