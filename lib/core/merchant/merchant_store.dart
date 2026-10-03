@@ -24,19 +24,8 @@ class MerchantStore extends ChangeNotifier {
     String? name,
     String? parentId,
     bool clearParent = false,
-    String? policy,
-    String? categoryId,
-    bool clearCategory = false,
   }) async {
-    await _repository.update(
-      id,
-      name: name,
-      parentId: parentId,
-      clearParent: clearParent,
-      policy: policy,
-      categoryId: categoryId,
-      clearCategory: clearCategory,
-    );
+    await _repository.update(id, name: name, parentId: parentId, clearParent: clearParent);
     await reload();
   }
 

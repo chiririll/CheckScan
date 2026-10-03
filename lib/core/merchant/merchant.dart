@@ -1,10 +1,3 @@
-class MerchantPolicy {
-  static const parse = 'parse';
-  static const ignore = 'ignore';
-
-  static String normalize(String? raw) => raw == ignore ? ignore : parse;
-}
-
 class MerchantAlias {
   const MerchantAlias({required this.id, this.name, this.taxId});
 
@@ -18,24 +11,13 @@ class Merchant {
     required this.id,
     required this.name,
     this.parentId,
-    this.policy = MerchantPolicy.parse,
-    this.categoryId,
     this.aliases = const [],
   });
 
   final String id;
   final String name;
+
+  /// Network (chain) this store belongs to.
   final String? parentId;
-  final String policy;
-  final String? categoryId;
   final List<MerchantAlias> aliases;
-
-  bool get ignoresItems => policy == MerchantPolicy.ignore;
-
-  String get networkId => parentId ?? id;
-}
-
-/// Merchants whose receipts count as one sum, not as catalog items.
-Set<String> ignoreMerchantIdsOf(Iterable<Merchant> merchants) {
-  return {for (final merchant in merchants) if (merchant.ignoresItems) merchant.id};
 }

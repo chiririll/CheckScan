@@ -12,10 +12,4 @@ void main() {
     expect(formatMoney(5, 'EUR'), endsWith(' EUR'));
     expect(formatMoney(5), endsWith(' ₽'));
   });
-
-  test('parseDecimal accepts a decimal comma and rejects junk', () {
-    expect(parseDecimal('1,5'), 1.5);
-    expect(parseDecimal(' 2 '), 2);
-    expect(parseDecimal('abc'), isNull);
-  });
 }

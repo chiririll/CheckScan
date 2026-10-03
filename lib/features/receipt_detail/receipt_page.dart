@@ -126,7 +126,7 @@ class _ReceiptPageState extends State<ReceiptPage> {
                     style: TextStyle(color: Colors.grey.shade700),
                   ),
                 ],
-                if (receipt.items.isNotEmpty) ReceiptItemList(state: widget.state, record: record),
+                if (receipt.items.isNotEmpty) ReceiptItemList(record: record),
                 const SizedBox(height: 8),
                 const Divider(),
                 ReceiptMetadataTile(record: record),

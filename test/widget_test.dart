@@ -76,9 +76,10 @@ void main() {
     await tester.tap(find.text('Не сейчас'));
     await tester.pump();
     expect(find.text('Пока нет статистики'), findsOneWidget);
-    expect(find.text('Каталог'), findsWidgets);
-    expect(find.text('Список'), findsWidgets);
+    expect(find.text('Главная'), findsWidgets);
     expect(find.text('История'), findsWidgets);
+    expect(find.text('Каталог'), findsNothing);
+    expect(find.text('Список'), findsNothing);
   });
 
   testWidgets('settings lists integrations as soon', (tester) async {
@@ -89,11 +90,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.text('1С'), findsOneWidget);
     expect(find.text('Экспорт eQ'), findsOneWidget);
-    expect(find.text('Экспорт CSV'), findsOneWidget);
     expect(find.text('Облако'), findsOneWidget);
     expect(find.text('Скоро'), findsNWidgets(2));
     expect(find.byIcon(Icons.share_outlined), findsOneWidget);
-    expect(find.byIcon(Icons.table_chart_outlined), findsOneWidget);
   });
 
   testWidgets('settings shows provider token from schema label', (tester) async {
@@ -116,19 +115,12 @@ void main() {
     await tester.pump();
     expect(find.text('Потрачено'), findsOneWidget);
     expect(find.text('Чеков'), findsOneWidget);
-    expect(find.text('Цены'), findsOneWidget);
-    expect(find.text('Траты зря'), findsOneWidget);
-    expect(find.text('Чаще всего'), findsOneWidget);
     expect(find.text('Магазины'), findsOneWidget);
 
     await tester.tap(find.text('История'));
     await tester.pump();
     expect(find.text('Пятёрочка'), findsOneWidget);
     expect(find.text('1 товар'), findsOneWidget);
-
-    await tester.tap(find.text('Список').first);
-    await tester.pump();
-    expect(find.text('Пока нечего брать'), findsOneWidget);
   });
 
   testWidgets('home splits stats by currency tabs and keeps period shared', (tester) async {
@@ -165,7 +157,6 @@ void main() {
     expect(find.text('₽'), findsOneWidget);
     expect(find.text('дин.'), findsOneWidget);
     expect(find.text(formatMoney(1247, 'RUB')), findsOneWidget);
-    expect(find.text('Цены'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Предыдущий период'));
     await tester.pump();
@@ -184,16 +175,5 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.text(formatMonthYear(HomePeriod.current(now).asDate)), findsOneWidget);
     expect(find.text(formatMoney(500, 'RSD')), findsWidgets);
-    expect(find.text('Цены'), findsOneWidget);
-  });
-
-  testWidgets('home opens catalog from the app bar', (tester) async {
-    await tester.pumpWidget(CheckScanApp(state: _state(onboardingDone: true, receipts: [_sampleReceipt()])));
-    await tester.pump();
-    await tester.tap(find.byTooltip('Каталог'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
-    expect(find.text('Не разобрано'), findsWidgets);
-    expect(find.text('Категории'), findsOneWidget);
   });
 }

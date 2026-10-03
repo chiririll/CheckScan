@@ -38,8 +38,6 @@ class MerchantsPage extends StatelessWidget {
   }
 
   String _subtitle(Merchant merchant, AppLocalizations l10n) {
-    final policy = merchant.ignoresItems ? l10n.merchantPolicyIgnore : l10n.merchantPolicyParse;
-    final network = state.merchants.byId(merchant.parentId)?.name ?? l10n.merchantNoNetwork;
-    return '$policy · $network';
+    return state.merchants.byId(merchant.parentId)?.name ?? l10n.merchantNoNetwork;
   }
 }

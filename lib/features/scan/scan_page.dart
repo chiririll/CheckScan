@@ -10,7 +10,6 @@ import '../../l10n/app_localizations.dart';
 import '../receipt_detail/receipt_page.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/navigation.dart';
-import 'manual_receipt_page.dart';
 import 'widgets/scan_frame.dart';
 
 /// First non-empty QR payload among [barcodes].
@@ -127,19 +126,6 @@ class _ScanPageState extends State<ScanPage> {
     await _handleRaw(raw);
   }
 
-  Future<void> _openManual() async {
-    if (_busy) return;
-    await _controller.stop();
-    if (!mounted) return;
-    final id = await pushPage<String>(context, ManualReceiptPage(state: widget.state), fullscreenDialog: true);
-    if (!mounted) return;
-    if (id != null) {
-      _replaceWithReceipt(id);
-      return;
-    }
-    await _controller.start();
-  }
-
   Future<void> _ensureCamera() async {
     final status = await Permission.camera.status;
     if (status.isGranted) return;
@@ -194,11 +180,6 @@ class _ScanPageState extends State<ScanPage> {
                       IconButton(
                         onPressed: () => Navigator.pop(context),
                         icon: const Icon(Icons.close, color: Colors.white),
-                      ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: _busy ? null : _openManual,
-                        child: Text(l10n.scanNoQr, style: const TextStyle(color: Colors.white)),
                       ),
                     ],
                   ),

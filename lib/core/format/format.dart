@@ -1,7 +1,6 @@
 import 'package:intl/intl.dart';
 
 final _money = NumberFormat.decimalPattern('ru');
-final _day = DateFormat('d MMMM', 'ru');
 final _dayYear = DateFormat('d MMMM y', 'ru');
 final _monthYear = DateFormat('LLLL y', 'ru');
 final _dateTime = DateFormat('d MMMM y, HH:mm', 'ru');
@@ -20,14 +19,9 @@ String formatMonthYear(DateTime date) {
 
 String formatDayHeader(DateTime date) => _dayYear.format(date);
 
-String formatDayShort(DateTime date) => _day.format(date);
-
 String formatDateTime(DateTime date) => _dateTime.format(date);
 
 String formatQty(double qty) {
   if (qty == qty.roundToDouble()) return qty.toInt().toString();
   return qty.toString();
 }
-
-/// User-typed number; accepts a decimal comma.
-double? parseDecimal(String raw) => double.tryParse(raw.trim().replaceAll(',', '.'));

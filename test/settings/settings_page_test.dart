@@ -28,10 +28,6 @@ void main() {
 
     expect(find.text('Нет чеков для экспорта'), findsOneWidget);
 
-    await tester.tap(find.text('Экспорт CSV'));
-    await tester.pump();
-
-    expect(find.text('Нет чеков для экспорта'), findsOneWidget);
     expect(find.text('Скоро'), findsNWidgets(2));
   });
 }

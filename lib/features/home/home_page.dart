@@ -4,20 +4,14 @@ import '../../app/theme.dart';
 import '../../core/format/format.dart';
 import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
-import '../catalog/catalog_nav.dart';
-import '../catalog/catalog_page.dart';
-import '../labels/unit_labels.dart';
 import '../merchant/merchants_page.dart';
 import '../settings/settings_page.dart';
 import '../widgets/centered_message.dart';
 import '../widgets/empty_hint.dart';
 import '../widgets/navigation.dart';
-import 'frequent_page.dart';
 import 'home_block.dart';
 import 'home_dashboard.dart';
 import 'home_period.dart';
-import 'prices_page.dart';
-import 'waste_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key, required this.state});
@@ -31,11 +25,6 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: Text(l10n.homeTitle),
         actions: [
-          IconButton(
-            tooltip: l10n.catalogTitle,
-            icon: const Icon(Icons.category_outlined),
-            onPressed: () => pushPage<void>(context, CatalogPage(state: state), name: catalogRouteName),
-          ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => pushPage<void>(context, SettingsPage(state: state)),
@@ -158,18 +147,11 @@ class _DashboardPane extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final dash = HomeDashboard.of(
       receipts: state.receipts,
-      purchases: state.catalog.purchases,
-      products: state.catalog.products,
-      categories: state.catalog.categories,
-      positions: state.catalog.positions,
       merchants: state.merchants.all,
-      resolver: state.catalog.resolver,
       period: period,
       currency: currency,
-      fallbackMerchant: l10n.receiptTitle,
     );
     if (dash.isEmpty) return CenteredMessage(title: l10n.emptyPeriodTitle, body: l10n.emptyPeriodBody);
-    final prices = dash.prices;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       children: [
@@ -182,65 +164,11 @@ class _DashboardPane extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         HomeBlock(
-          title: l10n.pricesBlock,
-          onTap: () => pushPage<void>(context, PricesPage(state: state, rows: dash.priceRows, currency: currency)),
-          child: prices == null
-              ? HomeBlockHint(l10n.pricesEmptyBody)
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(prices.productName),
-                    const SizedBox(height: 2),
-                    Text(formatUnitPrice(prices.perUnit, prices.unit, currency, l10n), style: AppText.title),
-                    Text(l10n.cheaperAt(prices.networkName), style: AppText.mutedSmall),
-                  ],
-                ),
-        ),
-        const SizedBox(height: 10),
-        HomeBlock(
-          title: l10n.wasteBlock,
-          onTap: () => pushPage<void>(
-            context,
-            WastePage(state: state, leaves: dash.wasteLeaves, tags: dash.wasteTags, currency: currency),
-          ),
-          child: dash.wasteTotal <= 0
-              ? HomeBlockHint(l10n.wasteEmptyBody)
-              : Text(formatMoney(dash.wasteTotal, currency), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-        ),
-        const SizedBox(height: 10),
-        HomeBlock(
-          title: l10n.frequentBlock,
-          onTap: () => pushPage<void>(context, FrequentPage(state: state, items: dash.frequent)),
-          child: dash.frequent.isEmpty
-              ? HomeBlockHint(l10n.frequentEmptyBody)
-              : Column(
-                  children: [
-                    for (final item in dash.frequent.take(3))
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: Row(
-                          children: [
-                            Expanded(child: Text(item.name)),
-                            Text(l10n.timesCount(item.count), style: const TextStyle(color: AppColors.muted, fontSize: 12)),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-        ),
-        const SizedBox(height: 10),
-        HomeBlock(
           title: l10n.merchantsBlock,
           onTap: () => pushPage<void>(context, MerchantsPage(state: state)),
           child: dash.merchants.isEmpty
               ? HomeBlockHint(l10n.merchantsEmptyBody)
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(l10n.merchantsWithoutNetwork(dash.merchants.withoutNetwork)),
-                    Text(l10n.merchantsIgnorePolicy(dash.merchants.ignoreCount), style: AppText.mutedSmall),
-                  ],
-                ),
+              : Text(l10n.merchantsWithoutNetwork(dash.merchants.withoutNetwork)),
         ),
       ],
     );

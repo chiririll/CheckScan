@@ -13,5 +13,3 @@ extension RowRead on Map<String, Object?> {
 
 /// String id → INTEGER column value.
 int dbId(String id) => int.parse(id);
-
-int? dbIdOrNull(String? id) => id == null ? null : int.parse(id);

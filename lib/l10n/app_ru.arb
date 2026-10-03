@@ -2,14 +2,11 @@
   "@@locale": "ru",
   "appTitle": "CheckScan",
   "tabHome": "Главная",
-  "tabCatalog": "Каталог",
-  "tabList": "Список",
   "tabHistory": "История",
-  "scan": "Скан",
   "onboard1Title": "Чеки всегда под рукой",
   "onboard1Body": "Сканируйте QR на чеке — сохраним покупки и список товаров.",
   "onboard2Title": "Статистика по покупкам",
-  "onboard2Body": "По отсканированным чекам видно, на что уходят деньги, что покупаете чаще и где дешевле.",
+  "onboard2Body": "По отсканированным чекам видно, сколько и в каких магазинах уходит денег.",
   "onboard3Title": "Нужен доступ к камере",
   "onboard3Body": "Камера используется только чтобы считать QR на чеке.",
   "next": "Далее",
@@ -29,30 +26,21 @@
   "nextPeriod": "Следующий период",
   "emptyPeriodTitle": "Нет чеков за этот месяц",
   "emptyPeriodBody": "Смените период или отсканируйте чек.",
-  "mostOften": "Чаще всего",
-  "cheaperWhere": "Где дешевле {item}",
-  "@cheaperWhere": {
-    "placeholders": {
-      "item": { "type": "String" }
-    }
-  },
-  "timesCount": "{count} раз",
-  "@timesCount": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
-  },
   "itemsCount": "{count, plural, one{{count} товар} few{{count} товара} many{{count} товаров} other{{count} товара}}",
   "@itemsCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "providerSecrets": "Провайдеры",
   "providerToken": "Токен ({label})",
   "@providerToken": {
     "placeholders": {
-      "label": { "type": "String" }
+      "label": {
+        "type": "String"
+      }
     }
   },
   "providerTokenHint": "Нужен, чтобы подгружать состав чека. Без него сохранится только сумма из QR.",
@@ -74,18 +62,13 @@
   "parseErrorBody": "Данные чека сейчас недоступны. Можно повторить.",
   "loadErrorBody": "Не удалось загрузить данные. Перезапустите приложение.",
   "unavailableTitle": "Сервис недоступен",
-  "unavailableBody": "Не удалось получить чек. Можно повторить позже.",
   "rateLimitedTitle": "Слишком много запросов",
-  "rateLimitedBody": "Провайдер временно ограничил доступ. Чек сохранён, состав подгрузим позже.",
   "needsSecretTitle": "Нужен токен",
-  "needsSecretBody": "Чтобы подгрузить состав, укажите токен в настройках.",
   "close": "Закрыть",
   "cancel": "Отмена",
   "deleteReceipt": "Удалить",
   "deleteReceiptTitle": "Удалить чек?",
   "deleteReceiptBody": "Чек исчезнет из истории и статистики.",
-  "retry": "Повторить",
-  "retryItems": "Обновить состав",
   "refreshReceipt": "Обновить данные",
   "receiptActions": "Ещё",
   "refreshPending": "Догрузить состав",
@@ -108,211 +91,30 @@
   "qtyPrice": "{qty} × {price}",
   "@qtyPrice": {
     "placeholders": {
-      "qty": { "type": "String" },
-      "price": { "type": "String" }
+      "qty": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
     }
   },
-  "amount": "{value} ₽",
-  "@amount": {
-    "placeholders": {
-      "value": { "type": "String" }
-    }
-  },
-  "catalogTitle": "Каталог",
-  "catalogUnassigned": "Не разобрано",
-  "catalogProducts": "Товары",
-  "catalogCategories": "Категории",
-  "catalogSearch": "Поиск",
-  "catalogEmptyUnassigned": "Все позиции уже в товарах",
-  "catalogEmptyUnassignedBody": "Новые названия из чеков появятся здесь.",
-  "catalogEmptyProducts": "Пока нет товаров",
-  "catalogEmptyProductsBody": "Объедините позиции из «Не разобрано» в товар.",
-  "catalogEmptySearch": "Ничего не найдено",
-  "assignToProduct": "В товар",
-  "mergeWith": "Объединить с {name}",
-  "@mergeWith": {
-    "placeholders": {
-      "name": { "type": "String" }
-    }
-  },
-  "newProduct": "Новый товар",
-  "productName": "Название товара",
-  "productCategory": "Категория",
+  "merchantName": "Название",
   "productTags": "Теги",
-  "addTag": "Добавить тег",
-  "detachPosition": "Отвязать",
-  "deleteProduct": "Удалить товар",
-  "deleteProductTitle": "Удалить товар?",
-  "deleteProductBody": "Позиции останутся в «Не разобрано».",
-  "deleteCategoryTitle": "Удалить категорию?",
-  "deleteCategoryBody": "Товары останутся без категории.",
-  "addCategory": "Новая категория",
-  "categoryName": "Название категории",
-  "uncategorized": "Без категории",
-  "unitLabel": "Единица",
-  "unitNone": "Не задана",
-  "unitPiece": "шт",
-  "unitPack": "упак",
-  "unitKg": "кг",
-  "unitG": "г",
-  "unitL": "л",
-  "unitMl": "мл",
-  "unitSize": "Фасовка",
-  "positionBrand": "Бренд",
-  "mergeGroup": "Объединить",
-  "mergeGroupBody": "Похожие позиции. Уберите лишние — остальные станут одной.",
-  "mergeGroupConfirm": "Объединить",
-  "mergeSuggested": "Похожие · {count}",
-  "@mergeSuggested": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
-  },
-  "clusterAndMore": "и ещё {count}",
-  "@clusterAndMore": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
-  },
-  "positionsSection": "Позиции",
-  "addPosition": "Добавить позицию",
-  "draftProductCreate": "Создать товар",
-  "byCategory": "По категориям",
-  "splitAlias": "Отделить",
   "save": "Сохранить",
-  "createAndAssign": "Создать и привязать",
-  "rename": "Переименовать",
-  "aliasesSection": "Названия в чеках",
-  "noCategory": "Без категории",
-  "seedCategoryDairyEggs": "Молочные и яйца",
-  "seedCategoryMeat": "Мясо и птица",
-  "seedCategoryFish": "Рыба и морепродукты",
-  "seedCategoryDeli": "Колбасы и копчёности",
-  "seedCategoryProduce": "Овощи и фрукты",
-  "seedCategoryBakery": "Хлеб и выпечка",
-  "seedCategoryGrocery": "Бакалея",
-  "seedCategoryDrinks": "Напитки",
-  "seedCategorySnacks": "Сладости и снеки",
-  "seedCategoryReadyMeals": "Готовая еда",
-  "seedCategoryAlcohol": "Алкоголь",
-  "seedCategoryKids": "Детские товары",
-  "seedCategoryPets": "Товары для животных",
-  "seedCategoryBeauty": "Красота и гигиена",
-  "seedCategoryPharmacy": "Аптека",
-  "seedCategoryHome": "Дом и быт",
-  "seedCategoryOther": "Прочее",
-  "appLanguageName": "русский",
-  "assistCopyPrompt": "Скопировать промпт",
-  "assistPasteReply": "Вставить ответ",
-  "assistPasteHint": "Вставьте ответ",
-  "assistCopyShort": "Промпт",
-  "assistPasteShort": "Вставить",
-  "assistCopied": "Промпт скопирован",
-  "assistReview": "Проверка",
-  "assistApply": "Применить",
-  "assistUnmatched": "Не удалось сопоставить",
-  "assistErrorEmpty": "Буфер пуст",
-  "assistErrorNoProducts": "Не удалось разобрать ответ",
-  "assistErrorNothing": "Нечего применять",
-  "catalogAncestors": "Назад по каталогу",
-  "catalogMore": "Ещё",
-  "productReceipts": "В чеках",
-  "productReceiptsEmptyTitle": "Пока нет чеков",
-  "productReceiptsEmptyBody": "Этот товар ещё не встречался в сохранённых чеках.",
-  "productKind": "Тип",
-  "productKindGood": "Товар",
-  "productKindService": "Услуга",
-  "itemTags": "Теги названия",
-  "itemSearchHint": "Найти название",
-  "similarItems": "Похожие",
-  "dismissSuggestion": "Не предлагать",
-  "attachItem": "Привязать",
-  "itemAssignedElsewhere": "Уже в другом товаре",
   "merchantsTitle": "Магазины",
-  "merchantPolicy": "Состав чека",
-  "merchantPolicyParse": "Разбирать",
-  "merchantPolicyIgnore": "Не разбирать",
   "merchantNetwork": "Сеть",
   "merchantNoNetwork": "Без сети",
-  "merchantCategory": "Категория чека",
   "merchantAliases": "Как в чеке",
   "addAlias": "Добавить название",
-  "addChildCategory": "Подкатегория",
-  "parentCategory": "Родитель",
-  "noParentCategory": "Верхний уровень",
-  "seedCategoryProducts": "Продукты",
-  "seedCategoryHousehold": "Для дома",
-  "seedCategoryCafe": "Кафе",
-  "seedCategoryTransport": "Транспорт",
-  "pricesBlock": "Цены",
-  "wasteBlock": "Траты зря",
-  "frequentBlock": "Чаще всего",
   "merchantsBlock": "Магазины",
-  "pricePerUnit": "{price}/{unit}",
-  "@pricePerUnit": {
-    "placeholders": {
-      "price": { "type": "String" },
-      "unit": { "type": "String" }
-    }
-  },
-  "cheaperAt": "дешевле в {store}",
-  "@cheaperAt": {
-    "placeholders": {
-      "store": { "type": "String" }
-    }
-  },
-  "pricesEmptyTitle": "Нет цены за единицу",
-  "pricesEmptyBody": "Укажите фасовку и единицу товара — сравним ₽/кг и ₽/л, а не пачки.",
-  "wasteEmptyTitle": "Пока нечего считать",
-  "wasteEmptyBody": "Повесьте товары на нижние категории или теги.",
-  "frequentEmptyTitle": "Пока нет темпа",
-  "frequentEmptyBody": "Соберите товары из чеков — здесь будет, что берут чаще.",
   "merchantsWithoutNetwork": "{count} без сети",
   "@merchantsWithoutNetwork": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-  "merchantsIgnorePolicy": "{count} не разбирать",
-  "@merchantsIgnorePolicy": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
-  },
-  "merchantsEmptyBody": "Магазины появятся из чеков.",
-  "priceDynamics": "Динамика",
-  "referencePack": "Эталон {pack}",
-  "@referencePack": {
-    "placeholders": {
-      "pack": { "type": "String" }
-    }
-  },
-  "wasteByLeaf": "Категории",
-  "wasteByTag": "Теги",
-  "noUnitPrice": "Нет ₽/ед",
-  "listTitle": "Список",
-  "listEmptyTitle": "Пока нечего брать",
-  "listEmptyBody": "Соберите товары и укажите фасовку — здесь появятся упаковки и где дешевле.",
-  "listPacks": "{count, plural, one{{count} упаковка} few{{count} упаковки} many{{count} упаковок} other{{count} упаковки}}",
-  "@listPacks": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
-  },
-  "scanNoQr": "Без QR",
-  "manualReceiptTitle": "Ручной чек",
-  "manualMerchant": "Магазин",
-  "manualMerchantHint": "Как на рынке или в магазине",
-  "manualDate": "Дата",
-  "manualAddLine": "Добавить товар",
-  "manualQuantity": "Количество",
-  "manualPrice": "Цена за единицу",
-  "manualEmptyLines": "Добавьте известные товары",
-  "manualSave": "Сохранить",
-  "manualNeedMerchant": "Укажите магазин",
-  "manualNeedLines": "Добавьте хотя бы одну строку",
-  "manualProductHint": "Товар из каталога",
-  "manualNoProducts": "Сначала соберите товары в каталоге",
-  "exportCsv": "Экспорт CSV",
-  "exportCsvSubject": "Категории CheckScan"
+  "merchantsEmptyBody": "Магазины появятся из чеков."
 }

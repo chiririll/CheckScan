@@ -12,11 +12,10 @@ Lint: [analysis_options.yaml](analysis_options.yaml).
 | --- | --- |
 | [lib/](lib/) | Flutter UI and app logic |
 | [lib/app/](lib/app/) | `MaterialApp` and theme tokens (`AppColors`, `AppShapes`, `AppText`) |
-| [lib/core/state/](lib/core/state/) | `AppState`: receipts + catalog and merchant stores |
-| [lib/core/catalog/](lib/core/catalog/) | Catalog: `model/`, `data/` (one mixin per table), `text/`, `pricing/`, `assist/`, `CatalogStore` |
+| [lib/core/state/](lib/core/state/) | `AppState`: receipts, merchants, background fetch after scan |
 | [lib/core/merchant/](lib/core/merchant/) | Merchants: repository and `MerchantStore` |
-| [lib/core/util/](lib/core/util/) | Collection helpers (`firstWhereOrNull`, `groupBy`, `filterByQuery`) |
-| [lib/features/](lib/features/) | Screens by feature; shared widgets in `widgets/`, l10n labels in `labels/` |
+| [lib/core/util/](lib/core/util/) | Collection helpers (`firstWhereOrNull`, `groupBy`) |
+| [lib/features/](lib/features/) | Screens by feature; shared widgets in `widgets/` |
 | [packages/eq_models](packages/eq_models/) | Shared receipt JSON (`EqReceipt`) |
 | [test/](test/) | Dart tests (`flutter test`) |
 
@@ -25,7 +24,7 @@ Providers and FFI: [CheckScanProviders](https://github.com/chiririll/CheckScanPr
 ## Flow
 
 1. Wire-up: [lib/main.dart](lib/main.dart)
-2. Scan pipeline (match → dedupe → resolve → persist): [lib/core/scan/scan_session.dart](lib/core/scan/scan_session.dart)
+2. Scan pipeline (match → dedupe → local parse → persist; network fetch runs after the receipt opens): [lib/core/scan/scan_session.dart](lib/core/scan/scan_session.dart)
 3. Native adapter: [lib/core/scan/native_adapter.dart](lib/core/scan/native_adapter.dart)
 4. FFI: CheckScanProviders `adapters/flutter/` plugin. Host attaches `checkscan_set_log` and prints `[checkscan]` lines.
 5. Local DB: [lib/core/storage/receipt_repository.dart](lib/core/storage/receipt_repository.dart), [lib/core/models/receipt_record.dart](lib/core/models/receipt_record.dart)

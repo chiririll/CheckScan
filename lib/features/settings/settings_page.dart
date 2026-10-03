@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme.dart';
-import '../../core/export/category_csv.dart';
-import '../../core/export/category_csv_share.dart';
 import '../../core/export/eq_jsonl_share.dart';
 import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
-import '../labels/category_label.dart';
 import '../merchant/merchants_page.dart';
 import '../widgets/navigation.dart';
 import 'secret_field.dart';
@@ -55,12 +52,6 @@ class SettingsPage extends StatelessWidget {
                 state: state,
                 export: () => shareEqJsonl(receipts: state.receipts, subject: l10n.exportShareSubject),
               ),
-              ExportRow(
-                title: l10n.exportCsv,
-                icon: Icons.table_chart_outlined,
-                state: state,
-                export: () => _shareCategoryCsv(l10n),
-              ),
               SettingsRow(title: l10n.integrationCloud, trailing: _soon(l10n)),
             ],
           );
@@ -70,18 +61,4 @@ class SettingsPage extends StatelessWidget {
   }
 
   Widget _soon(AppLocalizations l10n) => Text(l10n.soon, style: const TextStyle(color: AppColors.muted, fontSize: 12));
-
-  Future<void> _shareCategoryCsv(AppLocalizations l10n) {
-    final rows = buildCategoryExport(
-      receipts: state.receipts,
-      resolver: state.catalog.resolver,
-      categories: state.catalog.categories,
-      merchants: state.merchants.all,
-    );
-    return shareCategoryCsv(
-      rows: rows,
-      subject: l10n.exportCsvSubject,
-      categoryName: (key) => key.isEmpty ? l10n.uncategorized : categoryLabel(key, l10n),
-    );
-  }
 }

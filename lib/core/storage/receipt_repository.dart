@@ -68,6 +68,7 @@ class ReceiptRepository {
 
   Future<void> deleteById(String id) async {
     await (await _db).transaction((txn) async {
+      // Legacy catalog cache; the table is kept for old data but must not point at deleted receipts.
       await txn.delete('purchase', where: 'check_id = ?', whereArgs: [id]);
       await txn.delete('receipts', where: 'id = ?', whereArgs: [id]);
     });

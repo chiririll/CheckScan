@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:checkscan/core/merchant/merchant.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
 import 'package:checkscan/core/state/app_state.dart';
 import 'package:checkscan/core/storage/database.dart';
@@ -73,18 +72,5 @@ void main() {
     expect(merchant.aliases.map((alias) => alias.taxId), contains('7700'));
     expect(notified, greaterThan(0));
     expect(state.merchants.byId(null), isNull);
-  });
-
-  test('ignore policy drops the merchant lines from purchases', () async {
-    final merchantId = await saveReceipt();
-    await state.load();
-    final position = state.catalog.positions.single;
-    await state.catalog.createProduct(name: 'Молоко', positionId: position.id);
-    expect(state.catalog.purchases, hasLength(1));
-
-    await state.setMerchantPolicy(merchantId, MerchantPolicy.ignore);
-
-    expect(state.merchants.byId(merchantId)!.ignoresItems, isTrue);
-    expect(state.catalog.purchases, isEmpty);
   });
 }

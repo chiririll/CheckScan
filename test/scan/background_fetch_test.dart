@@ -85,7 +85,7 @@ void main() {
 
     expect(state.isFetching(id), isFalse);
     expect(state.byId(id)!.itemCount, 1);
-    expect(state.catalog.positions.single.displayName, 'Хлеб');
+    expect(state.byId(id)!.receipt.items.single.description, 'Хлеб');
   });
 
   test('a complete receipt is not fetched again', () async {
@@ -95,8 +95,7 @@ void main() {
 
     final again = await state.processScan(FakeNativeAdapter.fnsQuery);
     expect(again.record!.itemCount, 1);
-    expect(state.isFetching(again.record!.id), isTrue, reason: 'only the catalog sync runs');
-    await state.fetchDone(again.record!.id);
+    expect(state.isFetching(again.record!.id), isFalse);
   });
 
   testWidgets('receipt page shows a loader until the items arrive', (tester) async {

@@ -14,17 +14,6 @@ void main() {
     expect(groups[1], ['a', 'd']);
   });
 
-  test('indexBy maps keys to items', () {
-    expect(['x', 'yy'].indexBy((s) => s.length), {1: 'x', 2: 'yy'});
-  });
-
-  test('filterByQuery is case-insensitive and keeps all on a blank query', () {
-    const items = ['Молоко', 'Хлеб', 'Кефир'];
-    expect(filterByQuery(items, '  ', (s) => [s]), items);
-    expect(filterByQuery(items, 'МОЛ', (s) => [s]), ['Молоко']);
-    expect(filterByQuery(items, 'zzz', (s) => [s]), isEmpty);
-  });
-
   test('trimmedOrNull drops blank strings', () {
     expect(trimmedOrNull(null), isNull);
     expect(trimmedOrNull('   '), isNull);

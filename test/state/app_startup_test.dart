@@ -80,31 +80,6 @@ void main() {
     adapter.schema.complete(const [SettingField(key: 'k', type: 'secret', label: 'RU')]);
     await loading;
     expect(state.settingFields.single.key, 'k');
-    expect(state.catalog.positions.single.displayName, 'Молоко 1л');
     state.dispose();
-  });
-
-  test('second launch shows the stored catalog and cached purchases right away', () async {
-    await saveReceipt();
-    final first = AppState(repository: receipts, adapter: FakeNativeAdapter());
-    await first.load();
-    await first.catalog.createProduct(name: 'Молоко', positionId: first.catalog.positions.single.id);
-    first.dispose();
-
-    final adapter = _SlowAdapter();
-    final second = AppState(repository: receipts, adapter: adapter);
-    final readyFired = Completer<void>();
-    second.addListener(() {
-      if (second.ready && !readyFired.isCompleted) readyFired.complete();
-    });
-    final loading = second.load();
-    await readyFired.future;
-
-    expect(second.catalog.products.single.name, 'Молоко');
-    expect(second.catalog.purchases, hasLength(1));
-
-    adapter.schema.complete(const []);
-    await loading;
-    second.dispose();
   });
 }

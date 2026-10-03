@@ -28,8 +28,6 @@ class MerchantRepository {
           id: row.str('id'),
           name: row.str('name'),
           parentId: row.optStr('parent_id'),
-          policy: MerchantPolicy.normalize(row.optStr('policy')),
-          categoryId: row.optStr('category_id'),
           aliases: aliases[row.str('id')] ?? const [],
         ),
     ];
@@ -45,10 +43,7 @@ class MerchantRepository {
         final rows = await txn.query('merchant_alias', where: '$column = ?', whereArgs: [value], limit: 1);
         if (rows.isNotEmpty) return rows.first.str('merchant_id');
       }
-      final merchantId = await txn.insert('merchant', {
-        'name': trimmedName ?? '—',
-        'policy': MerchantPolicy.parse,
-      });
+      final merchantId = await txn.insert('merchant', {'name': trimmedName ?? '—'});
       await txn.insert('merchant_alias', {
         'name': trimmedName,
         'tax_id': trimmedTax,
@@ -63,15 +58,10 @@ class MerchantRepository {
     String? name,
     String? parentId,
     bool clearParent = false,
-    String? policy,
-    String? categoryId,
-    bool clearCategory = false,
   }) async {
     final values = <String, Object?>{
       'name': ?name?.trim(),
       if (clearParent) 'parent_id': null else if (parentId != null && parentId != id) 'parent_id': dbId(parentId),
-      if (policy != null) 'policy': MerchantPolicy.normalize(policy),
-      if (clearCategory) 'category_id': null else if (categoryId != null) 'category_id': dbId(categoryId),
     };
     if (values.isEmpty) return;
     await (await _db).update('merchant', values, where: 'id = ?', whereArgs: [dbId(id)]);

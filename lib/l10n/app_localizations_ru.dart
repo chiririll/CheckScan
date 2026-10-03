@@ -16,16 +16,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get tabHome => 'Главная';
 
   @override
-  String get tabCatalog => 'Каталог';
-
-  @override
-  String get tabList => 'Список';
-
-  @override
   String get tabHistory => 'История';
-
-  @override
-  String get scan => 'Скан';
 
   @override
   String get onboard1Title => 'Чеки всегда под рукой';
@@ -39,7 +30,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get onboard2Body =>
-      'По отсканированным чекам видно, на что уходят деньги, что покупаете чаще и где дешевле.';
+      'По отсканированным чекам видно, сколько и в каких магазинах уходит денег.';
 
   @override
   String get onboard3Title => 'Нужен доступ к камере';
@@ -100,19 +91,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get emptyPeriodBody => 'Смените период или отсканируйте чек.';
-
-  @override
-  String get mostOften => 'Чаще всего';
-
-  @override
-  String cheaperWhere(String item) {
-    return 'Где дешевле $item';
-  }
-
-  @override
-  String timesCount(int count) {
-    return '$count раз';
-  }
 
   @override
   String itemsCount(int count) {
@@ -196,22 +174,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get unavailableTitle => 'Сервис недоступен';
 
   @override
-  String get unavailableBody =>
-      'Не удалось получить чек. Можно повторить позже.';
-
-  @override
   String get rateLimitedTitle => 'Слишком много запросов';
 
   @override
-  String get rateLimitedBody =>
-      'Провайдер временно ограничил доступ. Чек сохранён, состав подгрузим позже.';
-
-  @override
   String get needsSecretTitle => 'Нужен токен';
-
-  @override
-  String get needsSecretBody =>
-      'Чтобы подгрузить состав, укажите токен в настройках.';
 
   @override
   String get close => 'Закрыть';
@@ -227,12 +193,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get deleteReceiptBody => 'Чек исчезнет из истории и статистики.';
-
-  @override
-  String get retry => 'Повторить';
-
-  @override
-  String get retryItems => 'Обновить состав';
 
   @override
   String get refreshReceipt => 'Обновить данные';
@@ -298,316 +258,16 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String amount(String value) {
-    return '$value ₽';
-  }
-
-  @override
-  String get catalogTitle => 'Каталог';
-
-  @override
-  String get catalogUnassigned => 'Не разобрано';
-
-  @override
-  String get catalogProducts => 'Товары';
-
-  @override
-  String get catalogCategories => 'Категории';
-
-  @override
-  String get catalogSearch => 'Поиск';
-
-  @override
-  String get catalogEmptyUnassigned => 'Все позиции уже в товарах';
-
-  @override
-  String get catalogEmptyUnassignedBody =>
-      'Новые названия из чеков появятся здесь.';
-
-  @override
-  String get catalogEmptyProducts => 'Пока нет товаров';
-
-  @override
-  String get catalogEmptyProductsBody =>
-      'Объедините позиции из «Не разобрано» в товар.';
-
-  @override
-  String get catalogEmptySearch => 'Ничего не найдено';
-
-  @override
-  String get assignToProduct => 'В товар';
-
-  @override
-  String mergeWith(String name) {
-    return 'Объединить с $name';
-  }
-
-  @override
-  String get newProduct => 'Новый товар';
-
-  @override
-  String get productName => 'Название товара';
-
-  @override
-  String get productCategory => 'Категория';
+  String get merchantName => 'Название';
 
   @override
   String get productTags => 'Теги';
 
   @override
-  String get addTag => 'Добавить тег';
-
-  @override
-  String get detachPosition => 'Отвязать';
-
-  @override
-  String get deleteProduct => 'Удалить товар';
-
-  @override
-  String get deleteProductTitle => 'Удалить товар?';
-
-  @override
-  String get deleteProductBody => 'Позиции останутся в «Не разобрано».';
-
-  @override
-  String get deleteCategoryTitle => 'Удалить категорию?';
-
-  @override
-  String get deleteCategoryBody => 'Товары останутся без категории.';
-
-  @override
-  String get addCategory => 'Новая категория';
-
-  @override
-  String get categoryName => 'Название категории';
-
-  @override
-  String get uncategorized => 'Без категории';
-
-  @override
-  String get unitLabel => 'Единица';
-
-  @override
-  String get unitNone => 'Не задана';
-
-  @override
-  String get unitPiece => 'шт';
-
-  @override
-  String get unitPack => 'упак';
-
-  @override
-  String get unitKg => 'кг';
-
-  @override
-  String get unitG => 'г';
-
-  @override
-  String get unitL => 'л';
-
-  @override
-  String get unitMl => 'мл';
-
-  @override
-  String get unitSize => 'Фасовка';
-
-  @override
-  String get positionBrand => 'Бренд';
-
-  @override
-  String get mergeGroup => 'Объединить';
-
-  @override
-  String get mergeGroupBody =>
-      'Похожие позиции. Уберите лишние — остальные станут одной.';
-
-  @override
-  String get mergeGroupConfirm => 'Объединить';
-
-  @override
-  String mergeSuggested(int count) {
-    return 'Похожие · $count';
-  }
-
-  @override
-  String clusterAndMore(int count) {
-    return 'и ещё $count';
-  }
-
-  @override
-  String get positionsSection => 'Позиции';
-
-  @override
-  String get addPosition => 'Добавить позицию';
-
-  @override
-  String get draftProductCreate => 'Создать товар';
-
-  @override
-  String get byCategory => 'По категориям';
-
-  @override
-  String get splitAlias => 'Отделить';
-
-  @override
   String get save => 'Сохранить';
 
   @override
-  String get createAndAssign => 'Создать и привязать';
-
-  @override
-  String get rename => 'Переименовать';
-
-  @override
-  String get aliasesSection => 'Названия в чеках';
-
-  @override
-  String get noCategory => 'Без категории';
-
-  @override
-  String get seedCategoryDairyEggs => 'Молочные и яйца';
-
-  @override
-  String get seedCategoryMeat => 'Мясо и птица';
-
-  @override
-  String get seedCategoryFish => 'Рыба и морепродукты';
-
-  @override
-  String get seedCategoryDeli => 'Колбасы и копчёности';
-
-  @override
-  String get seedCategoryProduce => 'Овощи и фрукты';
-
-  @override
-  String get seedCategoryBakery => 'Хлеб и выпечка';
-
-  @override
-  String get seedCategoryGrocery => 'Бакалея';
-
-  @override
-  String get seedCategoryDrinks => 'Напитки';
-
-  @override
-  String get seedCategorySnacks => 'Сладости и снеки';
-
-  @override
-  String get seedCategoryReadyMeals => 'Готовая еда';
-
-  @override
-  String get seedCategoryAlcohol => 'Алкоголь';
-
-  @override
-  String get seedCategoryKids => 'Детские товары';
-
-  @override
-  String get seedCategoryPets => 'Товары для животных';
-
-  @override
-  String get seedCategoryBeauty => 'Красота и гигиена';
-
-  @override
-  String get seedCategoryPharmacy => 'Аптека';
-
-  @override
-  String get seedCategoryHome => 'Дом и быт';
-
-  @override
-  String get seedCategoryOther => 'Прочее';
-
-  @override
-  String get appLanguageName => 'русский';
-
-  @override
-  String get assistCopyPrompt => 'Скопировать промпт';
-
-  @override
-  String get assistPasteReply => 'Вставить ответ';
-
-  @override
-  String get assistPasteHint => 'Вставьте ответ';
-
-  @override
-  String get assistCopyShort => 'Промпт';
-
-  @override
-  String get assistPasteShort => 'Вставить';
-
-  @override
-  String get assistCopied => 'Промпт скопирован';
-
-  @override
-  String get assistReview => 'Проверка';
-
-  @override
-  String get assistApply => 'Применить';
-
-  @override
-  String get assistUnmatched => 'Не удалось сопоставить';
-
-  @override
-  String get assistErrorEmpty => 'Буфер пуст';
-
-  @override
-  String get assistErrorNoProducts => 'Не удалось разобрать ответ';
-
-  @override
-  String get assistErrorNothing => 'Нечего применять';
-
-  @override
-  String get catalogAncestors => 'Назад по каталогу';
-
-  @override
-  String get catalogMore => 'Ещё';
-
-  @override
-  String get productReceipts => 'В чеках';
-
-  @override
-  String get productReceiptsEmptyTitle => 'Пока нет чеков';
-
-  @override
-  String get productReceiptsEmptyBody =>
-      'Этот товар ещё не встречался в сохранённых чеках.';
-
-  @override
-  String get productKind => 'Тип';
-
-  @override
-  String get productKindGood => 'Товар';
-
-  @override
-  String get productKindService => 'Услуга';
-
-  @override
-  String get itemTags => 'Теги названия';
-
-  @override
-  String get itemSearchHint => 'Найти название';
-
-  @override
-  String get similarItems => 'Похожие';
-
-  @override
-  String get dismissSuggestion => 'Не предлагать';
-
-  @override
-  String get attachItem => 'Привязать';
-
-  @override
-  String get itemAssignedElsewhere => 'Уже в другом товаре';
-
-  @override
   String get merchantsTitle => 'Магазины';
-
-  @override
-  String get merchantPolicy => 'Состав чека';
-
-  @override
-  String get merchantPolicyParse => 'Разбирать';
-
-  @override
-  String get merchantPolicyIgnore => 'Не разбирать';
 
   @override
   String get merchantNetwork => 'Сеть';
@@ -616,76 +276,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get merchantNoNetwork => 'Без сети';
 
   @override
-  String get merchantCategory => 'Категория чека';
-
-  @override
   String get merchantAliases => 'Как в чеке';
 
   @override
   String get addAlias => 'Добавить название';
 
   @override
-  String get addChildCategory => 'Подкатегория';
-
-  @override
-  String get parentCategory => 'Родитель';
-
-  @override
-  String get noParentCategory => 'Верхний уровень';
-
-  @override
-  String get seedCategoryProducts => 'Продукты';
-
-  @override
-  String get seedCategoryHousehold => 'Для дома';
-
-  @override
-  String get seedCategoryCafe => 'Кафе';
-
-  @override
-  String get seedCategoryTransport => 'Транспорт';
-
-  @override
-  String get pricesBlock => 'Цены';
-
-  @override
-  String get wasteBlock => 'Траты зря';
-
-  @override
-  String get frequentBlock => 'Чаще всего';
-
-  @override
   String get merchantsBlock => 'Магазины';
-
-  @override
-  String pricePerUnit(String price, String unit) {
-    return '$price/$unit';
-  }
-
-  @override
-  String cheaperAt(String store) {
-    return 'дешевле в $store';
-  }
-
-  @override
-  String get pricesEmptyTitle => 'Нет цены за единицу';
-
-  @override
-  String get pricesEmptyBody =>
-      'Укажите фасовку и единицу товара — сравним ₽/кг и ₽/л, а не пачки.';
-
-  @override
-  String get wasteEmptyTitle => 'Пока нечего считать';
-
-  @override
-  String get wasteEmptyBody => 'Повесьте товары на нижние категории или теги.';
-
-  @override
-  String get frequentEmptyTitle => 'Пока нет темпа';
-
-  @override
-  String get frequentEmptyBody =>
-      'Соберите товары из чеков — здесь будет, что берут чаще.';
 
   @override
   String merchantsWithoutNetwork(int count) {
@@ -693,98 +290,5 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String merchantsIgnorePolicy(int count) {
-    return '$count не разбирать';
-  }
-
-  @override
   String get merchantsEmptyBody => 'Магазины появятся из чеков.';
-
-  @override
-  String get priceDynamics => 'Динамика';
-
-  @override
-  String referencePack(String pack) {
-    return 'Эталон $pack';
-  }
-
-  @override
-  String get wasteByLeaf => 'Категории';
-
-  @override
-  String get wasteByTag => 'Теги';
-
-  @override
-  String get noUnitPrice => 'Нет ₽/ед';
-
-  @override
-  String get listTitle => 'Список';
-
-  @override
-  String get listEmptyTitle => 'Пока нечего брать';
-
-  @override
-  String get listEmptyBody =>
-      'Соберите товары и укажите фасовку — здесь появятся упаковки и где дешевле.';
-
-  @override
-  String listPacks(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count упаковки',
-      many: '$count упаковок',
-      few: '$count упаковки',
-      one: '$count упаковка',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get scanNoQr => 'Без QR';
-
-  @override
-  String get manualReceiptTitle => 'Ручной чек';
-
-  @override
-  String get manualMerchant => 'Магазин';
-
-  @override
-  String get manualMerchantHint => 'Как на рынке или в магазине';
-
-  @override
-  String get manualDate => 'Дата';
-
-  @override
-  String get manualAddLine => 'Добавить товар';
-
-  @override
-  String get manualQuantity => 'Количество';
-
-  @override
-  String get manualPrice => 'Цена за единицу';
-
-  @override
-  String get manualEmptyLines => 'Добавьте известные товары';
-
-  @override
-  String get manualSave => 'Сохранить';
-
-  @override
-  String get manualNeedMerchant => 'Укажите магазин';
-
-  @override
-  String get manualNeedLines => 'Добавьте хотя бы одну строку';
-
-  @override
-  String get manualProductHint => 'Товар из каталога';
-
-  @override
-  String get manualNoProducts => 'Сначала соберите товары в каталоге';
-
-  @override
-  String get exportCsv => 'Экспорт CSV';
-
-  @override
-  String get exportCsvSubject => 'Категории CheckScan';
 }

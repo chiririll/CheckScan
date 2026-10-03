@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import '../../app/theme.dart';
 import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
-import '../catalog/catalog_page.dart';
 import '../history/history_page.dart';
 import '../home/home_page.dart';
-import '../list/list_page.dart';
 import '../scan/scan_page.dart';
 import '../widgets/navigation.dart';
 
@@ -36,8 +34,6 @@ class _AppShellState extends State<AppShell> {
           index: _tab,
           children: [
             HomePage(state: widget.state),
-            CatalogPage(state: widget.state),
-            ListPage(state: widget.state),
             HistoryPage(state: widget.state),
           ],
         ),
@@ -56,10 +52,8 @@ class _AppShellState extends State<AppShell> {
                 child: Row(
                   children: [
                     _tabButton(l10n.tabHome, 0),
-                    _tabButton(l10n.tabCatalog, 1),
                     const SizedBox(width: 64),
-                    _tabButton(l10n.tabList, 2),
-                    _tabButton(l10n.tabHistory, 3),
+                    _tabButton(l10n.tabHistory, 1),
                   ],
                 ),
               ),

@@ -4,8 +4,6 @@ import '../../app/theme.dart';
 import '../../core/merchant/merchant.dart';
 import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
-import '../catalog/category_picker.dart';
-import '../labels/category_label.dart';
 import '../widgets/dialogs.dart';
 
 class MerchantPage extends StatelessWidget {
@@ -26,7 +24,6 @@ class MerchantPage extends StatelessWidget {
           return Scaffold(appBar: AppBar(title: Text(l10n.merchantsTitle)));
         }
         final parent = merchants.byId(merchant.parentId);
-        final category = merchant.categoryId == null ? null : state.catalog.categoryById(merchant.categoryId!);
         return Scaffold(
           appBar: AppBar(title: Text(merchant.name)),
           body: ListView(
@@ -34,10 +31,10 @@ class MerchantPage extends StatelessWidget {
             children: [
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(l10n.productName),
+                title: Text(l10n.merchantName),
                 subtitle: Text(merchant.name),
                 onTap: () async {
-                  final name = await promptText(context, title: l10n.productName, initial: merchant.name, confirm: l10n.save);
+                  final name = await promptText(context, title: l10n.merchantName, initial: merchant.name, confirm: l10n.save);
                   if (name != null) await merchants.update(merchant.id, name: name);
                 },
               ),
@@ -46,27 +43,6 @@ class MerchantPage extends StatelessWidget {
                 title: Text(l10n.merchantNetwork),
                 subtitle: Text(parent?.name ?? l10n.merchantNoNetwork),
                 onTap: () => _pickParent(context, merchant),
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(l10n.merchantPolicy),
-                trailing: DropdownButton<String>(
-                  value: merchant.policy,
-                  underline: const SizedBox.shrink(),
-                  items: [
-                    DropdownMenuItem(value: MerchantPolicy.parse, child: Text(l10n.merchantPolicyParse)),
-                    DropdownMenuItem(value: MerchantPolicy.ignore, child: Text(l10n.merchantPolicyIgnore)),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) state.setMerchantPolicy(merchant.id, value);
-                  },
-                ),
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(l10n.merchantCategory),
-                subtitle: Text(category == null ? l10n.noCategory : categoryTitle(category, l10n)),
-                onTap: () => _pickCategory(context, merchant),
               ),
               const SizedBox(height: 12),
               Text(l10n.merchantAliases, style: AppText.title),
@@ -91,21 +67,6 @@ class MerchantPage extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  Future<void> _pickCategory(BuildContext context, Merchant merchant) async {
-    final selected = await pickAssignableCategory(
-      context: context,
-      catalog: state.catalog,
-      currentId: merchant.categoryId,
-      topsOnly: true,
-    );
-    if (selected == null) return;
-    await state.merchants.update(
-      merchant.id,
-      categoryId: selected.isEmpty ? null : selected,
-      clearCategory: selected.isEmpty,
     );
   }
 
