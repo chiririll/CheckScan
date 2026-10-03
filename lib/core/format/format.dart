@@ -9,13 +9,14 @@ final _dateTime = DateFormat('d MMMM y, HH:mm', 'ru');
 const _currencySymbols = {'RUB': '₽', 'RSD': 'дин.'};
 
 /// [minor] counts 10^-[scale] units of [currency]. Whole amounts drop the fraction:
-/// "1 247 ₽", "178,50 ₽".
-String formatMoney(int minor, {required int scale, String currency = 'RUB'}) {
+/// "1 247 ₽", "178,50 ₽". With [plus], a positive amount gets a "+": money coming back.
+String formatMoney(int minor, {required int scale, String currency = 'RUB', bool plus = false}) {
   final parts = splitMinor(minor, scale);
   final whole = _grouped.format(parts.whole);
   final hasFraction = parts.fraction.isNotEmpty && int.parse(parts.fraction) != 0;
   final amount = hasFraction ? '$whole,${parts.fraction}' : whole;
-  return '${parts.negative ? '-' : ''}$amount ${formatCurrencyLabel(currency)}';
+  final sign = parts.negative ? '-' : (plus && minor != 0 ? '+' : '');
+  return '$sign$amount ${formatCurrencyLabel(currency)}';
 }
 
 String formatCurrencyLabel(String currency) => _currencySymbols[currency] ?? currency;

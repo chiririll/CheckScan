@@ -78,7 +78,12 @@ class ReceiptRecord {
 
   bool get canRetry => canRetryStatus(lastStatus);
 
-  bool get missingRemoteItems => status != ReceiptStatus.ok && itemCount == 0;
+  bool get isRefund => receipt.type == 'refund';
+
+  /// [total] as it moves money: a refund gives it back.
+  int get signedTotal => isRefund ? -total : total;
+
+  bool get missingRemoteItems => status != ReceiptStatus.ok && itemCount == 0 && !itemsUnavailable;
 
   bool get itemsUnavailable => receiptFlag(receipt, itemsUnavailableExtension);
 }

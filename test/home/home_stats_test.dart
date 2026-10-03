@@ -11,28 +11,31 @@ ReceiptRecord _receipt({
   required DateTime issuedAt,
   required int total,
   int scale = 2,
+  String type = 'sale',
+  bool itemsUnavailable = false,
 }) {
   final receipt = Receipt(
     id: id,
     issuedAt: issuedAt,
     currency: currency,
     scale: scale,
-    type: 'sale',
+    type: type,
     merchantName: 'Магазин',
     total: total,
-    items: const [ReceiptItem(name: 'Молоко', quantity: 1, price: 8000, sum: 8000)],
+    items: itemsUnavailable ? const [] : const [ReceiptItem(name: 'Молоко', quantity: 1, price: 8000, sum: 8000)],
+    extensions: itemsUnavailable ? const {itemsUnavailableExtension: true} : const {},
   );
   return ReceiptRecord(
     id: id,
     qrHash: 'h:$id',
     adapterId: 'eq_payload',
-    status: ReceiptStatus.ok,
+    status: itemsUnavailable ? ReceiptStatus.incomplete : ReceiptStatus.ok,
     issuedAt: issuedAt,
     merchantName: 'Магазин',
     total: total,
     currency: currency,
     scale: scale,
-    itemCount: 1,
+    itemCount: itemsUnavailable ? 0 : 1,
     payload: receipt.encode(),
     scannedAt: issuedAt,
     rawQr: '{}',
@@ -80,5 +83,51 @@ void main() {
     expect(dash.spentScale, 2);
     expect(dash.spent, 18999);
     expect(dash.receiptCount, 2);
+  });
+
+  test('a refund reduces spent and shows as a negative amount', () {
+    final refund = _receipt(id: 'ref', currency: 'RSD', issuedAt: DateTime(2026, 8, 2), total: 2000, type: 'refund');
+    final dash = HomeDashboard.of(
+      receipts: [
+        _receipt(id: 'buy', currency: 'RSD', issuedAt: DateTime(2026, 8, 1), total: 5000),
+        refund,
+      ],
+      merchants: const [],
+      period: const HomePeriod(year: 2026, month: 8),
+      currency: 'RSD',
+    );
+    expect(dash.spent, 3000);
+    expect(refund.signedTotal, -2000);
+  });
+
+  test('spent goes negative when refunds exceed purchases in a period', () {
+    final dash = HomeDashboard.of(
+      receipts: [
+        _receipt(id: 'ref', currency: 'RSD', issuedAt: DateTime(2026, 8, 2), total: 2000, type: 'refund'),
+      ],
+      merchants: const [],
+      period: const HomePeriod(year: 2026, month: 8),
+      currency: 'RSD',
+    );
+    expect(dash.spent, -2000);
+  });
+
+  test('formatMoney marks returned money with a plus', () {
+    expect(formatMoney(223984, scale: 2, currency: 'RSD', plus: true), '+2 239,84 дин.');
+    expect(formatMoney(223984, scale: 2, currency: 'RSD'), '2 239,84 дин.');
+    expect(formatMoney(0, scale: 2, plus: true), '0 ₽');
+  });
+
+  test('a receipt without items from the provider is not flagged as missing', () {
+    final record = _receipt(
+      id: 'r',
+      currency: 'RSD',
+      issuedAt: DateTime(2026, 8, 1),
+      total: 100,
+      type: 'refund',
+      itemsUnavailable: true,
+    );
+    expect(record.itemsUnavailable, isTrue);
+    expect(record.missingRemoteItems, isFalse);
   });
 }

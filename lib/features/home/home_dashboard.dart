@@ -45,7 +45,7 @@ class HomeDashboard {
     // Providers of one currency may differ in precision: sum at the finest scale.
     final scale = scoped.fold<int>(0, (finest, receipt) => receipt.scale > finest ? receipt.scale : finest);
     return HomeDashboard(
-      spent: scoped.fold<int>(0, (sum, receipt) => sum + rescaleMinor(receipt.total, receipt.scale, scale)),
+      spent: scoped.fold<int>(0, (sum, receipt) => sum + rescaleMinor(receipt.signedTotal, receipt.scale, scale)),
       spentScale: scale,
       receiptCount: scoped.length,
       merchants: MerchantTeaser.of(merchants),
