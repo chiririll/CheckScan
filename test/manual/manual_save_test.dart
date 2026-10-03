@@ -36,7 +36,7 @@ void main() {
   test('saves a manual receipt that never needs a fetch', () async {
     final record = await state.saveManual(receipt(), label: 'Вручную');
 
-    expect(record.isManual, isTrue);
+    expect(record.isEditable, isTrue);
     expect(record.canRetry, isFalse);
     expect(record.missingRemoteItems, isFalse);
     expect(record.providerLabel, 'Вручную');

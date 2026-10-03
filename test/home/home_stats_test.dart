@@ -1,3 +1,4 @@
+import 'package:checkscan/core/currency/currencies.dart';
 import 'package:checkscan/core/format/format.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
 import 'package:checkscan/features/home/home_dashboard.dart';
@@ -47,13 +48,14 @@ void main() {
     expect(period.contains(DateTime(2026, 7, 31)), isFalse);
   });
 
-  test('listCurrencies prefers RUB then RSD', () {
+  test('homeCurrencies follows the user order, then receipt count', () {
     final receipts = [
       _receipt(id: 'eur', currency: 'EUR', issuedAt: DateTime(2026, 8, 1), total: 1000),
       _receipt(id: 'rsd', currency: 'RSD', issuedAt: DateTime(2026, 8, 1), total: 2000),
       _receipt(id: 'rub', currency: 'RUB', issuedAt: DateTime(2026, 8, 1), total: 3000),
     ];
-    expect(listCurrencies(receipts), ['RUB', 'RSD', 'EUR']);
+    expect(homeCurrencies(receipts, const ['RSD', 'RUB']), ['RSD', 'RUB', 'EUR']);
+    expect(homeCurrencies(receipts, const []), ['EUR', 'RSD', 'RUB']); // equal counts: by code
   });
 
   test('formatCurrencyLabel uses local symbols', () {

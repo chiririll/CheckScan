@@ -1,4 +1,5 @@
 import 'package:checkscan/app/app.dart';
+import 'package:checkscan/core/currency/currency_store.dart';
 import 'package:checkscan/core/format/format.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
 import 'package:checkscan/core/scan/native_adapter.dart';
@@ -15,12 +16,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'scan/fake_native_adapter.dart';
 import 'support/receipt_fixtures.dart';
 
-AppState _state({bool onboardingDone = false, List<ReceiptRecord> receipts = const []}) {
+AppState _state({
+  bool onboardingDone = false,
+  List<ReceiptRecord> receipts = const [],
+  List<String> currencyOrder = const [],
+}) {
   final repository = ReceiptRepository(resolveDbPath: () async => 'unused.db');
   return AppState(
     repository: repository,
     adapter: FakeNativeAdapter(),
     onboarding: OnboardingStore()..done = onboardingDone,
+    currencies: CurrencyStore()..order = currencyOrder,
   )
     ..ready = true
     ..receipts = receipts;
@@ -132,7 +138,7 @@ void main() {
       rawQr: '{}',
     );
 
-    await tester.pumpWidget(CheckScanApp(state: _state(onboardingDone: true, receipts: [rub, rsd])));
+    await tester.pumpWidget(CheckScanApp(state: _state(onboardingDone: true, receipts: [rub, rsd], currencyOrder: const ['RUB', 'RSD'])));
     await tester.pump();
 
     expect(find.text('₽'), findsOneWidget);

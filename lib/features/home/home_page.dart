@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme.dart';
+import '../../core/currency/currencies.dart';
 import '../../core/format/format.dart';
 import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
@@ -59,7 +60,7 @@ class _HomeBodyState extends State<_HomeBody> {
   @override
   Widget build(BuildContext context) {
     final receipts = widget.state.receipts;
-    final currencies = listCurrencies(receipts);
+    final currencies = homeCurrencies(receipts, widget.state.currencyOrder);
     if (currencies.isEmpty) {
       final l10n = AppLocalizations.of(context);
       return EmptyHint(title: l10n.emptyHomeTitle, body: l10n.emptyHomeBody);

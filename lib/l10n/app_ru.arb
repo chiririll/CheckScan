@@ -133,5 +133,11 @@
   "manualInvalidTotal": "Укажите сумму больше нуля",
   "manualInvalidItem": "У позиции нужны название и цена",
   "manualProviderLabel": "Вручную",
+  "currenciesTitle": "Валюты",
+  "currenciesHint": "Порядок вкладок на главной и выбор валюты в ручном чеке. Валюты из последних чеков подставляются сами, если их нет в списке.",
+  "currenciesAddTitle": "Добавить валюту",
+  "currenciesRemove": "Убрать",
+  "currenciesFromReceipts": "Из последних чеков",
+  "currencyInvalid": "Код валюты — три латинские буквы, например EUR",
   "merchantsEmptyBody": "Магазины появятся из чеков."
 }

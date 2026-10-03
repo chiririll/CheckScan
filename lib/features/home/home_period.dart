@@ -1,4 +1,3 @@
-import '../../core/models/receipt_record.dart';
 
 class HomePeriod {
   const HomePeriod({required this.year, required this.month});
@@ -30,25 +29,4 @@ class HomePeriod {
 
   @override
   int get hashCode => Object.hash(year, month);
-}
-
-const _preferredCurrencies = ['RUB', 'RSD'];
-
-List<String> listCurrencies(List<ReceiptRecord> receipts) {
-  final seen = <String>{};
-  for (final receipt in receipts) {
-    if (receipt.currency.isNotEmpty) seen.add(receipt.currency);
-  }
-  final list = seen.toList();
-  list.sort((a, b) {
-    final ia = _preferredCurrencies.indexOf(a);
-    final ib = _preferredCurrencies.indexOf(b);
-    if (ia != -1 || ib != -1) {
-      if (ia == -1) return 1;
-      if (ib == -1) return -1;
-      return ia.compareTo(ib);
-    }
-    return a.compareTo(b);
-  });
-  return list;
 }

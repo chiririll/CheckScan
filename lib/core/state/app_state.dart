@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:receipt_model/receipt_model.dart';
 
+import '../currency/currencies.dart';
+import '../currency/currency_store.dart';
 import '../manual/manual_receipt.dart';
 import '../merchant/merchant_store.dart';
 import '../models/receipt_record.dart';
@@ -23,12 +25,14 @@ class AppState extends ChangeNotifier {
     ScanSession? session,
     MerchantStore? merchants,
     OnboardingStore? onboarding,
+    CurrencyStore? currencies,
   })  : _repository = repository,
         _adapter = adapter,
         settings = settings ?? SettingsStore(),
         _session = session ?? ScanSession(repository: repository, adapter: adapter),
         merchants = merchants ?? MerchantStore(repository: repository.merchants),
-        _onboarding = onboarding ?? OnboardingStore() {
+        _onboarding = onboarding ?? OnboardingStore(),
+        _currencies = currencies ?? CurrencyStore() {
     this.merchants.addListener(notifyListeners);
   }
 
@@ -38,6 +42,7 @@ class AppState extends ChangeNotifier {
   final ScanSession _session;
   final MerchantStore merchants;
   final OnboardingStore _onboarding;
+  final CurrencyStore _currencies;
 
   List<ReceiptRecord> receipts = const [];
   List<SettingField> settingFields = const [];
@@ -52,7 +57,7 @@ class AppState extends ChangeNotifier {
   Future<void> load() async {
     final watch = Stopwatch()..start();
     try {
-      await Future.wait([_onboarding.load(), settings.load()]);
+      await Future.wait([_onboarding.load(), settings.load(), _currencies.load()]);
       _adapter.configure(settings.snapshot());
       await reload();
       loadError = null;
@@ -113,8 +118,22 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The user's currency order from settings; empty when they have no preference.
+  List<String> get currencyOrder => _currencies.order;
+
+  /// Currencies a new manual receipt can use: the user's list plus those of the latest receipts.
+  List<String> get manualCurrencies => entryCurrencies(receipts, currencyOrder);
+
   /// Currency of the latest receipt: the best guess for a new manual one.
-  String get defaultCurrency => receipts.isEmpty ? 'RUB' : receipts.first.currency;
+  String get defaultCurrency {
+    if (receipts.isNotEmpty) return receipts.first.currency;
+    return currencyOrder.isEmpty ? 'RUB' : currencyOrder.first;
+  }
+
+  Future<void> setCurrencyOrder(List<String> codes) async {
+    await _currencies.save(codes);
+    notifyListeners();
+  }
 
   /// Stores a hand-typed receipt, or the edited version of [existing]. [label] is the provider chip text.
   Future<ReceiptRecord> saveManual(Receipt receipt, {required String label, ReceiptRecord? existing}) async {

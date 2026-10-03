@@ -706,6 +706,42 @@ abstract class AppLocalizations {
   /// **'Вручную'**
   String get manualProviderLabel;
 
+  /// No description provided for @currenciesTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Валюты'**
+  String get currenciesTitle;
+
+  /// No description provided for @currenciesHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Порядок вкладок на главной и выбор валюты в ручном чеке. Валюты из последних чеков подставляются сами, если их нет в списке.'**
+  String get currenciesHint;
+
+  /// No description provided for @currenciesAddTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить валюту'**
+  String get currenciesAddTitle;
+
+  /// No description provided for @currenciesRemove.
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать'**
+  String get currenciesRemove;
+
+  /// No description provided for @currenciesFromReceipts.
+  ///
+  /// In ru, this message translates to:
+  /// **'Из последних чеков'**
+  String get currenciesFromReceipts;
+
+  /// No description provided for @currencyInvalid.
+  ///
+  /// In ru, this message translates to:
+  /// **'Код валюты — три латинские буквы, например EUR'**
+  String get currencyInvalid;
+
   /// No description provided for @merchantsEmptyBody.
   ///
   /// In ru, this message translates to:

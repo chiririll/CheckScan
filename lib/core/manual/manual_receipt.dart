@@ -10,8 +10,6 @@ const manualScale = 2;
 /// Quantities are typed with up to three fraction digits ("1,235" kg).
 const _qtyScale = 3;
 
-const manualCurrencies = ['RUB', 'RSD'];
-
 enum ManualReceiptError { invalidItem, invalidTotal }
 
 /// One line as typed: raw text, parsed only when the receipt is built.

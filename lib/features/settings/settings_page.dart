@@ -4,6 +4,7 @@ import '../../app/theme.dart';
 import '../../core/export/receipts_jsonl_share.dart';
 import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
+import '../currencies/currencies_page.dart';
 import '../merchant/merchants_page.dart';
 import '../widgets/navigation.dart';
 import 'secret_field.dart';
@@ -41,6 +42,11 @@ class SettingsPage extends StatelessWidget {
                 title: l10n.merchantsTitle,
                 trailing: const Icon(Icons.chevron_right, size: 18, color: AppColors.muted),
                 onTap: () => pushPage<void>(context, MerchantsPage(state: state)),
+              ),
+              SettingsRow(
+                title: l10n.currenciesTitle,
+                trailing: const Icon(Icons.chevron_right, size: 18, color: AppColors.muted),
+                onTap: () => pushPage<void>(context, CurrenciesPage(state: state)),
               ),
               const SizedBox(height: 16),
               Text(l10n.integrations, style: AppText.muted),

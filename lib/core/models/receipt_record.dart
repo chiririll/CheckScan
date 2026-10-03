@@ -81,8 +81,8 @@ class ReceiptRecord {
 
   bool get isRefund => receipt.type == 'refund';
 
-  /// Typed in by hand: no QR, nothing to fetch.
-  bool get isManual => adapterId == manualAdapterId;
+  /// The user can change this receipt's data. Only hand-typed receipts: a scanned one comes from its provider.
+  bool get isEditable => adapterId == manualAdapterId;
 
   /// [total] as it moves money: a refund gives it back.
   int get signedTotal => isRefund ? -total : total;

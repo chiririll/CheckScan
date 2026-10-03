@@ -341,5 +341,25 @@ class AppLocalizationsRu extends AppLocalizations {
   String get manualProviderLabel => 'Вручную';
 
   @override
+  String get currenciesTitle => 'Валюты';
+
+  @override
+  String get currenciesHint =>
+      'Порядок вкладок на главной и выбор валюты в ручном чеке. Валюты из последних чеков подставляются сами, если их нет в списке.';
+
+  @override
+  String get currenciesAddTitle => 'Добавить валюту';
+
+  @override
+  String get currenciesRemove => 'Убрать';
+
+  @override
+  String get currenciesFromReceipts => 'Из последних чеков';
+
+  @override
+  String get currencyInvalid =>
+      'Код валюты — три латинские буквы, например EUR';
+
+  @override
   String get merchantsEmptyBody => 'Магазины появятся из чеков.';
 }

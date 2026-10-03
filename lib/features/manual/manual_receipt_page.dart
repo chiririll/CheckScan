@@ -33,6 +33,12 @@ class _ManualReceiptPageState extends State<ManualReceiptPage> {
     return ManualReceiptDraft(currency: widget.state.defaultCurrency);
   }
 
+  /// Offered currencies; an edited receipt's own one stays selectable even if it fell out of the list.
+  List<String> get _currencies {
+    final offered = widget.state.manualCurrencies;
+    return offered.contains(_draft.currency) ? offered : [_draft.currency, ...offered];
+  }
+
   @override
   void dispose() {
     _total.dispose();
@@ -128,7 +134,7 @@ class _ManualReceiptPageState extends State<ManualReceiptPage> {
               DropdownButton<String>(
                 value: _draft.currency,
                 items: [
-                  for (final code in manualCurrencies)
+                  for (final code in _currencies)
                     DropdownMenuItem(value: code, child: Text(formatCurrencyLabel(code))),
                 ],
                 onChanged: (code) => setState(() => _draft.currency = code ?? _draft.currency),

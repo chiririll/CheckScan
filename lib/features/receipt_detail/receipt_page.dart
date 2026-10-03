@@ -78,7 +78,7 @@ class _ReceiptPageState extends State<ReceiptPage> {
                   }
                 },
                 itemBuilder: (context) => [
-                  if (record.isManual) PopupMenuItem(value: 'edit', child: Text(l10n.editReceipt)),
+                  if (record.isEditable) PopupMenuItem(value: 'edit', child: Text(l10n.editReceipt)),
                   PopupMenuItem(
                     value: 'delete',
                     child: Text(l10n.deleteReceipt, style: AppText.danger),
