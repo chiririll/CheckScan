@@ -111,7 +111,10 @@ class _ReceiptPageState extends State<ReceiptPage> {
                   overflow: TextOverflow.fade,
                   style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
                 ),
-                if (record.status == ReceiptStatus.error) ...[
+                if (widget.state.isFetching(record.id)) ...[
+                  const SizedBox(height: 12),
+                  _FetchingRow(label: l10n.progressLoading),
+                ] else if (record.status == ReceiptStatus.error) ...[
                   const SizedBox(height: 12),
                   Text(l10n.parseErrorBody, style: TextStyle(color: Colors.grey.shade700)),
                 ] else if (receipt.items.isEmpty) ...[
@@ -159,6 +162,25 @@ class _ReceiptCrumbs extends StatelessWidget {
         Flexible(
           child: Text(l10n.receiptTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
         ),
+      ],
+    );
+  }
+}
+
+/// Shown while the provider is still being asked for items.
+class _FetchingRow extends StatelessWidget {
+  const _FetchingRow({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      key: const ValueKey('receipt-fetching'),
+      children: [
+        const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+        const SizedBox(width: 10),
+        Expanded(child: Text(label, style: AppText.muted)),
       ],
     );
   }

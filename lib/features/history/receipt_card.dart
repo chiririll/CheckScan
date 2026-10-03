@@ -40,7 +40,10 @@ class ReceiptCard extends StatelessWidget {
                         style: AppText.title,
                       ),
                     ),
-                    if (receipt.missingRemoteItems) ...[
+                    if (state.isFetching(receipt.id)) ...[
+                      const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+                      const SizedBox(width: 6),
+                    ] else if (receipt.missingRemoteItems) ...[
                       Tooltip(
                         message: l10n.missingItemsHint,
                         child: const Icon(Icons.cloud_off, size: 16, color: AppColors.muted),

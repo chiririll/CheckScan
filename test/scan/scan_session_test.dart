@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:checkscan/core/models/receipt_record.dart';
+import 'package:checkscan/core/scan/native_adapter.dart';
 import 'package:checkscan/core/scan/scan_session.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
 import 'package:eq_models/eq_models.dart';
@@ -74,7 +75,30 @@ void main() {
     expect(await repository.listAll(), isEmpty);
   });
 
-  test('re-scan retries incomplete receipt', () async {
+  test('scan is offline: it asks the adapter for a local parse only', () async {
+    final adapter = _RecordingAdapter();
+    session = ScanSession(repository: repository, adapter: adapter);
+    await session.process(FakeNativeAdapter.fnsQuery);
+    expect(adapter.remoteFlags, [false]);
+  });
+
+  test('re-scan returns the stored receipt without resolving again', () async {
+    final first = await session.process(FakeNativeAdapter.fnsQuery);
+    final adapter = _RecordingAdapter();
+    session = ScanSession(repository: repository, adapter: adapter);
+    final second = await session.process(FakeNativeAdapter.fnsQuery);
+    expect(second.record!.id, first.record!.id);
+    expect(adapter.remoteFlags, isEmpty);
+  });
+
+  test('fetchRemote does not bring back a receipt deleted meanwhile', () async {
+    final saved = (await session.process(FakeNativeAdapter.fnsQuery)).record!;
+    await repository.deleteById(saved.id);
+    expect(await session.fetchRemote(saved), isNull);
+    expect(await repository.listAll(), isEmpty);
+  });
+
+  test('fetchRemote enriches an incomplete receipt', () async {
     final first = await session.process(FakeNativeAdapter.fnsQuery);
     final adapter = FakeNativeAdapter();
     adapter.nextReceipt = EqReceipt(
@@ -87,10 +111,10 @@ void main() {
       items: const [EqItem(description: 'Хлеб', quantity: 1, unitPrice: 1247, totalPrice: 1247)],
     );
     session = ScanSession(repository: repository, adapter: adapter);
-    final second = await session.process(FakeNativeAdapter.fnsQuery);
-    expect(second.record!.id, first.record!.id);
-    expect(second.record!.itemCount, 1);
-    expect(second.record!.status, ReceiptStatus.ok);
+    final fetched = await session.fetchRemote(first.record!);
+    expect(fetched!.id, first.record!.id);
+    expect(fetched.itemCount, 1);
+    expect(fetched.status, ReceiptStatus.ok);
   });
 
   test('refresh replaces when adapter returns a richer receipt', () async {
@@ -136,4 +160,21 @@ void main() {
     await session.process(FakeNativeAdapter.fnsQuery, onMatched: () => called = true);
     expect(called, isTrue);
   });
+}
+
+/// Records whether each resolve asked for the network.
+class _RecordingAdapter extends FakeNativeAdapter {
+  final remoteFlags = <bool>[];
+
+  @override
+  Future<AdapterResult<AdapterResolve>> resolve(
+    String rawQr, {
+    String? hint,
+    bool remote = false,
+    bool wait = false,
+    String? current,
+  }) {
+    remoteFlags.add(remote);
+    return super.resolve(rawQr, hint: hint, remote: remote, wait: wait, current: current);
+  }
 }

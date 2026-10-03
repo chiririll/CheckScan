@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import '../catalog/catalog_store.dart';
@@ -151,10 +153,56 @@ class AppState extends ChangeNotifier {
     await reload();
   }
 
+  /// Saves the scan offline and returns at once; the network fetch and the catalog
+  /// sync run in the background ([isFetching] / [fetchDone]).
   Future<ScanOutcome> processScan(String rawQr, {void Function()? onMatched}) async {
     final result = await _session.process(rawQr, onMatched: onMatched);
-    if (result.record != null) await reload();
+    final record = result.record;
+    if (record != null) {
+      _put(record);
+      unawaited(_fetchInBackground(record));
+    }
     return result;
+  }
+
+  final _fetches = <String, Future<void>>{};
+
+  /// True while the provider is being asked for this receipt's full data.
+  bool isFetching(String receiptId) => _fetches.containsKey(receiptId);
+
+  /// Completes when the background fetch for [receiptId] (if any) is over.
+  Future<void> fetchDone(String receiptId) => _fetches[receiptId] ?? Future.value();
+
+  Future<void> _fetchInBackground(ReceiptRecord record) {
+    final running = _fetches[record.id];
+    if (running != null) return running;
+    final fetch = _fetchAndSync(record).whenComplete(() {
+      _fetches.remove(record.id);
+      notifyListeners();
+    });
+    _fetches[record.id] = fetch;
+    notifyListeners();
+    return fetch;
+  }
+
+  Future<void> _fetchAndSync(ReceiptRecord record) async {
+    try {
+      if (record.canRetry) await _session.fetchRemote(record);
+    } catch (error) {
+      debugPrint('[checkscan] background fetch failed: $error');
+    }
+    try {
+      await reload();
+    } catch (error) {
+      debugPrint('[checkscan] sync after scan failed: $error');
+    }
+  }
+
+  /// Shows a just-saved receipt before the full reload catches up.
+  void _put(ReceiptRecord record) {
+    receipts = [record, for (final receipt in receipts) if (receipt.id != record.id) receipt]
+      ..sort((a, b) => b.at.compareTo(a.at));
+    notifyListeners();
   }
 
   Future<ReceiptRecord?> refreshReceipt(ReceiptRecord record) async {
