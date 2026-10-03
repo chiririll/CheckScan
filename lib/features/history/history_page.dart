@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
+import '../manual/manual_receipt_page.dart';
 import '../widgets/empty_hint.dart';
 import '../widgets/navigation.dart';
 import 'receipt_day_list.dart';
@@ -42,6 +43,11 @@ class _HistoryPageState extends State<HistoryPage> {
       appBar: AppBar(
         title: Text(l10n.historyTitle),
         actions: [
+          IconButton(
+            tooltip: l10n.addReceipt,
+            icon: const Icon(Icons.add),
+            onPressed: () => pushPage<void>(context, ManualReceiptPage(state: state)),
+          ),
           if (canRefresh)
             PopupMenuButton<String>(
               enabled: !_busy,

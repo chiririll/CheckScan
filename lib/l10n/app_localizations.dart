@@ -211,7 +211,7 @@ abstract class AppLocalizations {
   /// No description provided for @emptyHistoryBody.
   ///
   /// In ru, this message translates to:
-  /// **'Нажмите круглую кнопку внизу и наведите камеру на QR.'**
+  /// **'Нажмите круглую кнопку внизу и наведите камеру на QR или добавьте чек вручную через «+».'**
   String get emptyHistoryBody;
 
   /// No description provided for @spent.
@@ -603,6 +603,108 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'{count} без сети'**
   String merchantsWithoutNetwork(int count);
+
+  /// No description provided for @addReceipt.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить чек'**
+  String get addReceipt;
+
+  /// No description provided for @editReceipt.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить'**
+  String get editReceipt;
+
+  /// No description provided for @manualTitleNew.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новый чек'**
+  String get manualTitleNew;
+
+  /// No description provided for @manualTitleEdit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить чек'**
+  String get manualTitleEdit;
+
+  /// No description provided for @manualMerchant.
+  ///
+  /// In ru, this message translates to:
+  /// **'Магазин или продавец'**
+  String get manualMerchant;
+
+  /// No description provided for @manualDate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Дата и время'**
+  String get manualDate;
+
+  /// No description provided for @manualCurrency.
+  ///
+  /// In ru, this message translates to:
+  /// **'Валюта'**
+  String get manualCurrency;
+
+  /// No description provided for @manualItems.
+  ///
+  /// In ru, this message translates to:
+  /// **'Позиции'**
+  String get manualItems;
+
+  /// No description provided for @manualAddItem.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить позицию'**
+  String get manualAddItem;
+
+  /// No description provided for @manualRemoveItem.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить позицию'**
+  String get manualRemoveItem;
+
+  /// No description provided for @manualItemName.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название'**
+  String get manualItemName;
+
+  /// No description provided for @manualItemQty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Кол-во'**
+  String get manualItemQty;
+
+  /// No description provided for @manualItemPrice.
+  ///
+  /// In ru, this message translates to:
+  /// **'Цена'**
+  String get manualItemPrice;
+
+  /// No description provided for @manualTotal.
+  ///
+  /// In ru, this message translates to:
+  /// **'Итого'**
+  String get manualTotal;
+
+  /// No description provided for @manualInvalidTotal.
+  ///
+  /// In ru, this message translates to:
+  /// **'Укажите сумму больше нуля'**
+  String get manualInvalidTotal;
+
+  /// No description provided for @manualInvalidItem.
+  ///
+  /// In ru, this message translates to:
+  /// **'У позиции нужны название и цена'**
+  String get manualInvalidItem;
+
+  /// No description provided for @manualProviderLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вручную'**
+  String get manualProviderLabel;
 
   /// No description provided for @merchantsEmptyBody.
   ///

@@ -1,5 +1,6 @@
 import 'package:receipt_model/receipt_model.dart';
 
+import '../manual/manual_receipt.dart';
 import 'receipt_status.dart';
 
 export 'receipt_status.dart';
@@ -79,6 +80,9 @@ class ReceiptRecord {
   bool get canRetry => canRetryStatus(lastStatus);
 
   bool get isRefund => receipt.type == 'refund';
+
+  /// Typed in by hand: no QR, nothing to fetch.
+  bool get isManual => adapterId == manualAdapterId;
 
   /// [total] as it moves money: a refund gives it back.
   int get signedTotal => isRefund ? -total : total;

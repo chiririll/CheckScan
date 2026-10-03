@@ -19,7 +19,7 @@
   "emptyHomeTitle": "Пока нет статистики",
   "emptyHomeBody": "Отсканируйте первый чек — появятся цены, траты зря, темп и магазины.",
   "emptyHistoryTitle": "Пока нет чеков",
-  "emptyHistoryBody": "Нажмите круглую кнопку внизу и наведите камеру на QR.",
+  "emptyHistoryBody": "Нажмите круглую кнопку внизу и наведите камеру на QR или добавьте чек вручную через «+».",
   "spent": "Потрачено",
   "receiptCount": "Чеков",
   "previousPeriod": "Предыдущий период",
@@ -116,5 +116,22 @@
       }
     }
   },
+  "addReceipt": "Добавить чек",
+  "editReceipt": "Изменить",
+  "manualTitleNew": "Новый чек",
+  "manualTitleEdit": "Изменить чек",
+  "manualMerchant": "Магазин или продавец",
+  "manualDate": "Дата и время",
+  "manualCurrency": "Валюта",
+  "manualItems": "Позиции",
+  "manualAddItem": "Добавить позицию",
+  "manualRemoveItem": "Удалить позицию",
+  "manualItemName": "Название",
+  "manualItemQty": "Кол-во",
+  "manualItemPrice": "Цена",
+  "manualTotal": "Итого",
+  "manualInvalidTotal": "Укажите сумму больше нуля",
+  "manualInvalidItem": "У позиции нужны название и цена",
+  "manualProviderLabel": "Вручную",
   "merchantsEmptyBody": "Магазины появятся из чеков."
 }

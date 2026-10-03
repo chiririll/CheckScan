@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:receipt_model/receipt_model.dart';
 
+import '../manual/manual_receipt.dart';
 import '../merchant/merchant_store.dart';
 import '../models/receipt_record.dart';
 import '../scan/native_adapter.dart';
@@ -109,6 +111,26 @@ class AppState extends ChangeNotifier {
     await _repository.deleteById(id);
     receipts = receipts.where((receipt) => receipt.id != id).toList();
     notifyListeners();
+  }
+
+  /// Currency of the latest receipt: the best guess for a new manual one.
+  String get defaultCurrency => receipts.isEmpty ? 'RUB' : receipts.first.currency;
+
+  /// Stores a hand-typed receipt, or the edited version of [existing]. [label] is the provider chip text.
+  Future<ReceiptRecord> saveManual(Receipt receipt, {required String label, ReceiptRecord? existing}) async {
+    final record = await _repository.upsertParsed(
+      id: existing?.id,
+      qrHash: existing?.qrHash ?? '$manualAdapterId:${receipt.id}',
+      adapterId: manualAdapterId,
+      rawQr: '',
+      receipt: withProviderLabel(receipt, label),
+      lastStatus: statusOk,
+      scannedAt: existing?.scannedAt,
+      keepMerchant: false,
+    );
+    await merchants.reload();
+    _put(record);
+    return record;
   }
 
   /// Saves the scan offline and returns at once; the network fetch runs in the

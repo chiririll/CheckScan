@@ -72,7 +72,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get emptyHistoryBody =>
-      'Нажмите круглую кнопку внизу и наведите камеру на QR.';
+      'Нажмите круглую кнопку внизу и наведите камеру на QR или добавьте чек вручную через «+».';
 
   @override
   String get spent => 'Потрачено';
@@ -288,6 +288,57 @@ class AppLocalizationsRu extends AppLocalizations {
   String merchantsWithoutNetwork(int count) {
     return '$count без сети';
   }
+
+  @override
+  String get addReceipt => 'Добавить чек';
+
+  @override
+  String get editReceipt => 'Изменить';
+
+  @override
+  String get manualTitleNew => 'Новый чек';
+
+  @override
+  String get manualTitleEdit => 'Изменить чек';
+
+  @override
+  String get manualMerchant => 'Магазин или продавец';
+
+  @override
+  String get manualDate => 'Дата и время';
+
+  @override
+  String get manualCurrency => 'Валюта';
+
+  @override
+  String get manualItems => 'Позиции';
+
+  @override
+  String get manualAddItem => 'Добавить позицию';
+
+  @override
+  String get manualRemoveItem => 'Удалить позицию';
+
+  @override
+  String get manualItemName => 'Название';
+
+  @override
+  String get manualItemQty => 'Кол-во';
+
+  @override
+  String get manualItemPrice => 'Цена';
+
+  @override
+  String get manualTotal => 'Итого';
+
+  @override
+  String get manualInvalidTotal => 'Укажите сумму больше нуля';
+
+  @override
+  String get manualInvalidItem => 'У позиции нужны название и цена';
+
+  @override
+  String get manualProviderLabel => 'Вручную';
 
   @override
   String get merchantsEmptyBody => 'Магазины появятся из чеков.';

@@ -41,11 +41,14 @@ class ReceiptRepository {
     required Receipt receipt,
     required int lastStatus,
     DateTime? scannedAt,
+    bool keepMerchant = true,
   }) async {
     final existing = await findByHash(qrHash);
     final hasMerchant = trimmedOrNull(receipt.merchantName) != null || trimmedOrNull(receipt.taxId) != null;
-    final merchantId =
-        hasMerchant ? await merchants.resolve(name: receipt.merchantName, taxId: receipt.taxId) : existing?.merchantId;
+    // A provider refresh that lost the merchant keeps the old one; a manual edit that cleared it drops it.
+    final merchantId = hasMerchant
+        ? await merchants.resolve(name: receipt.merchantName, taxId: receipt.taxId)
+        : (keepMerchant ? existing?.merchantId : null);
     final record = ReceiptRecord(
       id: existing?.id ?? id ?? const Uuid().v4(),
       qrHash: qrHash,

@@ -5,6 +5,7 @@ import '../../core/format/format.dart';
 import '../../core/models/receipt_record.dart';
 import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
+import '../manual/manual_receipt_page.dart';
 import '../merchant/merchant_page.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/navigation.dart';
@@ -72,8 +73,12 @@ class _ReceiptPageState extends State<ReceiptPage> {
                 tooltip: l10n.receiptActions,
                 onSelected: (value) {
                   if (value == 'delete') _confirmDelete();
+                  if (value == 'edit') {
+                    pushPage<void>(context, ManualReceiptPage(state: widget.state, existing: record));
+                  }
                 },
                 itemBuilder: (context) => [
+                  if (record.isManual) PopupMenuItem(value: 'edit', child: Text(l10n.editReceipt)),
                   PopupMenuItem(
                     value: 'delete',
                     child: Text(l10n.deleteReceipt, style: AppText.danger),
