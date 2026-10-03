@@ -2,7 +2,7 @@ import 'package:sqflite/sqflite.dart';
 
 import 'migration.dart';
 
-final v7SuggestionIgnore = Migration(version: 7, up: createSuggestionIgnoreTables);
+const v7SuggestionIgnore = Migration(version: 7, up: createSuggestionIgnoreTables);
 
 Future<void> createSuggestionIgnoreTables(DatabaseExecutor db) async {
   if (!await tableExists(db, 'cluster_ignore')) {

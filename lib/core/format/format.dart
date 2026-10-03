@@ -7,18 +7,11 @@ final _monthYear = DateFormat('LLLL y', 'ru');
 final _dateTime = DateFormat('d MMMM y, HH:mm', 'ru');
 final _time = DateFormat('HH:mm');
 
-String formatMoney(double value, [String currency = 'RUB']) {
-  final amount = _money.format(value);
-  if (currency == 'RUB') return '$amount ₽';
-  if (currency == 'RSD') return '$amount дин.';
-  return '$amount $currency';
-}
+const _currencySymbols = {'RUB': '₽', 'RSD': 'дин.'};
 
-String formatCurrencyLabel(String currency) {
-  if (currency == 'RUB') return '₽';
-  if (currency == 'RSD') return 'дин.';
-  return currency;
-}
+String formatMoney(double value, [String currency = 'RUB']) => '${_money.format(value)} ${formatCurrencyLabel(currency)}';
+
+String formatCurrencyLabel(String currency) => _currencySymbols[currency] ?? currency;
 
 String formatMonthYear(DateTime date) {
   final raw = _monthYear.format(date);
@@ -38,3 +31,6 @@ String formatQty(double qty) {
   if (qty == qty.roundToDouble()) return qty.toInt().toString();
   return qty.toString();
 }
+
+/// User-typed number; accepts a decimal comma.
+double? parseDecimal(String raw) => double.tryParse(raw.trim().replaceAll(',', '.'));

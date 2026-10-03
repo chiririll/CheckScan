@@ -1,22 +1,18 @@
 import 'package:flutter/material.dart';
 
-import '../../core/app_state.dart';
-import '../../core/catalog/assist_cluster.dart';
-import '../../core/catalog/category_label.dart';
+import '../../app/theme.dart';
+import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
-import '../../theme.dart';
-import '../widgets/empty_hint.dart';
-import 'assist_actions.dart';
-import 'catalog_dialogs.dart';
+import 'assist/assist_actions.dart';
+import 'catalog_nav.dart';
 import 'catalog_search_field.dart';
 import 'catalog_trail.dart';
-import 'category_page.dart';
-import 'draft_product_page.dart';
-import 'product_page.dart';
-import 'unit_labels.dart';
+import 'tabs/categories_tab.dart';
+import 'tabs/products_tab.dart';
+import 'tabs/unassigned_tab.dart';
 
 class CatalogPage extends StatefulWidget {
-  const CatalogPage({super.key, required this.state, this.initialTab = 0});
+  const CatalogPage({super.key, required this.state, this.initialTab = CatalogTab.unassigned});
 
   final AppState state;
   final int initialTab;
@@ -26,25 +22,24 @@ class CatalogPage extends StatefulWidget {
 }
 
 class _CatalogPageState extends State<CatalogPage> with SingleTickerProviderStateMixin {
-  late final TabController _tabs;
+  late final _tabs = TabController(length: 3, vsync: this, initialIndex: widget.initialTab);
   final _query = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 3, vsync: this, initialIndex: widget.initialTab);
-    widget.state.catalog.addListener(_onCatalog);
+    widget.state.catalogTab.addListener(_onTabRequest);
     _query.addListener(() => setState(() {}));
   }
 
-  void _onCatalog() {
-    final pending = widget.state.catalog.takePendingTab();
+  void _onTabRequest() {
+    final pending = widget.state.catalogTab.take();
     if (pending != null && pending != _tabs.index) _tabs.animateTo(pending);
   }
 
   @override
   void dispose() {
-    widget.state.catalog.removeListener(_onCatalog);
+    widget.state.catalogTab.removeListener(_onTabRequest);
     _tabs.dispose();
     _query.dispose();
     super.dispose();
@@ -53,22 +48,25 @@ class _CatalogPageState extends State<CatalogPage> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final catalog = widget.state.catalog;
     return ListenableBuilder(
-      listenable: Listenable.merge([_tabs, widget.state.catalog]),
+      listenable: Listenable.merge([_tabs, catalog]),
       builder: (context, _) {
+        final onUnassigned = _tabs.index == CatalogTab.unassigned;
+        final canAssist = catalog.unassigned.isNotEmpty;
         return Scaffold(
           appBar: CatalogAppBar(
             title: l10n.catalogTitle,
             actions: [
-              if (_tabs.index == 0) ...[
+              if (onUnassigned) ...[
                 CatalogAction(
                   label: l10n.assistCopyShort,
-                  enabled: widget.state.catalog.unassigned.isNotEmpty,
+                  enabled: canAssist,
                   onSelected: () => copyAssistPrompt(context, widget.state),
                 ),
                 CatalogAction(
                   label: l10n.assistPasteShort,
-                  enabled: widget.state.catalog.unassigned.isNotEmpty,
+                  enabled: canAssist,
                   onSelected: () => pasteAssistReply(context, widget.state),
                 ),
               ],
@@ -87,7 +85,7 @@ class _CatalogPageState extends State<CatalogPage> with SingleTickerProviderStat
           ),
           body: Column(
             children: [
-              if (_tabs.index < 2)
+              if (_tabs.index != CatalogTab.categories)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                   child: CatalogSearchField(controller: _query, hintText: l10n.catalogSearch),
@@ -96,9 +94,9 @@ class _CatalogPageState extends State<CatalogPage> with SingleTickerProviderStat
                 child: TabBarView(
                   controller: _tabs,
                   children: [
-                    _UnassignedTab(state: widget.state, query: _query.text),
-                    _ProductsTab(state: widget.state, query: _query.text),
-                    _CategoriesTab(state: widget.state),
+                    UnassignedTab(state: widget.state, query: _query.text),
+                    ProductsTab(state: widget.state, query: _query.text),
+                    CategoriesTab(state: widget.state),
                   ],
                 ),
               ),
@@ -106,241 +104,6 @@ class _CatalogPageState extends State<CatalogPage> with SingleTickerProviderStat
           ),
         );
       },
-    );
-  }
-}
-
-class _UnassignedTab extends StatelessWidget {
-  const _UnassignedTab({required this.state, required this.query});
-
-  final AppState state;
-  final String query;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final needle = query.trim().toLowerCase();
-    final items = [
-      for (final cluster in state.catalog.unassignedClusters)
-        if (needle.isEmpty ||
-            cluster.name.toLowerCase().contains(needle) ||
-            cluster.positions.any((position) => position.displayName.toLowerCase().contains(needle)))
-          cluster,
-    ];
-    if (state.catalog.unassigned.isEmpty) {
-      return EmptyHint(title: l10n.catalogEmptyUnassigned, body: l10n.catalogEmptyUnassignedBody);
-    }
-    if (items.isEmpty) {
-      return EmptyHint(title: l10n.catalogEmptySearch, body: l10n.catalogSearch);
-    }
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-      itemCount: items.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 8),
-      itemBuilder: (context, index) => _ClusterCard(state: state, cluster: items[index]),
-    );
-  }
-}
-
-class _ClusterCard extends StatelessWidget {
-  const _ClusterCard({required this.state, required this.cluster});
-
-  final AppState state;
-  final UnassignedCluster cluster;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Material(
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(color: Color(0xFFE4E4E4)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 4, 4, 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () => openDraftProduct(context: context, state: state, positions: cluster.positions),
-                    child: Text(cluster.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                  ),
-                ),
-                if (cluster.positions.length > 1)
-                  IconButton(
-                    key: const ValueKey<String>('dismiss-cluster'),
-                    tooltip: l10n.dismissSuggestion,
-                    onPressed: () => state.catalog.dismissCluster(cluster.positions.map((item) => item.id)),
-                    icon: const Icon(Icons.close, size: 20),
-                  ),
-              ],
-            ),
-            for (final position in cluster.preview)
-              Row(
-                children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: () => openDraftProduct(context: context, state: state, positions: cluster.positions),
-                      child: Text('• ${position.displayName}'),
-                    ),
-                  ),
-                  if (cluster.positions.length > 1)
-                    IconButton(
-                      key: ValueKey<String>('dismiss-item-${position.id}'),
-                      tooltip: l10n.dismissSuggestion,
-                      onPressed: () => state.catalog.dismissClusterItem(position.id),
-                      icon: const Icon(Icons.close, size: 18),
-                    ),
-                ],
-              ),
-            if (cluster.hiddenCount > 0)
-              Padding(
-                padding: const EdgeInsets.only(top: 2, left: 8),
-                child: InkWell(
-                  onTap: () => openDraftProduct(context: context, state: state, positions: cluster.positions),
-                  child: Text(
-                    l10n.clusterAndMore(cluster.hiddenCount),
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ProductsTab extends StatelessWidget {
-  const _ProductsTab({required this.state, required this.query});
-
-  final AppState state;
-  final String query;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final needle = query.trim().toLowerCase();
-    final items = [
-      for (final product in state.catalog.products)
-        if (needle.isEmpty || product.name.toLowerCase().contains(needle)) product,
-    ];
-    if (state.catalog.products.isEmpty) {
-      return EmptyHint(title: l10n.catalogEmptyProducts, body: l10n.catalogEmptyProductsBody);
-    }
-    if (items.isEmpty) {
-      return EmptyHint(title: l10n.catalogEmptySearch, body: l10n.catalogSearch);
-    }
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-      itemCount: items.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 8),
-      itemBuilder: (context, index) {
-        final product = items[index];
-        final category = product.categoryId == null ? null : state.catalog.categoryById(product.categoryId!);
-        final subtitle = [
-          if (category != null) categoryTitle(category, l10n),
-          if (product.unit != null) unitLabel(product.unit, l10n),
-        ].join(' · ');
-        return ListTile(
-          tileColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-            side: const BorderSide(color: Color(0xFFE4E4E4)),
-          ),
-          title: Text(product.name),
-          subtitle: subtitle.isEmpty ? null : Text(subtitle),
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => ProductPage(state: state, productId: product.id)),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _CategoriesTab extends StatelessWidget {
-  const _CategoriesTab({required this.state});
-
-  final AppState state;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Column(
-      children: [
-        Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            itemCount: state.catalog.topCategories.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
-            itemBuilder: (context, index) {
-              final category = state.catalog.topCategories[index];
-              final childIds = {for (final child in state.catalog.childrenOf(category.id)) child.id};
-              final count = state.catalog.products.where((product) {
-                return product.categoryId == category.id || childIds.contains(product.categoryId);
-              }).length;
-              return ListTile(
-                tileColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  side: const BorderSide(color: Color(0xFFE4E4E4)),
-                ),
-                title: Text(categoryTitle(category, l10n)),
-                subtitle: Text(l10n.itemsCount(count)),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => CategoryPage(state: state, categoryId: category.id)),
-                ),
-                trailing: PopupMenuButton<String>(
-                  onSelected: (value) async {
-                    if (value == 'rename') {
-                      final current = categoryTitle(category, l10n);
-                      final name = await promptText(
-                        context,
-                        title: l10n.categoryName,
-                        initial: current,
-                        confirm: l10n.save,
-                      );
-                      if (name != null && name != current) await state.catalog.renameCategory(category.id, name);
-                    } else if (value == 'delete') {
-                      final ok = await confirmAction(
-                        context,
-                        title: l10n.deleteCategoryTitle,
-                        body: l10n.deleteCategoryBody,
-                        confirm: l10n.deleteReceipt,
-                      );
-                      if (ok) await state.catalog.deleteCategory(category.id);
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    PopupMenuItem(value: 'rename', child: Text(l10n.rename)),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Text(l10n.deleteReceipt, style: const TextStyle(color: Color(0xFFC62828))),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-        SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: FilledButton(
-              onPressed: () async {
-                final name = await promptText(context, title: l10n.addCategory, confirm: l10n.save);
-                if (name != null) await state.catalog.createCategory(name);
-              },
-              child: Text(l10n.addCategory),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

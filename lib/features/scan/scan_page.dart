@@ -3,13 +3,24 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../../core/app_state.dart';
+import '../../app/theme.dart';
 import '../../core/models/receipt_status.dart';
+import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
-import '../../theme.dart';
 import '../receipt_detail/receipt_page.dart';
+import '../widgets/dialogs.dart';
+import '../widgets/navigation.dart';
 import 'manual_receipt_page.dart';
 import 'widgets/scan_frame.dart';
+
+/// First non-empty QR payload among [barcodes].
+String? _firstQr(Iterable<Barcode> barcodes) {
+  for (final barcode in barcodes) {
+    final raw = barcode.rawValue;
+    if (barcode.format == BarcodeFormat.qrCode && raw != null && raw.isNotEmpty) return raw;
+  }
+  return null;
+}
 
 class ScanPage extends StatefulWidget {
   const ScanPage({super.key, required this.state});
@@ -64,23 +75,22 @@ class _ScanPageState extends State<ScanPage> {
         await _showMessage(l10n.unknownTitle, l10n.unknownBody);
         return;
       }
-      if (result.record == null) {
+      final record = result.record;
+      if (record == null) {
         await _showMessage(_titleFor(result.status, l10n), result.message.isEmpty ? l10n.parseErrorBody : result.message);
         return;
       }
-      final id = result.record!.id;
-      Navigator.of(context).pop();
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => ReceiptPage(state: widget.state, receiptId: id)),
-      );
+      _replaceWithReceipt(record.id);
     } catch (_) {
       if (!mounted) return;
       await _showMessage(l10n.parseErrorTitle, l10n.parseErrorBody);
-    } finally {
-      if (mounted && _frozen) {
-        // success navigates away; failure resets in _showMessage
-      }
     }
+  }
+
+  /// Success leaves the scanner for the receipt.
+  void _replaceWithReceipt(String id) {
+    Navigator.of(context).pop();
+    pushPage<void>(context, ReceiptPage(state: widget.state, receiptId: id));
   }
 
   String _titleFor(int status, AppLocalizations l10n) {
@@ -92,18 +102,9 @@ class _ScanPageState extends State<ScanPage> {
     };
   }
 
+  /// Shows the failure and resumes scanning.
   Future<void> _showMessage(String title, String body) async {
-    await showDialog<void>(
-      context: context,
-      builder: (context) {
-        final l10n = AppLocalizations.of(context);
-        return AlertDialog(
-          title: Text(title),
-          content: Text(body),
-          actions: [FilledButton(onPressed: () => Navigator.pop(context), child: Text(l10n.gotIt))],
-        );
-      },
-    );
+    await showNotice(context, title: title, body: body);
     if (!mounted) return;
     setState(() {
       _busy = false;
@@ -116,24 +117,11 @@ class _ScanPageState extends State<ScanPage> {
   Future<void> _pickGallery() async {
     final file = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (file == null || !mounted) return;
-    final barcodes = await _controller.analyzeImage(file.path);
-    final raw = barcodes?.barcodes
-        .where((b) => b.format == BarcodeFormat.qrCode)
-        .map((b) => b.rawValue)
-        .whereType<String>()
-        .firstWhere((v) => v.isNotEmpty, orElse: () => '');
-    if (raw == null || raw.isEmpty) {
-      if (!mounted) return;
-      await showDialog<void>(
-        context: context,
-        builder: (context) {
-          final l10n = AppLocalizations.of(context);
-          return AlertDialog(
-            content: Text(l10n.galleryNoQr),
-            actions: [FilledButton(onPressed: () => Navigator.pop(context), child: Text(l10n.gotIt))],
-          );
-        },
-      );
+    final capture = await _controller.analyzeImage(file.path);
+    final raw = _firstQr(capture?.barcodes ?? const []);
+    if (!mounted) return;
+    if (raw == null) {
+      await showNotice(context, body: AppLocalizations.of(context).galleryNoQr);
       return;
     }
     await _handleRaw(raw);
@@ -143,15 +131,10 @@ class _ScanPageState extends State<ScanPage> {
     if (_busy) return;
     await _controller.stop();
     if (!mounted) return;
-    final id = await Navigator.of(context).push<String>(
-      MaterialPageRoute(builder: (_) => ManualReceiptPage(state: widget.state), fullscreenDialog: true),
-    );
+    final id = await pushPage<String>(context, ManualReceiptPage(state: widget.state), fullscreenDialog: true);
     if (!mounted) return;
     if (id != null) {
-      Navigator.of(context).pop();
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => ReceiptPage(state: widget.state, receiptId: id)),
-      );
+      _replaceWithReceipt(id);
       return;
     }
     await _controller.start();
@@ -196,13 +179,8 @@ class _ScanPageState extends State<ScanPage> {
             tapToFocus: true,
             onDetect: (capture) {
               if (_busy) return;
-              final raw = capture.barcodes
-                  .where((b) => b.format == BarcodeFormat.qrCode)
-                  .map((b) => b.rawValue)
-                  .whereType<String>()
-                  .where((v) => v.isNotEmpty);
-              if (raw.isEmpty) return;
-              _handleRaw(raw.first);
+              final raw = _firstQr(capture.barcodes);
+              if (raw != null) _handleRaw(raw);
             },
           ),
           if (_frozen) Container(color: Colors.black.withValues(alpha: 0.35)),

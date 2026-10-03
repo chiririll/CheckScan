@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 
-import '../../core/app_state.dart';
-import '../../core/format.dart';
+import '../../app/theme.dart';
+import '../../core/format/format.dart';
+import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
-import '../../theme.dart';
 import '../catalog/catalog_nav.dart';
 import '../catalog/catalog_page.dart';
-import '../catalog/unit_labels.dart';
+import '../labels/unit_labels.dart';
 import '../merchant/merchants_page.dart';
 import '../settings/settings_page.dart';
+import '../widgets/centered_message.dart';
 import '../widgets/empty_hint.dart';
+import '../widgets/navigation.dart';
 import 'frequent_page.dart';
 import 'home_block.dart';
 import 'home_dashboard.dart';
@@ -32,16 +34,11 @@ class HomePage extends StatelessWidget {
           IconButton(
             tooltip: l10n.catalogTitle,
             icon: const Icon(Icons.category_outlined),
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                settings: const RouteSettings(name: catalogRouteName),
-                builder: (_) => CatalogPage(state: state),
-              ),
-            ),
+            onPressed: () => pushPage<void>(context, CatalogPage(state: state), name: catalogRouteName),
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SettingsPage(state: state))),
+            onPressed: () => pushPage<void>(context, SettingsPage(state: state)),
           ),
         ],
       ),
@@ -135,7 +132,7 @@ class _PeriodBar extends StatelessWidget {
             child: Text(
               formatMonthYear(period.asDate),
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+              style: const TextStyle(color: AppColors.muted, fontWeight: FontWeight.w500),
             ),
           ),
           IconButton(
@@ -165,27 +162,14 @@ class _DashboardPane extends StatelessWidget {
       products: state.catalog.products,
       categories: state.catalog.categories,
       positions: state.catalog.positions,
-      merchants: state.merchantList,
+      merchants: state.merchants.all,
       resolver: state.catalog.resolver,
       period: period,
       currency: currency,
       fallbackMerchant: l10n.receiptTitle,
     );
-    if (dash.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(28, 8, 28, 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(l10n.emptyPeriodTitle, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-              const SizedBox(height: 8),
-              Text(l10n.emptyPeriodBody, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey.shade600)),
-            ],
-          ),
-        ),
-      );
-    }
+    if (dash.isEmpty) return CenteredMessage(title: l10n.emptyPeriodTitle, body: l10n.emptyPeriodBody);
+    final prices = dash.prices;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       children: [
@@ -199,31 +183,25 @@ class _DashboardPane extends StatelessWidget {
         const SizedBox(height: 16),
         HomeBlock(
           title: l10n.pricesBlock,
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => PricesPage(state: state, rows: dash.priceRows, currency: currency)),
-          ),
-          child: dash.prices == null
+          onTap: () => pushPage<void>(context, PricesPage(state: state, rows: dash.priceRows, currency: currency)),
+          child: prices == null
               ? HomeBlockHint(l10n.pricesEmptyBody)
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(dash.prices!.productName),
+                    Text(prices.productName),
                     const SizedBox(height: 2),
-                    Text(
-                      formatUnitPrice(dash.prices!.perUnit, dash.prices!.unit, currency, l10n),
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    Text(l10n.cheaperAt(dash.prices!.networkName), style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                    Text(formatUnitPrice(prices.perUnit, prices.unit, currency, l10n), style: AppText.title),
+                    Text(l10n.cheaperAt(prices.networkName), style: AppText.mutedSmall),
                   ],
                 ),
         ),
         const SizedBox(height: 10),
         HomeBlock(
           title: l10n.wasteBlock,
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => WastePage(state: state, leaves: dash.wasteLeaves, tags: dash.wasteTags, currency: currency),
-            ),
+          onTap: () => pushPage<void>(
+            context,
+            WastePage(state: state, leaves: dash.wasteLeaves, tags: dash.wasteTags, currency: currency),
           ),
           child: dash.wasteTotal <= 0
               ? HomeBlockHint(l10n.wasteEmptyBody)
@@ -232,9 +210,7 @@ class _DashboardPane extends StatelessWidget {
         const SizedBox(height: 10),
         HomeBlock(
           title: l10n.frequentBlock,
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => FrequentPage(state: state, items: dash.frequent)),
-          ),
+          onTap: () => pushPage<void>(context, FrequentPage(state: state, items: dash.frequent)),
           child: dash.frequent.isEmpty
               ? HomeBlockHint(l10n.frequentEmptyBody)
               : Column(
@@ -245,7 +221,7 @@ class _DashboardPane extends StatelessWidget {
                         child: Row(
                           children: [
                             Expanded(child: Text(item.name)),
-                            Text(l10n.timesCount(item.count), style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                            Text(l10n.timesCount(item.count), style: const TextStyle(color: AppColors.muted, fontSize: 12)),
                           ],
                         ),
                       ),
@@ -255,16 +231,14 @@ class _DashboardPane extends StatelessWidget {
         const SizedBox(height: 10),
         HomeBlock(
           title: l10n.merchantsBlock,
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => MerchantsPage(state: state)),
-          ),
+          onTap: () => pushPage<void>(context, MerchantsPage(state: state)),
           child: dash.merchants.isEmpty
               ? HomeBlockHint(l10n.merchantsEmptyBody)
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(l10n.merchantsWithoutNetwork(dash.merchants.withoutNetwork)),
-                    Text(l10n.merchantsIgnorePolicy(dash.merchants.ignoreCount), style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                    Text(l10n.merchantsIgnorePolicy(dash.merchants.ignoreCount), style: AppText.mutedSmall),
                   ],
                 ),
         ),

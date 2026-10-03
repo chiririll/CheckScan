@@ -1,13 +1,9 @@
 import '../models/receipt_record.dart';
+import 'export_file.dart';
 
-String eqJsonlFileName([DateTime? now]) {
-  final date = now ?? DateTime.now();
-  final year = date.year.toString().padLeft(4, '0');
-  final month = date.month.toString().padLeft(2, '0');
-  final day = date.day.toString().padLeft(2, '0');
-  return 'checkscan-eq-$year-$month-$day.jsonl';
-}
+String eqJsonlFileName([DateTime? now]) => datedExportName('eq', 'jsonl', now);
 
+/// One eQ JSON object per line. The stored payload is kept verbatim when present.
 String encodeEqJsonl(Iterable<ReceiptRecord> receipts) {
   final buffer = StringBuffer();
   for (final record in receipts) {

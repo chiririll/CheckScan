@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:eq_models/eq_models.dart';
+import 'package:uuid/uuid.dart';
 
-import '../catalog/catalog_position.dart';
-import '../catalog/catalog_product.dart';
-import '../catalog/reference_pack.dart';
+import '../catalog/model/catalog_position.dart';
+import '../catalog/model/catalog_product.dart';
+import '../catalog/pricing/reference_pack.dart';
+import '../models/receipt_status.dart';
 
 const manualProviderId = 'manual';
 
@@ -49,6 +51,23 @@ EqReceipt buildManualReceipt({
     items: items,
     grandTotal: total,
   );
+}
+
+/// eQ for hand-entered [lines], labelled as a manual receipt.
+EqReceipt manualReceiptOf({
+  required String merchantName,
+  required DateTime issuedAt,
+  required List<ManualLine> lines,
+  String currency = 'RUB',
+}) {
+  final receipt = buildManualReceipt(
+    id: const Uuid().v4(),
+    issuedAt: issuedAt,
+    merchantName: merchantName.trim(),
+    items: [for (final line in lines) line.asItem],
+    currency: currency,
+  );
+  return withProviderLabel(receipt, manualProviderId);
 }
 
 /// Hash of the first saved eQ. Later edits must keep this key so the row stays one check.

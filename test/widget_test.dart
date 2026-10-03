@@ -1,26 +1,27 @@
-import 'package:checkscan/app.dart';
-import 'package:checkscan/core/app_state.dart';
-import 'package:checkscan/core/format.dart';
+import 'package:checkscan/app/app.dart';
+import 'package:checkscan/core/format/format.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
 import 'package:checkscan/core/scan/native_adapter.dart';
+import 'package:checkscan/core/settings/onboarding_store.dart';
+import 'package:checkscan/core/state/app_state.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
 import 'package:checkscan/features/home/home_period.dart';
 import 'package:eq_models/eq_models.dart';
-
-import 'scan/fake_native_adapter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'scan/fake_native_adapter.dart';
 
 AppState _state({bool onboardingDone = false, List<ReceiptRecord> receipts = const []}) {
   final repository = ReceiptRepository(resolveDbPath: () async => 'unused.db');
   return AppState(
     repository: repository,
     adapter: FakeNativeAdapter(),
+    onboarding: OnboardingStore()..done = onboardingDone,
   )
     ..ready = true
-    ..onboardingDone = onboardingDone
     ..receipts = receipts;
 }
 

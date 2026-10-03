@@ -1,5 +1,5 @@
-import 'package:checkscan/core/catalog/catalog_category.dart';
 import 'package:checkscan/core/catalog/category_top.dart';
+import 'package:checkscan/core/catalog/model/catalog_category.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

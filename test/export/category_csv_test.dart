@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:checkscan/core/catalog/catalog_category.dart';
-import 'package:checkscan/core/catalog/catalog_position.dart';
-import 'package:checkscan/core/catalog/catalog_product.dart';
 import 'package:checkscan/core/catalog/catalog_resolver.dart';
+import 'package:checkscan/core/catalog/model/catalog_category.dart';
+import 'package:checkscan/core/catalog/model/catalog_position.dart';
+import 'package:checkscan/core/catalog/model/catalog_product.dart';
 import 'package:checkscan/core/export/category_csv.dart';
 import 'package:checkscan/core/export/category_csv_share.dart';
 import 'package:checkscan/core/merchant/merchant.dart';

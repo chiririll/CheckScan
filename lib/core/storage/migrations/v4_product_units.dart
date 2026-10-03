@@ -2,7 +2,7 @@ import 'package:sqflite/sqflite.dart';
 
 import 'migration.dart';
 
-final v4ProductUnits = Migration(version: 4, up: migrateCatalogUnitsToProducts);
+const v4ProductUnits = Migration(version: 4, up: migrateCatalogUnitsToProducts);
 
 Future<void> migrateCatalogUnitsToProducts(DatabaseExecutor db) async {
   if (!await tableExists(db, 'products') || await columnExists(db, 'products', 'unit')) return;

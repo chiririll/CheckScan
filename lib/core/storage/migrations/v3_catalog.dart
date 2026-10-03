@@ -1,6 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 
-import '../../catalog/category_seeder.dart';
+import '../../catalog/data/category_seeder.dart';
 import 'migration.dart';
 
 final v3Catalog = Migration(

@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:checkscan/core/app_state.dart';
-import 'package:checkscan/core/catalog/item_unit.dart';
+import 'package:checkscan/core/catalog/model/item_unit.dart';
 import 'package:checkscan/core/manual/manual_receipt.dart';
+import 'package:checkscan/core/state/app_state.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;

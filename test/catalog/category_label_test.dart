@@ -1,4 +1,4 @@
-import 'package:checkscan/core/catalog/category_label.dart';
+import 'package:checkscan/features/labels/category_label.dart';
 import 'package:checkscan/l10n/app_localizations_ru.dart';
 import 'package:flutter_test/flutter_test.dart';
 

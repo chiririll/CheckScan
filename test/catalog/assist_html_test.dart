@@ -1,6 +1,6 @@
-import 'package:checkscan/core/catalog/assist_clipboard.dart';
-import 'package:checkscan/core/catalog/assist_html.dart';
-import 'package:checkscan/core/catalog/assist_parse.dart';
+import 'package:checkscan/core/catalog/assist/assist_clipboard.dart';
+import 'package:checkscan/core/catalog/assist/assist_html.dart';
+import 'package:checkscan/core/catalog/assist/assist_parse.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const _realLlmReply = '''

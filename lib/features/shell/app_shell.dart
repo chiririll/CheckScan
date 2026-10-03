@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../core/app_state.dart';
+import '../../app/theme.dart';
+import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
-import '../../theme.dart';
 import '../catalog/catalog_page.dart';
 import '../history/history_page.dart';
 import '../home/home_page.dart';
 import '../list/list_page.dart';
 import '../scan/scan_page.dart';
+import '../widgets/navigation.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key, required this.state});
@@ -20,6 +21,10 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int _tab = 0;
+
+  Widget _tabButton(String label, int index) {
+    return _Tab(label: label, active: _tab == index, onTap: () => setState(() => _tab = index));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,15 +51,15 @@ class _AppShellState extends State<AppShell> {
               Container(
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  border: Border(top: BorderSide(color: Color(0xFFE8E8E8))),
+                  border: Border(top: BorderSide(color: AppColors.divider)),
                 ),
                 child: Row(
                   children: [
-                    _Tab(label: l10n.tabHome, active: _tab == 0, onTap: () => setState(() => _tab = 0)),
-                    _Tab(label: l10n.tabCatalog, active: _tab == 1, onTap: () => setState(() => _tab = 1)),
+                    _tabButton(l10n.tabHome, 0),
+                    _tabButton(l10n.tabCatalog, 1),
                     const SizedBox(width: 64),
-                    _Tab(label: l10n.tabList, active: _tab == 2, onTap: () => setState(() => _tab = 2)),
-                    _Tab(label: l10n.tabHistory, active: _tab == 3, onTap: () => setState(() => _tab = 3)),
+                    _tabButton(l10n.tabList, 2),
+                    _tabButton(l10n.tabHistory, 3),
                   ],
                 ),
               ),
@@ -64,11 +69,7 @@ class _AppShellState extends State<AppShell> {
                 right: 0,
                 child: Center(
                   child: GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => ScanPage(state: widget.state), fullscreenDialog: true),
-                      );
-                    },
+                    onTap: () => pushPage<void>(context, ScanPage(state: widget.state), fullscreenDialog: true),
                     child: Container(
                       width: 56,
                       height: 56,
@@ -102,7 +103,7 @@ class _Tab extends StatelessWidget {
             label,
             style: TextStyle(
               fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-              color: active ? const Color(0xFF1B1B1B) : Colors.grey,
+              color: active ? AppColors.text : Colors.grey,
               fontSize: 13,
             ),
           ),

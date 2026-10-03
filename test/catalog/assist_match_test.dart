@@ -1,7 +1,7 @@
-import 'package:checkscan/core/catalog/assist_draft.dart';
-import 'package:checkscan/core/catalog/assist_match.dart';
-import 'package:checkscan/core/catalog/assist_parse.dart';
-import 'package:checkscan/core/catalog/catalog_position.dart';
+import 'package:checkscan/core/catalog/assist/assist_draft.dart';
+import 'package:checkscan/core/catalog/assist/assist_match.dart';
+import 'package:checkscan/core/catalog/assist/assist_parse.dart';
+import 'package:checkscan/core/catalog/model/catalog_position.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const _beans = CatalogPosition(

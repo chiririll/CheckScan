@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../theme.dart';
+import '../../app/theme.dart';
 
 class CatalogSearchField extends StatelessWidget {
   const CatalogSearchField({
@@ -18,7 +18,7 @@ class CatalogSearchField extends StatelessWidget {
 
   static const _border = OutlineInputBorder(
     borderRadius: BorderRadius.all(Radius.circular(10)),
-    borderSide: BorderSide(color: Color(0xFFE4E4E4)),
+    borderSide: BorderSide(color: AppColors.border),
   );
 
   @override
@@ -27,10 +27,10 @@ class CatalogSearchField extends StatelessWidget {
       controller: controller,
       autofocus: autofocus,
       onChanged: onChanged,
-      style: const TextStyle(color: Color(0xFF1B1B1B)),
+      style: const TextStyle(color: AppColors.text),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(color: Colors.grey.shade600),
+        hintStyle: AppText.muted,
         prefixIcon: Icon(Icons.search, color: Colors.grey.shade700),
         isDense: true,
         filled: true,

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../core/app_state.dart';
-import '../../core/catalog/catalog_position.dart';
+import '../../app/theme.dart';
+import '../../core/catalog/model/catalog_position.dart';
+import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
-import '../../theme.dart';
 import 'catalog_search_field.dart';
 
 class ProductItemSearch extends StatefulWidget {
@@ -50,7 +50,7 @@ class _ProductItemSearchState extends State<ProductItemSearch> {
         ],
         if (similar.isNotEmpty) ...[
           const SizedBox(height: 12),
-          Text(l10n.similarItems, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(l10n.similarItems, style: AppText.title),
           const SizedBox(height: 8),
           for (final item in similar.take(8))
             _AttachRow(
@@ -80,7 +80,7 @@ class _AttachRow extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       dense: true,
       title: Text(item.displayName),
-      subtitle: elsewhere ? Text(l10n.itemAssignedElsewhere, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)) : null,
+      subtitle: elsewhere ? Text(l10n.itemAssignedElsewhere, style: const TextStyle(color: AppColors.muted, fontSize: 12)) : null,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

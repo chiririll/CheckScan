@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:checkscan/core/catalog/catalog_position.dart';
-import 'package:checkscan/core/catalog/catalog_product.dart';
-import 'package:checkscan/core/catalog/item_unit.dart';
+import 'package:checkscan/core/catalog/model/catalog_position.dart';
+import 'package:checkscan/core/catalog/model/catalog_product.dart';
+import 'package:checkscan/core/catalog/model/item_unit.dart';
 import 'package:checkscan/core/manual/manual_receipt.dart';
 import 'package:crypto/crypto.dart';
 import 'package:eq_models/eq_models.dart';

@@ -1,4 +1,4 @@
-import 'package:checkscan/core/format.dart';
+import 'package:checkscan/core/format/format.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
 import 'package:checkscan/features/home/home_period.dart';
 import 'package:eq_models/eq_models.dart';

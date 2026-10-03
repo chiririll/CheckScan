@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../theme.dart';
+import '../../app/theme.dart';
 
 class HomeBlock extends StatelessWidget {
   const HomeBlock({
@@ -22,12 +22,12 @@ class HomeBlock extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: const Border.fromBorderSide(BorderSide(color: Color(0xFFE4E4E4))),
+        border: const Border.fromBorderSide(BorderSide(color: AppColors.border)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(title, style: AppText.title),
           const SizedBox(height: 8),
           child,
         ],
@@ -52,7 +52,7 @@ class HomeBlockHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(text, style: TextStyle(color: Colors.grey.shade600, fontSize: 13));
+    return Text(text, style: AppText.mutedSmall);
   }
 }
 
@@ -69,7 +69,7 @@ class HomeMetric extends StatelessWidget {
       children: [
         Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.primary)),
         const SizedBox(height: 2),
-        Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+        Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
       ],
     );
   }

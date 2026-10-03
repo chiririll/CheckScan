@@ -34,3 +34,8 @@ class Merchant {
 
   String get networkId => parentId ?? id;
 }
+
+/// Merchants whose receipts count as one sum, not as catalog items.
+Set<String> ignoreMerchantIdsOf(Iterable<Merchant> merchants) {
+  return {for (final merchant in merchants) if (merchant.ignoresItems) merchant.id};
+}

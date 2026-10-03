@@ -4,42 +4,37 @@ import 'package:uuid/uuid.dart';
 
 import '../merchant/merchant_repository.dart';
 import '../models/receipt_record.dart';
+import '../util/collections.dart';
 import 'database.dart';
+import 'row.dart';
 
 class ReceiptRepository {
   ReceiptRepository({
     CheckScanDatabase? database,
     Future<String> Function()? resolveDbPath,
     MerchantRepository? merchants,
-  })  : database = database ?? CheckScanDatabase(resolvePath: resolveDbPath),
-        _merchants = merchants;
+  }) : this._(database ?? CheckScanDatabase(resolvePath: resolveDbPath), merchants);
+
+  ReceiptRepository._(this.database, MerchantRepository? merchants)
+      : merchants = merchants ?? MerchantRepository(database: database);
 
   final CheckScanDatabase database;
-  final MerchantRepository? _merchants;
-
-  MerchantRepository get merchants => _merchants ?? MerchantRepository(database: database);
+  final MerchantRepository merchants;
 
   Future<Database> get _db => database.database;
 
   Future<void> close() => database.close();
 
-  Future<ReceiptRecord?> findByHash(String qrHash) async {
-    final rows = await (await _db).query('receipts', where: 'qr_hash = ?', whereArgs: [qrHash], limit: 1);
-    if (rows.isEmpty) return null;
-    return _fromRow(rows.first);
-  }
+  Future<ReceiptRecord?> findByHash(String qrHash) => _findOne('qr_hash = ?', qrHash);
 
-  Future<ReceiptRecord?> findById(String id) async {
-    final rows = await (await _db).query('receipts', where: 'id = ?', whereArgs: [id], limit: 1);
-    if (rows.isEmpty) return null;
-    return _fromRow(rows.first);
-  }
+  Future<ReceiptRecord?> findById(String id) => _findOne('id = ?', id);
 
   Future<List<ReceiptRecord>> listAll() async {
     final rows = await (await _db).query('receipts', orderBy: 'COALESCE(issued_at, scanned_at) DESC');
     return rows.map(_fromRow).toList();
   }
 
+  /// Inserts or replaces the receipt stored under [qrHash], keeping its id and scan time.
   Future<ReceiptRecord> upsertParsed({
     String? id,
     required String qrHash,
@@ -50,9 +45,9 @@ class ReceiptRepository {
     DateTime? scannedAt,
   }) async {
     final existing = await findByHash(qrHash);
-    final hasMerchant = (receipt.merchantName != null && receipt.merchantName!.trim().isNotEmpty) ||
-        (receipt.taxId != null && receipt.taxId!.trim().isNotEmpty);
-    final merchantId = hasMerchant ? await merchants.resolve(name: receipt.merchantName, taxId: receipt.taxId) : existing?.merchantId;
+    final hasMerchant = trimmedOrNull(receipt.merchantName) != null || trimmedOrNull(receipt.taxId) != null;
+    final merchantId =
+        hasMerchant ? await merchants.resolve(name: receipt.merchantName, taxId: receipt.taxId) : existing?.merchantId;
     final record = ReceiptRecord(
       id: existing?.id ?? id ?? const Uuid().v4(),
       qrHash: qrHash,
@@ -76,11 +71,15 @@ class ReceiptRepository {
   Future<void> replace(ReceiptRecord record) => _upsert(record);
 
   Future<void> deleteById(String id) async {
-    final db = await _db;
-    await db.transaction((txn) async {
+    await (await _db).transaction((txn) async {
       await txn.delete('purchase', where: 'check_id = ?', whereArgs: [id]);
       await txn.delete('receipts', where: 'id = ?', whereArgs: [id]);
     });
+  }
+
+  Future<ReceiptRecord?> _findOne(String where, String arg) async {
+    final rows = await (await _db).query('receipts', where: where, whereArgs: [arg], limit: 1);
+    return rows.isEmpty ? null : _fromRow(rows.first);
   }
 
   Future<void> _upsert(ReceiptRecord record) async {
@@ -107,25 +106,23 @@ class ReceiptRepository {
   }
 
   ReceiptRecord _fromRow(Map<String, Object?> row) {
-    final statusName = '${row['status']}';
-    final status = ReceiptStatus.values.asNameMap()[statusName] ?? ReceiptStatus.incomplete;
-    final lastStatus = (row['last_status'] as num?)?.toInt() ??
-        (status == ReceiptStatus.ok ? statusOk : statusIncomplete);
+    final status = ReceiptStatus.values.asNameMap()[row.str('status')] ?? ReceiptStatus.incomplete;
     return ReceiptRecord(
-      id: '${row['id']}',
-      qrHash: '${row['qr_hash']}',
-      adapterId: '${row['adapter_id']}',
+      id: row.str('id'),
+      qrHash: row.str('qr_hash'),
+      adapterId: row.str('adapter_id'),
+      // Legacy rows may carry `error`; it is shown as incomplete.
       status: status == ReceiptStatus.error ? ReceiptStatus.incomplete : status,
-      issuedAt: DateTime.tryParse('${row['issued_at']}'),
-      merchantName: row['merchant_name'] as String?,
-      grandTotal: (row['grand_total'] as num?)?.toDouble() ?? 0,
-      currency: '${row['currency'] ?? ''}',
-      itemCount: (row['item_count'] as num?)?.toInt() ?? 0,
-      payload: '${row['payload'] ?? ''}',
-      scannedAt: DateTime.tryParse('${row['scanned_at']}') ?? DateTime.fromMillisecondsSinceEpoch(0),
-      rawQr: '${row['raw_qr'] ?? ''}',
-      lastStatus: lastStatus,
-      merchantId: row['merchant_id'] == null ? null : '${row['merchant_id']}',
+      issuedAt: row.date('issued_at'),
+      merchantName: row.optStr('merchant_name'),
+      grandTotal: row.optDouble('grand_total') ?? 0,
+      currency: row.str('currency'),
+      itemCount: row.optInt('item_count') ?? 0,
+      payload: row.str('payload'),
+      scannedAt: row.date('scanned_at') ?? DateTime.fromMillisecondsSinceEpoch(0),
+      rawQr: row.str('raw_qr'),
+      lastStatus: row.optInt('last_status') ?? (status == ReceiptStatus.ok ? statusOk : statusIncomplete),
+      merchantId: row.optStr('merchant_id'),
     );
   }
 }

@@ -41,6 +41,14 @@ class ReceiptRecord {
 
   EqReceipt? _cached;
 
+  /// When the purchase happened: the receipt date, or the scan time without one.
+  DateTime get at => issuedAt ?? scannedAt;
+
+  String displayMerchant(String fallback) {
+    final name = merchantName;
+    return name == null || name.isEmpty ? fallback : name;
+  }
+
   EqReceipt get receipt {
     final cached = _cached;
     if (cached != null) return cached;

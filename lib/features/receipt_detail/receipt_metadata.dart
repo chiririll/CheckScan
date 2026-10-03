@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme.dart';
 import '../../core/models/receipt_record.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -70,7 +71,7 @@ class ReceiptMetadataTile extends StatelessWidget {
       child: ExpansionTile(
         tilePadding: EdgeInsets.zero,
         childrenPadding: const EdgeInsets.only(bottom: 4),
-        title: Text(l10n.metadataSection, style: const TextStyle(fontWeight: FontWeight.w600)),
+        title: Text(l10n.metadataSection, style: AppText.title),
         children: [
           for (final row in rows)
             Padding(
@@ -82,7 +83,7 @@ class ReceiptMetadataTile extends StatelessWidget {
                     width: 128,
                     child: Text(
                       row.label,
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                      style: AppText.mutedSmall,
                     ),
                   ),
                   Expanded(

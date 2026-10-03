@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../core/app_state.dart';
 import '../../core/shopping/shopping_list.dart';
+import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
 import '../catalog/product_page.dart';
-import '../catalog/unit_labels.dart';
+import '../labels/unit_labels.dart';
+import '../widgets/card_tile.dart';
+import '../widgets/centered_message.dart';
+import '../widgets/navigation.dart';
 
 class ListPage extends StatelessWidget {
   const ListPage({super.key, required this.state});
@@ -25,48 +28,24 @@ class ListPage extends StatelessWidget {
             positions: state.catalog.positions,
             receipts: state.receipts,
             resolver: state.catalog.resolver,
-            merchants: state.merchantList,
+            merchants: state.merchants.all,
             fallbackMerchant: l10n.receiptTitle,
           );
-          if (lines.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(28, 8, 28, 20),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(l10n.listEmptyTitle, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                    const SizedBox(height: 8),
-                    Text(l10n.listEmptyBody, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey.shade600)),
-                  ],
-                ),
-              ),
-            );
-          }
-          return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          if (lines.isEmpty) return CenteredMessage(title: l10n.listEmptyTitle, body: l10n.listEmptyBody);
+          return CardList(
             itemCount: lines.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
               final line = lines[index];
               final pack = formatCatalogUnit(line.unit, line.packSize, l10n);
-              return ListTile(
-                tileColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  side: const BorderSide(color: Color(0xFFE4E4E4)),
-                ),
-                title: Text(line.name),
-                subtitle: Text(
-                  [
-                    l10n.listPacks(line.packs),
-                    if (pack.isNotEmpty) pack,
-                    if (line.cheaperNetwork != null) l10n.cheaperAt(line.cheaperNetwork!),
-                  ].join(' · '),
-                ),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => ProductPage(state: state, productId: line.productId)),
-                ),
+              final cheaper = line.cheaperNetwork;
+              return CardTile(
+                title: line.name,
+                subtitle: [
+                  l10n.listPacks(line.packs),
+                  if (pack.isNotEmpty) pack,
+                  if (cheaper != null) l10n.cheaperAt(cheaper),
+                ].join(' · '),
+                onTap: () => pushPage<void>(context, ProductPage(state: state, productId: line.productId)),
               );
             },
           );

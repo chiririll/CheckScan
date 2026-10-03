@@ -1,5 +1,5 @@
-import 'package:checkscan/core/app_state.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
+import 'package:checkscan/core/state/app_state.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
 import 'package:checkscan/features/receipt_detail/receipt_page.dart';
 import 'package:checkscan/l10n/app_localizations.dart';

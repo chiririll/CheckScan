@@ -1,6 +1,7 @@
-import 'catalog_category.dart';
-import 'catalog_position.dart';
-import 'catalog_product.dart';
+import '../util/collections.dart';
+import 'model/catalog_category.dart';
+import 'model/catalog_position.dart';
+import 'model/catalog_product.dart';
 
 class CatalogHit {
   const CatalogHit({required this.position, this.product, this.category});
@@ -17,6 +18,23 @@ class CatalogResolver {
     this.products = const {},
     this.categories = const {},
   });
+
+  /// Raw cashier names come from each position's aliases.
+  factory CatalogResolver.from({
+    required Iterable<CatalogCategory> categories,
+    required Iterable<CatalogProduct> products,
+    required Iterable<CatalogPosition> positions,
+  }) {
+    return CatalogResolver(
+      byRawName: {
+        for (final position in positions)
+          for (final alias in position.aliases) alias: position.id,
+      },
+      positions: positions.indexBy((position) => position.id),
+      products: products.indexBy((product) => product.id),
+      categories: categories.indexBy((category) => category.id),
+    );
+  }
 
   final Map<String, String> byRawName;
   final Map<String, CatalogPosition> positions;
@@ -35,19 +53,5 @@ class CatalogResolver {
     return CatalogHit(position: position, product: product, category: category);
   }
 
-  String topKey(String description) {
-    final hit = resolve(description);
-    if (hit?.product != null) return hit!.product!.name;
-    if (hit != null) return hit.position.displayName;
-    return description;
-  }
-
-  String cheaperKey(String description) {
-    final hit = resolve(description);
-    return hit?.position.displayName ?? description;
-  }
-
   String? categoryName(String description) => resolve(description)?.category?.name;
-
-  String? categoryId(String description) => resolve(description)?.category?.id;
 }

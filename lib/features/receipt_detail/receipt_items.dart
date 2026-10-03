@@ -1,14 +1,15 @@
 import 'package:eq_models/eq_models.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/app_state.dart';
+import '../../app/theme.dart';
 import '../../core/catalog/catalog_resolver.dart';
-import '../../core/catalog/category_label.dart';
-import '../../core/format.dart';
+import '../../core/format/format.dart';
 import '../../core/models/receipt_record.dart';
+import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
 import '../catalog/assign_sheet.dart';
-import '../catalog/unit_labels.dart';
+import '../labels/category_label.dart';
+import '../labels/unit_labels.dart';
 
 class ReceiptItemList extends StatelessWidget {
   const ReceiptItemList({super.key, required this.state, required this.record});
@@ -27,7 +28,7 @@ class ReceiptItemList extends StatelessWidget {
       children: [
         const SizedBox(height: 16),
         const Divider(),
-        Text(l10n.itemsSection, style: const TextStyle(fontWeight: FontWeight.w600)),
+        Text(l10n.itemsSection, style: AppText.title),
         const SizedBox(height: 8),
         for (final group in groups) ...[
           if (group.title != null) ...[
@@ -72,6 +73,8 @@ List<ReceiptItemGroup> groupReceiptItems(List<EqItem> items, CatalogResolver res
   ];
 }
 
+const _caption = TextStyle(color: AppColors.muted, fontSize: 12);
+
 class _ItemRow extends StatelessWidget {
   const _ItemRow({required this.state, required this.record, required this.item});
 
@@ -83,7 +86,7 @@ class _ItemRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final hit = state.catalog.resolver.resolve(item.description);
-    final unit = hit == null ? '' : formatPositionMeta(hit.position, hit.product, l10n);
+    final unit = hit == null ? '' : formatPositionPack(hit.position, hit.product, l10n);
     final product = hit?.product?.name;
     final subtitle = [
       ?product,
@@ -105,14 +108,13 @@ class _ItemRow extends StatelessWidget {
                   Text(item.description),
                   Text(
                     l10n.qtyPrice(formatQty(item.quantity), formatMoney(item.unitPrice, record.currency)),
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                    style: _caption,
                   ),
-                  if (subtitle.isNotEmpty)
-                    Text(subtitle, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                  if (subtitle.isNotEmpty) Text(subtitle, style: _caption),
                 ],
               ),
             ),
-            Text(formatMoney(item.totalPrice, record.currency), style: const TextStyle(fontWeight: FontWeight.w600)),
+            Text(formatMoney(item.totalPrice, record.currency), style: AppText.title),
           ],
         ),
       ),

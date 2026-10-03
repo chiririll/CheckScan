@@ -1,8 +1,11 @@
-import '../catalog/catalog_category.dart';
 import '../catalog/catalog_resolver.dart';
 import '../catalog/category_top.dart';
+import '../catalog/model/catalog_category.dart';
+import '../format/format.dart';
 import '../merchant/merchant.dart';
 import '../models/receipt_record.dart';
+import '../util/collections.dart';
+import 'export_file.dart';
 
 class CategoryExportRow {
   const CategoryExportRow({
@@ -32,68 +35,37 @@ List<CategoryExportRow> buildCategoryExport({
   required List<Merchant> merchants,
 }) {
   final byId = categoryIndex(categories);
-  final merchantById = {for (final merchant in merchants) merchant.id: merchant};
+  final merchantById = merchants.indexBy((merchant) => merchant.id);
   final rows = <CategoryExportRow>[];
 
   for (final receipt in receipts) {
-    final merchant = receipt.merchantId == null ? null : merchantById[receipt.merchantId!];
-    final merchantName = merchant?.name ?? receipt.merchantName ?? '';
-    final at = receipt.issuedAt ?? receipt.scannedAt;
+    final merchant = merchantById[receipt.merchantId];
+
+    CategoryExportRow row(String categoryKey, double amount, [List<String> items = const []]) {
+      return CategoryExportRow(
+        at: receipt.at,
+        merchant: merchant?.name ?? receipt.merchantName ?? '',
+        receiptId: receipt.id,
+        categoryKey: categoryKey,
+        amount: amount,
+        currency: receipt.currency,
+        items: items,
+      );
+    }
 
     if (merchant != null && merchant.ignoresItems) {
       final top = topCategoryOf(categoryId: merchant.categoryId, byId: byId);
-      rows.add(
-        CategoryExportRow(
-          at: at,
-          merchant: merchantName,
-          receiptId: receipt.id,
-          categoryKey: top?.name ?? '',
-          amount: receipt.grandTotal,
-          currency: receipt.currency,
-        ),
-      );
+      rows.add(row(top?.name ?? '', receipt.grandTotal));
       continue;
     }
 
-    final buckets = <String, _Bucket>{};
-    for (final line in receipt.receipt.items) {
-      final hit = resolver.resolve(line.description);
-      final top = topCategoryOf(categoryId: hit?.product?.categoryId ?? hit?.category?.id, byId: byId);
-      final key = top?.name ?? '';
-      final bucket = buckets.putIfAbsent(key, _Bucket.new);
-      bucket.amount += line.totalPrice;
-      final label = hit?.product?.name ?? line.description;
-      if (label.isNotEmpty) {
-        bucket.items.add('$label × ${_qty(line.quantity)}');
-      }
-    }
-
+    final buckets = _bucketsByTop(receipt, resolver, byId);
     if (buckets.isEmpty) {
-      rows.add(
-        CategoryExportRow(
-          at: at,
-          merchant: merchantName,
-          receiptId: receipt.id,
-          categoryKey: '',
-          amount: receipt.grandTotal,
-          currency: receipt.currency,
-        ),
-      );
+      rows.add(row('', receipt.grandTotal));
       continue;
     }
-
-    for (final entry in buckets.entries) {
-      rows.add(
-        CategoryExportRow(
-          at: at,
-          merchant: merchantName,
-          receiptId: receipt.id,
-          categoryKey: entry.key,
-          amount: entry.value.amount,
-          currency: receipt.currency,
-          items: entry.value.items,
-        ),
-      );
+    for (final MapEntry(key: categoryKey, value: bucket) in buckets.entries) {
+      rows.add(row(categoryKey, bucket.amount, bucket.items));
     }
   }
 
@@ -105,13 +77,24 @@ List<CategoryExportRow> buildCategoryExport({
   return rows;
 }
 
-String categoryCsvFileName([DateTime? now]) {
-  final date = now ?? DateTime.now();
-  final year = date.year.toString().padLeft(4, '0');
-  final month = date.month.toString().padLeft(2, '0');
-  final day = date.day.toString().padLeft(2, '0');
-  return 'checkscan-categories-$year-$month-$day.csv';
+Map<String, _Bucket> _bucketsByTop(
+  ReceiptRecord receipt,
+  CatalogResolver resolver,
+  Map<String, CatalogCategory> byId,
+) {
+  final buckets = <String, _Bucket>{};
+  for (final line in receipt.receipt.items) {
+    final hit = resolver.resolve(line.description);
+    final top = topCategoryOf(categoryId: hit?.product?.categoryId ?? hit?.category?.id, byId: byId);
+    final bucket = buckets.putIfAbsent(top?.name ?? '', _Bucket.new);
+    bucket.amount += line.totalPrice;
+    final label = hit?.product?.name ?? line.description;
+    if (label.isNotEmpty) bucket.items.add('$label × ${formatQty(line.quantity)}');
+  }
+  return buckets;
 }
+
+String categoryCsvFileName([DateTime? now]) => datedExportName('categories', 'csv', now);
 
 String encodeCategoryCsv(
   Iterable<CategoryExportRow> rows, {
@@ -120,22 +103,16 @@ String encodeCategoryCsv(
   final nameOf = categoryName ?? (key) => key;
   final buffer = StringBuffer('date,merchant,category_key,category,amount,currency,items\n');
   for (final row in rows) {
-    final date = '${row.at.year.toString().padLeft(4, '0')}-${row.at.month.toString().padLeft(2, '0')}-${row.at.day.toString().padLeft(2, '0')}';
-    buffer
-      ..write(_cell(date))
-      ..write(',')
-      ..write(_cell(row.merchant))
-      ..write(',')
-      ..write(_cell(row.categoryKey))
-      ..write(',')
-      ..write(_cell(nameOf(row.categoryKey)))
-      ..write(',')
-      ..write(_cell(row.amount.toStringAsFixed(2)))
-      ..write(',')
-      ..write(_cell(row.currency))
-      ..write(',')
-      ..write(_cell(row.items.join('; ')))
-      ..write('\n');
+    final cells = [
+      isoDate(row.at),
+      row.merchant,
+      row.categoryKey,
+      nameOf(row.categoryKey),
+      row.amount.toStringAsFixed(2),
+      row.currency,
+      row.items.join('; '),
+    ];
+    buffer.writeln(cells.map(_cell).join(','));
   }
   return buffer.toString();
 }
@@ -143,11 +120,6 @@ String encodeCategoryCsv(
 class _Bucket {
   double amount = 0;
   final List<String> items = [];
-}
-
-String _qty(double value) {
-  if (value == value.roundToDouble()) return value.toInt().toString();
-  return value.toString();
 }
 
 String _cell(String value) {

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../core/app_state.dart';
-import '../../core/catalog/category_label.dart';
+import '../../app/theme.dart';
 import '../../core/merchant/merchant.dart';
+import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
-import '../catalog/catalog_dialogs.dart';
 import '../catalog/category_picker.dart';
+import '../labels/category_label.dart';
+import '../widgets/dialogs.dart';
 
 class MerchantPage extends StatelessWidget {
   const MerchantPage({super.key, required this.state, required this.merchantId});
@@ -19,11 +20,12 @@ class MerchantPage extends StatelessWidget {
     return ListenableBuilder(
       listenable: state,
       builder: (context, _) {
-        final merchant = state.merchantById(merchantId);
+        final merchants = state.merchants;
+        final merchant = merchants.byId(merchantId);
         if (merchant == null) {
           return Scaffold(appBar: AppBar(title: Text(l10n.merchantsTitle)));
         }
-        final parent = merchant.parentId == null ? null : state.merchantById(merchant.parentId);
+        final parent = merchants.byId(merchant.parentId);
         final category = merchant.categoryId == null ? null : state.catalog.categoryById(merchant.categoryId!);
         return Scaffold(
           appBar: AppBar(title: Text(merchant.name)),
@@ -36,9 +38,7 @@ class MerchantPage extends StatelessWidget {
                 subtitle: Text(merchant.name),
                 onTap: () async {
                   final name = await promptText(context, title: l10n.productName, initial: merchant.name, confirm: l10n.save);
-                  if (name == null) return;
-                  await state.merchants.update(merchant.id, name: name);
-                  await state.reloadMerchants();
+                  if (name != null) await merchants.update(merchant.id, name: name);
                 },
               ),
               ListTile(
@@ -57,11 +57,8 @@ class MerchantPage extends StatelessWidget {
                     DropdownMenuItem(value: MerchantPolicy.parse, child: Text(l10n.merchantPolicyParse)),
                     DropdownMenuItem(value: MerchantPolicy.ignore, child: Text(l10n.merchantPolicyIgnore)),
                   ],
-                  onChanged: (value) async {
-                    if (value == null) return;
-                    await state.merchants.update(merchant.id, policy: value);
-                    await state.reload();
-                    await state.reloadMerchants();
+                  onChanged: (value) {
+                    if (value != null) state.setMerchantPolicy(merchant.id, value);
                   },
                 ),
               ),
@@ -69,24 +66,10 @@ class MerchantPage extends StatelessWidget {
                 contentPadding: EdgeInsets.zero,
                 title: Text(l10n.merchantCategory),
                 subtitle: Text(category == null ? l10n.noCategory : categoryTitle(category, l10n)),
-                onTap: () async {
-                  final selected = await pickAssignableCategory(
-                    context: context,
-                    catalog: state.catalog,
-                    currentId: merchant.categoryId,
-                    topsOnly: true,
-                  );
-                  if (selected == null) return;
-                  if (selected.isEmpty) {
-                    await state.merchants.update(merchant.id, clearCategory: true);
-                  } else {
-                    await state.merchants.update(merchant.id, categoryId: selected);
-                  }
-                  await state.reloadMerchants();
-                },
+                onTap: () => _pickCategory(context, merchant),
               ),
               const SizedBox(height: 12),
-              Text(l10n.merchantAliases, style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text(l10n.merchantAliases, style: AppText.title),
               const SizedBox(height: 8),
               for (final alias in merchant.aliases)
                 ListTile(
@@ -99,9 +82,7 @@ class MerchantPage extends StatelessWidget {
                 child: TextButton(
                   onPressed: () async {
                     final name = await promptText(context, title: l10n.addAlias, confirm: l10n.save);
-                    if (name == null) return;
-                    await state.merchants.addAlias(merchant.id, name: name);
-                    await state.reloadMerchants();
+                    if (name != null) await merchants.addAlias(merchant.id, name: name);
                   },
                   child: Text(l10n.addAlias),
                 ),
@@ -110,6 +91,21 @@ class MerchantPage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Future<void> _pickCategory(BuildContext context, Merchant merchant) async {
+    final selected = await pickAssignableCategory(
+      context: context,
+      catalog: state.catalog,
+      currentId: merchant.categoryId,
+      topsOnly: true,
+    );
+    if (selected == null) return;
+    await state.merchants.update(
+      merchant.id,
+      categoryId: selected.isEmpty ? null : selected,
+      clearCategory: selected.isEmpty,
     );
   }
 
@@ -122,7 +118,7 @@ class MerchantPage extends StatelessWidget {
           shrinkWrap: true,
           children: [
             ListTile(title: Text(l10n.merchantNoNetwork), onTap: () => Navigator.pop(context, '')),
-            for (final other in state.merchantList)
+            for (final other in state.merchants.all)
               if (other.id != merchant.id)
                 ListTile(
                   title: Text(other.name),
@@ -134,11 +130,10 @@ class MerchantPage extends StatelessWidget {
       ),
     );
     if (selected == null) return;
-    if (selected.isEmpty) {
-      await state.merchants.update(merchant.id, clearParent: true);
-    } else {
-      await state.merchants.update(merchant.id, parentId: selected);
-    }
-    await state.reloadMerchants();
+    await state.merchants.update(
+      merchant.id,
+      parentId: selected.isEmpty ? null : selected,
+      clearParent: selected.isEmpty,
+    );
   }
 }

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../core/app_state.dart';
-import '../../core/catalog/catalog_product.dart';
-import '../../core/catalog/price_point.dart';
-import '../../core/catalog/purchase_cache.dart';
-import '../../core/format.dart';
+import '../../app/theme.dart';
+import '../../core/catalog/model/catalog_product.dart';
+import '../../core/catalog/pricing/price_point.dart';
+import '../../core/format/format.dart';
+import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
-import '../../theme.dart';
-import 'unit_labels.dart';
+import '../labels/unit_labels.dart';
 
+/// Unit price, cheapest networks and price history of one product.
 class ProductPrices extends StatelessWidget {
   const ProductPrices({super.key, required this.state, required this.product});
 
@@ -18,80 +18,90 @@ class ProductPrices extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final catalog = state.catalog;
     final points = collectPricePoints(
       receipts: state.receipts,
-      resolver: state.catalog.resolver,
-      merchants: state.merchantList,
-      ignoreMerchantIds: ignoreMerchantIdsOf(state.merchantList),
+      resolver: catalog.resolver,
+      merchants: state.merchants.all,
       fallbackMerchant: l10n.receiptTitle,
     );
     final mine = pointsForProduct(points, product.id);
     if (mine.isEmpty) return const SizedBox.shrink();
 
-    final headline = headlinePrice(
-      productPoints: mine,
-      items: state.catalog.positions,
-      product: product,
-    );
+    final headline = headlinePrice(productPoints: mine, items: catalog.positions, product: product);
     final networks = cheaperNetworks(mine);
     final currency = headline?.currency ?? mine.first.currency;
-    final pack = headline == null ? null : state.catalog.positionById(headline.itemId);
+    final pack = headline == null ? null : catalog.positionById(headline.itemId);
     final packLabel = pack == null ? '' : formatPositionPack(pack, product, l10n);
     final unit = headline?.unit;
+    final perUnit = headline?.perUnit;
+    final history = [for (final point in mine) if (point.perUnit != null && point.unit != null) point];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        Text(l10n.pricesBlock, style: const TextStyle(fontWeight: FontWeight.w600)),
+        Text(l10n.pricesBlock, style: AppText.title),
         const SizedBox(height: 8),
-        if (headline?.perUnit != null && unit != null) ...[
+        if (perUnit != null && unit != null) ...[
           Text(
-            formatUnitPrice(headline!.perUnit!, unit, currency, l10n),
+            formatUnitPrice(perUnit, unit, currency, l10n),
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.primary),
           ),
-          if (packLabel.isNotEmpty)
-            Text(l10n.referencePack(packLabel), style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+          if (packLabel.isNotEmpty) Text(l10n.referencePack(packLabel), style: AppText.mutedSmall),
         ] else
-          Text(l10n.noUnitPrice, style: TextStyle(color: Colors.grey.shade600)),
+          Text(l10n.noUnitPrice, style: AppText.muted),
         if (networks.isNotEmpty && unit != null) ...[
           const SizedBox(height: 8),
           for (final network in networks)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      network.networkName,
-                      style: TextStyle(fontWeight: network == networks.first ? FontWeight.w600 : FontWeight.w400),
-                    ),
-                  ),
-                  Text(formatUnitPrice(network.perUnit, unit, currency, l10n)),
-                ],
+            _PriceRow(
+              bottom: 4,
+              label: Text(
+                network.networkName,
+                style: TextStyle(fontWeight: network == networks.first ? FontWeight.w600 : FontWeight.w400),
               ),
+              price: Text(formatUnitPrice(network.perUnit, unit, currency, l10n)),
             ),
         ],
-        if (mine.any((point) => point.perUnit != null)) ...[
+        if (history.isNotEmpty) ...[
           const SizedBox(height: 12),
-          Text(l10n.priceDynamics, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(l10n.priceDynamics, style: AppText.title),
           const SizedBox(height: 8),
-          for (final point in mine.where((point) => point.perUnit != null && point.unit != null))
-            Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 88,
-                    child: Text(formatDayShort(point.at), style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-                  ),
-                  Expanded(child: Text(point.networkName, style: const TextStyle(fontSize: 13))),
-                  Text(formatUnitPrice(point.perUnit!, point.unit!, point.currency, l10n), style: const TextStyle(fontSize: 13)),
-                ],
+          for (final point in history)
+            _PriceRow(
+              bottom: 6,
+              leading: Text(formatDayShort(point.at), style: AppText.mutedSmall),
+              label: Text(point.networkName, style: const TextStyle(fontSize: 13)),
+              price: Text(
+                formatUnitPrice(point.perUnit!, point.unit!, point.currency, l10n),
+                style: const TextStyle(fontSize: 13),
               ),
             ),
         ],
       ],
+    );
+  }
+}
+
+class _PriceRow extends StatelessWidget {
+  const _PriceRow({required this.label, required this.price, required this.bottom, this.leading});
+
+  final Widget label;
+  final Widget price;
+  final double bottom;
+  final Widget? leading;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottom),
+      child: Row(
+        children: [
+          if (leading != null) SizedBox(width: 88, child: leading),
+          Expanded(child: label),
+          price,
+        ],
+      ),
     );
   }
 }

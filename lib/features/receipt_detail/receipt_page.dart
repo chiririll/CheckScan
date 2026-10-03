@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../core/app_state.dart';
-import '../../core/format.dart';
+import '../../app/theme.dart';
+import '../../core/format/format.dart';
 import '../../core/models/receipt_record.dart';
+import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
-import '../../theme.dart';
 import '../merchant/merchant_page.dart';
+import '../widgets/dialogs.dart';
+import '../widgets/navigation.dart';
 import 'receipt_items.dart';
 import 'receipt_metadata.dart';
 
@@ -24,26 +26,13 @@ class _ReceiptPageState extends State<ReceiptPage> {
 
   Future<void> _confirmDelete() async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.deleteReceiptTitle),
-        content: Text(l10n.deleteReceiptBody),
-        actionsAlignment: MainAxisAlignment.spaceBetween,
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: const Color(0xFFC62828)),
-            child: Text(l10n.deleteReceipt),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(l10n.cancel),
-          ),
-        ],
-      ),
+    final confirmed = await confirmAction(
+      context,
+      title: l10n.deleteReceiptTitle,
+      body: l10n.deleteReceiptBody,
+      confirm: l10n.deleteReceipt,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
     await widget.state.deleteReceipt(widget.receiptId);
     if (mounted) Navigator.of(context).pop();
   }
@@ -54,10 +43,7 @@ class _ReceiptPageState extends State<ReceiptPage> {
     try {
       await widget.state.refreshReceipt(current);
     } catch (_) {
-      if (mounted) {
-        final l10n = AppLocalizations.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.parseErrorBody)));
-      }
+      if (mounted) showSnack(context, AppLocalizations.of(context).parseErrorBody);
     }
   }
 
@@ -72,8 +58,10 @@ class _ReceiptPageState extends State<ReceiptPage> {
           return Scaffold(appBar: AppBar(leading: const BackButton(), title: Text(l10n.receiptTitle)));
         }
         final receipt = record.receipt;
-        final name = record.merchantName?.isNotEmpty == true ? record.merchantName! : l10n.receiptTitle;
-        final when = record.issuedAt ?? record.scannedAt;
+        final name = record.displayMerchant(l10n.receiptTitle);
+        final merchantId = record.merchantId;
+        const nameStyle = TextStyle(fontWeight: FontWeight.w600, fontSize: 18);
+        final when = record.at;
 
         return Scaffold(
           appBar: AppBar(
@@ -88,7 +76,7 @@ class _ReceiptPageState extends State<ReceiptPage> {
                 itemBuilder: (context) => [
                   PopupMenuItem(
                     value: 'delete',
-                    child: Text(l10n.deleteReceipt, style: const TextStyle(color: Color(0xFFC62828))),
+                    child: Text(l10n.deleteReceipt, style: AppText.danger),
                   ),
                 ],
               ),
@@ -103,22 +91,18 @@ class _ReceiptPageState extends State<ReceiptPage> {
                 Row(
                   children: [
                     Expanded(
-                      child: record.merchantId == null
-                          ? Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18))
-                          : GestureDetector(
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                  builder: (_) => MerchantPage(state: widget.state, merchantId: record.merchantId!),
-                                ),
-                              ),
-                              child: Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18)),
-                            ),
+                      child: GestureDetector(
+                        onTap: merchantId == null
+                            ? null
+                            : () => pushPage<void>(context, MerchantPage(state: widget.state, merchantId: merchantId)),
+                        child: Text(name, style: nameStyle),
+                      ),
                     ),
                     if (record.providerLabel.isNotEmpty) _Chip(record.providerLabel),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(formatDateTime(when), style: TextStyle(color: Colors.grey.shade600)),
+                Text(formatDateTime(when), style: AppText.muted),
                 const SizedBox(height: 8),
                 Text(
                   formatMoney(record.grandTotal, record.currency),
@@ -159,7 +143,7 @@ class _ReceiptCrumbs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final muted = TextStyle(color: Colors.grey.shade600, fontSize: 16, fontWeight: FontWeight.w400);
+    const muted = TextStyle(color: AppColors.muted, fontSize: 16, fontWeight: FontWeight.w400);
     return Row(
       children: [
         Flexible(
@@ -189,7 +173,7 @@ class _Chip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: const Color(0xFFE4EEEC),
+        color: AppColors.primarySoft,
         borderRadius: BorderRadius.circular(99),
       ),
       child: Text(label, style: const TextStyle(fontSize: 12, color: AppColors.primary)),

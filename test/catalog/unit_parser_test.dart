@@ -1,5 +1,5 @@
-import 'package:checkscan/core/catalog/item_unit.dart';
-import 'package:checkscan/core/catalog/unit_parser.dart';
+import 'package:checkscan/core/catalog/model/item_unit.dart';
+import 'package:checkscan/core/catalog/text/unit_parser.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

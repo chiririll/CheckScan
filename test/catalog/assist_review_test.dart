@@ -1,13 +1,13 @@
 import 'dart:io';
 
-import 'package:checkscan/core/app_state.dart';
-import 'package:checkscan/core/catalog/assist_draft.dart';
-import 'package:checkscan/core/catalog/catalog_repository.dart';
+import 'package:checkscan/core/catalog/assist/assist_draft.dart';
 import 'package:checkscan/core/catalog/catalog_store.dart';
+import 'package:checkscan/core/catalog/data/catalog_repository.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
+import 'package:checkscan/core/state/app_state.dart';
 import 'package:checkscan/core/storage/database.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
-import 'package:checkscan/features/catalog/assist_review_page.dart';
+import 'package:checkscan/features/catalog/assist/assist_review_page.dart';
 import 'package:checkscan/l10n/app_localizations.dart';
 import 'package:eq_models/eq_models.dart';
 import 'package:flutter/material.dart';

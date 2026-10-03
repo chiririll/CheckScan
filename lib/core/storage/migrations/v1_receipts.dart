@@ -2,7 +2,7 @@ import 'package:sqflite/sqflite.dart';
 
 import 'migration.dart';
 
-final v1Receipts = Migration(version: 1, up: createReceiptsTable);
+const v1Receipts = Migration(version: 1, up: createReceiptsTable);
 
 Future<void> createReceiptsTable(DatabaseExecutor db) async {
   await db.execute('''

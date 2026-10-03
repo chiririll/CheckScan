@@ -1,14 +1,14 @@
 import 'dart:io';
 
-import 'package:checkscan/core/app_state.dart';
-import 'package:checkscan/core/catalog/assist_clipboard.dart';
-import 'package:checkscan/core/catalog/catalog_repository.dart';
+import 'package:checkscan/core/catalog/assist/assist_clipboard.dart';
 import 'package:checkscan/core/catalog/catalog_store.dart';
+import 'package:checkscan/core/catalog/data/catalog_repository.dart';
+import 'package:checkscan/core/state/app_state.dart';
 import 'package:checkscan/core/storage/database.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
-import 'package:checkscan/features/catalog/assist_actions.dart';
-import 'package:checkscan/features/catalog/assist_paste_sheet.dart';
-import 'package:checkscan/features/catalog/assist_review_page.dart';
+import 'package:checkscan/features/catalog/assist/assist_actions.dart';
+import 'package:checkscan/features/catalog/assist/assist_paste_sheet.dart';
+import 'package:checkscan/features/catalog/assist/assist_review_page.dart';
 import 'package:checkscan/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

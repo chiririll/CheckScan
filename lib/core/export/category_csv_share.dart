@@ -1,20 +1,15 @@
 import 'dart:io';
 
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
-
 import 'category_csv.dart';
+import 'export_file.dart';
 
 Future<File> writeCategoryCsvFile({
   required Iterable<CategoryExportRow> rows,
   required Directory directory,
   DateTime? now,
   String Function(String key)? categoryName,
-}) async {
-  final file = File(p.join(directory.path, categoryCsvFileName(now)));
-  await file.writeAsString(encodeCategoryCsv(rows, categoryName: categoryName));
-  return file;
+}) {
+  return writeExportFile(directory, categoryCsvFileName(now), encodeCategoryCsv(rows, categoryName: categoryName));
 }
 
 Future<void> shareCategoryCsv({
@@ -23,24 +18,14 @@ Future<void> shareCategoryCsv({
   DateTime? now,
   String Function(String key)? categoryName,
   Future<Directory> Function()? temporaryDirectory,
-  Future<void> Function(String path, String subject)? shareFile,
-}) async {
-  final directory = await (temporaryDirectory ?? getTemporaryDirectory)();
-  final file = await writeCategoryCsvFile(
-    rows: rows,
-    directory: directory,
-    now: now,
-    categoryName: categoryName,
-  );
-  final share = shareFile ?? _shareFile;
-  await share(file.path, subject);
-}
-
-Future<void> _shareFile(String path, String subject) {
-  return SharePlus.instance.share(
-    ShareParams(
-      files: [XFile(path, mimeType: 'text/csv')],
-      subject: subject,
-    ),
+  ShareFile? shareFile,
+}) {
+  return shareExport(
+    name: categoryCsvFileName(now),
+    contents: encodeCategoryCsv(rows, categoryName: categoryName),
+    mimeType: 'text/csv',
+    subject: subject,
+    temporaryDirectory: temporaryDirectory,
+    shareFile: shareFile,
   );
 }

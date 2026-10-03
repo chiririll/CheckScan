@@ -1,6 +1,6 @@
-import 'package:checkscan/core/catalog/assist_cluster.dart';
-import 'package:checkscan/core/catalog/assist_prompt.dart';
-import 'package:checkscan/core/catalog/catalog_position.dart';
+import 'package:checkscan/core/catalog/assist/assist_cluster.dart';
+import 'package:checkscan/core/catalog/assist/assist_prompt.dart';
+import 'package:checkscan/core/catalog/model/catalog_position.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

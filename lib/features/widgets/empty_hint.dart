@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../theme.dart';
+import '../../app/theme.dart';
+import 'centered_message.dart';
 
+/// Empty state with a bouncing arrow pointing at the bottom bar.
 class EmptyHint extends StatefulWidget {
   const EmptyHint({super.key, required this.title, required this.body});
 
@@ -26,30 +28,15 @@ class _EmptyHintState extends State<EmptyHint> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(28, 8, 28, 20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(widget.title, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-            const SizedBox(height: 8),
-            Text(widget.body, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey.shade600)),
-            const SizedBox(height: 12),
-            AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                return Transform.translate(
-                  offset: Offset(0, _controller.value * 10),
-                  child: child,
-                );
-              },
-              child: CustomPaint(
-                size: const Size(32, 168),
-                painter: _ArrowPainter(color: AppColors.primary),
-              ),
-            ),
-          ],
+    return CenteredMessage(
+      title: widget.title,
+      body: widget.body,
+      footer: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) => Transform.translate(offset: Offset(0, _controller.value * 10), child: child),
+        child: CustomPaint(
+          size: const Size(32, 168),
+          painter: _ArrowPainter(color: AppColors.primary),
         ),
       ),
     );

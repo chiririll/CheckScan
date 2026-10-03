@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:checkscan/core/catalog/category_seeder.dart';
+import 'package:checkscan/core/catalog/data/category_seeder.dart';
 import 'package:checkscan/core/storage/database.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;

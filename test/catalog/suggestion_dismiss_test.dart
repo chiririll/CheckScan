@@ -1,21 +1,20 @@
 import 'dart:io';
 
-import 'package:checkscan/core/catalog/assist_cluster.dart';
-import 'package:checkscan/core/catalog/catalog_position.dart';
-import 'package:checkscan/core/catalog/catalog_repository.dart';
+import 'package:checkscan/core/catalog/assist/assist_cluster.dart';
 import 'package:checkscan/core/catalog/catalog_store.dart';
+import 'package:checkscan/core/catalog/data/catalog_repository.dart';
+import 'package:checkscan/core/catalog/model/catalog_position.dart';
+import 'package:checkscan/core/models/receipt_record.dart';
+import 'package:checkscan/core/state/app_state.dart';
 import 'package:checkscan/core/storage/database.dart';
+import 'package:checkscan/core/storage/receipt_repository.dart';
 import 'package:checkscan/features/catalog/catalog_page.dart';
 import 'package:checkscan/l10n/app_localizations.dart';
+import 'package:eq_models/eq_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
-import 'package:checkscan/core/app_state.dart';
-import 'package:checkscan/core/models/receipt_record.dart';
-import 'package:checkscan/core/storage/receipt_repository.dart';
-import 'package:eq_models/eq_models.dart';
 
 import '../scan/fake_native_adapter.dart';
 

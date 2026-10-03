@@ -28,11 +28,6 @@ bool canRetryStatus(int status) {
   return status == statusIncomplete || statusClass(status) == 5;
 }
 
-bool _extensionFlag(EqReceipt receipt, String key) {
-  final value = receipt.extensions[key];
-  return value == true || value == 'true';
-}
-
 EqReceipt withProviderLabel(EqReceipt receipt, String label) {
   if (label.isEmpty) return receipt;
   return receipt.copyWith(
@@ -40,4 +35,7 @@ EqReceipt withProviderLabel(EqReceipt receipt, String label) {
   );
 }
 
-bool receiptFlag(EqReceipt receipt, String key) => _extensionFlag(receipt, key);
+bool receiptFlag(EqReceipt receipt, String key) {
+  final value = receipt.extensions[key];
+  return value == true || value == 'true';
+}

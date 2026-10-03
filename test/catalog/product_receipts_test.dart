@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:checkscan/core/app_state.dart';
-import 'package:checkscan/core/catalog/catalog_repository.dart';
 import 'package:checkscan/core/catalog/catalog_store.dart';
+import 'package:checkscan/core/catalog/data/catalog_repository.dart';
+import 'package:checkscan/core/catalog/model/purchase.dart';
 import 'package:checkscan/core/catalog/product_receipts.dart';
-import 'package:checkscan/core/catalog/purchase.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
+import 'package:checkscan/core/state/app_state.dart';
 import 'package:checkscan/core/storage/database.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
 import 'package:checkscan/features/catalog/product_page.dart';

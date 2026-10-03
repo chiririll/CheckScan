@@ -1,4 +1,4 @@
-import 'catalog_category.dart';
+import 'model/catalog_category.dart';
 
 /// Walk a shelf to its Savvy envelope (top). Leaves keep the parent; a top stays itself.
 CatalogCategory? topCategoryOf({

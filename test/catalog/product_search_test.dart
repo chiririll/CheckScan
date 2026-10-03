@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:checkscan/core/catalog/catalog_repository.dart';
 import 'package:checkscan/core/catalog/catalog_store.dart';
+import 'package:checkscan/core/catalog/data/catalog_repository.dart';
 import 'package:checkscan/core/storage/database.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;

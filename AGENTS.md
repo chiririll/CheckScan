@@ -11,6 +11,12 @@ Lint: [analysis_options.yaml](analysis_options.yaml).
 | Path | What |
 | --- | --- |
 | [lib/](lib/) | Flutter UI and app logic |
+| [lib/app/](lib/app/) | `MaterialApp` and theme tokens (`AppColors`, `AppShapes`, `AppText`) |
+| [lib/core/state/](lib/core/state/) | `AppState`: receipts + catalog and merchant stores |
+| [lib/core/catalog/](lib/core/catalog/) | Catalog: `model/`, `data/` (one mixin per table), `text/`, `pricing/`, `assist/`, `CatalogStore` |
+| [lib/core/merchant/](lib/core/merchant/) | Merchants: repository and `MerchantStore` |
+| [lib/core/util/](lib/core/util/) | Collection helpers (`firstWhereOrNull`, `groupBy`, `filterByQuery`) |
+| [lib/features/](lib/features/) | Screens by feature; shared widgets in `widgets/`, l10n labels in `labels/` |
 | [packages/eq_models](packages/eq_models/) | Shared receipt JSON (`EqReceipt`) |
 | [test/](test/) | Dart tests (`flutter test`) |
 
@@ -23,7 +29,7 @@ Providers and FFI: [CheckScanProviders](https://github.com/chiririll/CheckScanPr
 3. Native adapter: [lib/core/scan/native_adapter.dart](lib/core/scan/native_adapter.dart)
 4. FFI: CheckScanProviders `adapters/flutter/` plugin. Host attaches `checkscan_set_log` and prints `[checkscan]` lines.
 5. Local DB: [lib/core/storage/receipt_repository.dart](lib/core/storage/receipt_repository.dart), [lib/core/models/receipt_record.dart](lib/core/models/receipt_record.dart)
-6. UI shell: [lib/app.dart](lib/app.dart), [lib/features/shell/app_shell.dart](lib/features/shell/app_shell.dart)
+6. UI shell: [lib/app/app.dart](lib/app/app.dart), [lib/features/shell/app_shell.dart](lib/features/shell/app_shell.dart)
 
 QR formats and provider IDs live in CheckScanProviders. Do not add Dart-side adapters.
 
@@ -32,6 +38,6 @@ QR formats and provider IDs live in CheckScanProviders. Do not add Dart-side ada
 - Android first. UI is Russian only (`ru`). Strings: [lib/l10n/app_ru.arb](lib/l10n/app_ru.arb); gen config: [l10n.yaml](l10n.yaml).
 - Provider changes go in CheckScanProviders. Bump the `providers_native` git `ref` here after a release.
 - Settings schema comes from CheckScanProviders `checkscan_settings`. Persist locally and `configure` the native library. Do not hardcode API names or tokens.
-- New code needs tests. Dart: [test/](test/) (`flutter test`; scan path uses [fake_providers_backend.dart](test/scan/fake_providers_backend.dart)).
+- New code needs tests. Dart: [test/](test/) (`flutter test`; scan path uses [fake_native_adapter.dart](test/scan/fake_native_adapter.dart)).
 - Keep files small. Split growing files into modules; split a module when it starts doing more than one job.
 - Before adding or bumping a Flutter/Dart plugin, look up the current stable version on [pub.dev](https://pub.dev) (or `flutter pub outdated`) and use that constraint. Do not pick a remembered older version. Confirm it matches this repo's Flutter/Android (AGP) bounds.

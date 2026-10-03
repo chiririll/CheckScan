@@ -1,4 +1,4 @@
-import 'package:checkscan/core/catalog/assist_parse.dart';
+import 'package:checkscan/core/catalog/assist/assist_parse.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const _realLlmReply = '''

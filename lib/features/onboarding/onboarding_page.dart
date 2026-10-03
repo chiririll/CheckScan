@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../../core/app_state.dart';
+import '../../app/theme.dart';
+import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
-import '../../theme.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key, required this.state});
@@ -63,7 +63,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                           width: 88,
                           height: 88,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE4EEEC),
+                            color: AppColors.primarySoft,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(page.$3, size: 40, color: AppColors.primary),

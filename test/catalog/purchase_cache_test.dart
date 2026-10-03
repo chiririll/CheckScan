@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:checkscan/core/catalog/catalog_repository.dart';
+import 'package:checkscan/core/catalog/data/catalog_repository.dart';
 import 'package:checkscan/core/merchant/merchant.dart';
 import 'package:checkscan/core/merchant/merchant_repository.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
@@ -38,7 +38,7 @@ void main() {
     await database.close();
   });
 
-  Future<ReceiptRecord> _save({
+  Future<ReceiptRecord> save({
     required String id,
     required List<EqItem> items,
     String merchant = 'Магнит',
@@ -63,7 +63,7 @@ void main() {
   }
 
   test('rebuild writes one purchase per product in a check and skips unassigned', () async {
-    final saved = await _save(
+    final saved = await save(
       id: 'r1',
       items: const [
         EqItem(description: 'Молоко 1 л', quantity: 2, unitPrice: 80, totalPrice: 160),
@@ -90,7 +90,7 @@ void main() {
   test('ignore merchant receipts do not enter the purchase cache', () async {
     final id = await merchants.resolve(name: 'Кафе Уют');
     await merchants.update(id, policy: MerchantPolicy.ignore);
-    final saved = await _save(
+    final saved = await save(
       id: 'cafe',
       merchant: 'Кафе Уют',
       items: const [EqItem(description: 'Капучино', quantity: 1, unitPrice: 200, totalPrice: 200)],
@@ -107,7 +107,7 @@ void main() {
   });
 
   test('deleteById drops purchase rows for that check', () async {
-    final saved = await _save(
+    final saved = await save(
       id: 'gone',
       items: const [EqItem(description: 'Хлеб', quantity: 1, unitPrice: 40, totalPrice: 40)],
     );

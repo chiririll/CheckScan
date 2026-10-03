@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../core/app_state.dart';
 import '../../core/merchant/merchant.dart';
+import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
+import '../widgets/card_tile.dart';
+import '../widgets/navigation.dart';
 import 'merchant_page.dart';
 
 class MerchantsPage extends StatelessWidget {
@@ -16,25 +18,17 @@ class MerchantsPage extends StatelessWidget {
     return ListenableBuilder(
       listenable: state,
       builder: (context, _) {
+        final merchants = state.merchants.all;
         return Scaffold(
           appBar: AppBar(title: Text(l10n.merchantsTitle)),
-          body: ListView.separated(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-            itemCount: state.merchantList.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
+          body: CardList(
+            itemCount: merchants.length,
             itemBuilder: (context, index) {
-              final merchant = state.merchantList[index];
-              return ListTile(
-                tileColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  side: const BorderSide(color: Color(0xFFE4E4E4)),
-                ),
-                title: Text(merchant.name),
-                subtitle: Text(_subtitle(merchant, l10n)),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => MerchantPage(state: state, merchantId: merchant.id)),
-                ),
+              final merchant = merchants[index];
+              return CardTile(
+                title: merchant.name,
+                subtitle: _subtitle(merchant, l10n),
+                onTap: () => pushPage<void>(context, MerchantPage(state: state, merchantId: merchant.id)),
               );
             },
           ),
@@ -45,8 +39,7 @@ class MerchantsPage extends StatelessWidget {
 
   String _subtitle(Merchant merchant, AppLocalizations l10n) {
     final policy = merchant.ignoresItems ? l10n.merchantPolicyIgnore : l10n.merchantPolicyParse;
-    final parent = merchant.parentId == null ? null : state.merchantById(merchant.parentId);
-    final network = parent == null ? l10n.merchantNoNetwork : parent.name;
+    final network = state.merchants.byId(merchant.parentId)?.name ?? l10n.merchantNoNetwork;
     return '$policy · $network';
   }
 }

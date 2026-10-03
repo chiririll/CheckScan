@@ -1,13 +1,12 @@
 import 'dart:io';
 
-import 'package:checkscan/core/catalog/assist_apply.dart';
-import 'package:checkscan/core/catalog/assist_draft.dart';
-import 'package:checkscan/core/catalog/catalog_repository.dart';
+import 'package:checkscan/core/catalog/assist/assist_apply.dart';
+import 'package:checkscan/core/catalog/assist/assist_draft.dart';
+import 'package:checkscan/core/catalog/data/catalog_repository.dart';
+import 'package:checkscan/core/storage/database.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
-import 'package:checkscan/core/storage/database.dart';
 
 int _seq = 0;
 

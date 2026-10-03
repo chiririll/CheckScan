@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:checkscan/core/catalog/catalog_repository.dart';
+import 'package:checkscan/core/catalog/data/catalog_repository.dart';
 import 'package:checkscan/core/merchant/merchant.dart';
 import 'package:checkscan/core/merchant/merchant_repository.dart';
 import 'package:checkscan/core/models/receipt_record.dart';

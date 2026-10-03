@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme.dart';
 import '../../l10n/app_localizations.dart';
 
 class CatalogCrumb {
@@ -88,7 +89,7 @@ class CatalogOverflowMenu extends StatelessWidget {
             enabled: actions[i].enabled,
             child: Text(
               actions[i].label,
-              style: actions[i].destructive ? const TextStyle(color: Color(0xFFC62828)) : null,
+              style: actions[i].destructive ? AppText.danger : null,
             ),
           ),
       ],

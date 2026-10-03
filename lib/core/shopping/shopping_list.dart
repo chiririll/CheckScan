@@ -1,15 +1,16 @@
-import '../catalog/catalog_position.dart';
-import '../catalog/catalog_product.dart';
 import '../catalog/catalog_resolver.dart';
-import '../catalog/item_unit.dart';
-import '../catalog/price_point.dart';
-import '../catalog/purchase.dart';
-import '../catalog/purchase_cache.dart';
-import '../catalog/reference_pack.dart';
-import '../catalog/unit_parser.dart';
-import '../catalog/unit_price.dart';
+import '../catalog/model/catalog_position.dart';
+import '../catalog/model/catalog_product.dart';
+import '../catalog/model/item_unit.dart';
+import '../catalog/model/purchase.dart';
+import '../catalog/pricing/price_point.dart';
+import '../catalog/pricing/reference_pack.dart';
+import '../catalog/pricing/unit_price.dart';
+import '../catalog/purchase_stats.dart';
+import '../catalog/text/unit_parser.dart';
 import '../merchant/merchant.dart';
 import '../models/receipt_record.dart';
+import '../util/collections.dart';
 
 class ShoppingLine {
   const ShoppingLine({
@@ -42,53 +43,33 @@ List<ShoppingLine> buildShoppingList({
   required List<Merchant> merchants,
   required String fallbackMerchant,
 }) {
-  final productById = {for (final product in products) product.id: product};
-  final itemsByProduct = <String, List<CatalogPosition>>{};
-  for (final item in positions) {
-    final productId = item.productId;
-    if (productId == null) continue;
-    itemsByProduct.putIfAbsent(productId, () => []).add(item);
-  }
+  final productById = products.indexBy((product) => product.id);
+  final itemsByProduct = positions.where((item) => item.productId != null).groupBy((item) => item.productId!);
+  final tallies = tallyPurchases(purchases.where((purchase) => productById.containsKey(purchase.productId)));
+  if (tallies.isEmpty) return const [];
 
-  final counts = <String, int>{};
-  final qty = <String, double>{};
-  for (final purchase in purchases) {
-    if (productById[purchase.productId] == null) continue;
-    counts[purchase.productId] = (counts[purchase.productId] ?? 0) + 1;
-    qty[purchase.productId] = (qty[purchase.productId] ?? 0) + purchase.quantity;
-  }
-  if (counts.isEmpty) return const [];
-
-  final points = collectPricePoints(
+  final pointsByProduct = collectPricePoints(
     receipts: receipts,
     resolver: resolver,
     merchants: merchants,
-    ignoreMerchantIds: ignoreMerchantIdsOf(merchants),
     fallbackMerchant: fallbackMerchant,
-  );
-  final pointsByProduct = <String, List<PricePoint>>{};
-  for (final point in points) {
-    pointsByProduct.putIfAbsent(point.productId, () => []).add(point);
-  }
+  ).groupBy((point) => point.productId);
 
-  final ranked = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
   final lines = <ShoppingLine>[];
-  for (final entry in ranked) {
-    final product = productById[entry.key];
-    if (product == null) continue;
+  for (final tally in tallies) {
+    final product = productById[tally.productId]!;
     final pack = _honestPack(product, itemsByProduct[product.id] ?? const []);
     if (pack == null) continue;
-    final avg = (qty[entry.key] ?? 0) / entry.value;
-    final packs = avg <= 0 ? 1 : avg.ceil();
+    final avg = tally.quantity / tally.count;
     final networks = cheaperNetworks(pointsByProduct[product.id] ?? const []);
     lines.add(
       ShoppingLine(
         productId: product.id,
         name: product.name,
-        packs: packs,
+        packs: avg <= 0 ? 1 : avg.ceil(),
         packSize: pack.size,
         unit: pack.unit,
-        cheaperNetwork: networks.isEmpty ? null : networks.first.networkName,
+        cheaperNetwork: networks.firstOrNull?.networkName,
       ),
     );
   }

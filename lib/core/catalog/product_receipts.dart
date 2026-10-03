@@ -1,5 +1,5 @@
 import '../models/receipt_record.dart';
-import 'purchase.dart';
+import 'model/purchase.dart';
 
 /// Receipts that contain a catalog product via `purchase` links, newest first.
 List<ReceiptRecord> receiptsContainingProduct({
@@ -12,9 +12,6 @@ List<ReceiptRecord> receiptsContainingProduct({
       if (purchase.productId == productId) purchase.checkId,
   };
   if (ids.isEmpty) return const [];
-  final found = [for (final receipt in receipts) if (ids.contains(receipt.id)) receipt];
-  found.sort((a, b) {
-    return (b.issuedAt ?? b.scannedAt).compareTo(a.issuedAt ?? a.scannedAt);
-  });
-  return found;
+  return [for (final receipt in receipts) if (ids.contains(receipt.id)) receipt]
+    ..sort((a, b) => b.at.compareTo(a.at));
 }

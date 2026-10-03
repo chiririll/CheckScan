@@ -1,7 +1,7 @@
-import 'package:checkscan/core/catalog/catalog_category.dart';
-import 'package:checkscan/core/catalog/catalog_position.dart';
-import 'package:checkscan/core/catalog/catalog_product.dart';
 import 'package:checkscan/core/catalog/catalog_resolver.dart';
+import 'package:checkscan/core/catalog/model/catalog_category.dart';
+import 'package:checkscan/core/catalog/model/catalog_position.dart';
+import 'package:checkscan/core/catalog/model/catalog_product.dart';
 import 'package:checkscan/features/receipt_detail/receipt_items.dart';
 import 'package:eq_models/eq_models.dart';
 import 'package:flutter_test/flutter_test.dart';

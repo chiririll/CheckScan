@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 
-import '../../core/catalog/category_label.dart';
+import '../../app/theme.dart';
 import '../../core/export/category_csv.dart';
 import '../../core/export/category_csv_share.dart';
 import '../../core/export/eq_jsonl_share.dart';
-import '../../core/scan/native_adapter.dart';
 import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
+import '../labels/category_label.dart';
 import '../merchant/merchants_page.dart';
+import '../widgets/navigation.dart';
+import 'secret_field.dart';
+import 'settings_row.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key, required this.state});
@@ -29,22 +32,36 @@ class SettingsPage extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             children: [
               if (state.settingFields.isNotEmpty) ...[
-                Text(l10n.providerSecrets, style: TextStyle(color: Colors.grey.shade600)),
+                Text(l10n.providerSecrets, style: AppText.muted),
                 const SizedBox(height: 8),
-                Text(l10n.providerTokenHint, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                Text(l10n.providerTokenHint, style: AppText.mutedSmall),
                 const SizedBox(height: 12),
                 for (final field in state.settingFields)
-                  _SecretField(state: state, field: field, title: l10n.providerToken(field.label)),
+                  SecretField(state: state, field: field, title: l10n.providerToken(field.label)),
                 const SizedBox(height: 16),
               ],
-              _MerchantsRow(state: state),
+              SettingsRow(
+                title: l10n.merchantsTitle,
+                trailing: const Icon(Icons.chevron_right, size: 18, color: AppColors.muted),
+                onTap: () => pushPage<void>(context, MerchantsPage(state: state)),
+              ),
               const SizedBox(height: 16),
-              Text(l10n.integrations, style: TextStyle(color: Colors.grey.shade600)),
+              Text(l10n.integrations, style: AppText.muted),
               const SizedBox(height: 8),
-              _row(l10n.integration1c, l10n.soon),
-              _ExportEqRow(state: state),
-              _ExportCsvRow(state: state),
-              _row(l10n.integrationCloud, l10n.soon),
+              SettingsRow(title: l10n.integration1c, trailing: _soon(l10n)),
+              ExportRow(
+                title: l10n.integrationExport,
+                icon: Icons.share_outlined,
+                state: state,
+                export: () => shareEqJsonl(receipts: state.receipts, subject: l10n.exportShareSubject),
+              ),
+              ExportRow(
+                title: l10n.exportCsv,
+                icon: Icons.table_chart_outlined,
+                state: state,
+                export: () => _shareCategoryCsv(l10n),
+              ),
+              SettingsRow(title: l10n.integrationCloud, trailing: _soon(l10n)),
             ],
           );
         },
@@ -52,266 +69,19 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _row(String title, String chip) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE4E4E4)),
-      ),
-      child: Row(
-        children: [
-          Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w500))),
-          Text(chip, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-        ],
-      ),
+  Widget _soon(AppLocalizations l10n) => Text(l10n.soon, style: const TextStyle(color: AppColors.muted, fontSize: 12));
+
+  Future<void> _shareCategoryCsv(AppLocalizations l10n) {
+    final rows = buildCategoryExport(
+      receipts: state.receipts,
+      resolver: state.catalog.resolver,
+      categories: state.catalog.categories,
+      merchants: state.merchants.all,
     );
-  }
-}
-
-class _MerchantsRow extends StatelessWidget {
-  const _MerchantsRow({required this.state});
-
-  final AppState state;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        child: InkWell(
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => MerchantsPage(state: state)),
-          ),
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFE4E4E4)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(l10n.merchantsTitle, style: const TextStyle(fontWeight: FontWeight.w500)),
-                ),
-                Icon(Icons.chevron_right, size: 18, color: Colors.grey.shade600),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ExportEqRow extends StatefulWidget {
-  const _ExportEqRow({required this.state});
-
-  final AppState state;
-
-  @override
-  State<_ExportEqRow> createState() => _ExportEqRowState();
-}
-
-class _ExportEqRowState extends State<_ExportEqRow> {
-  bool _busy = false;
-
-  Future<void> _export() async {
-    if (_busy) return;
-    final l10n = AppLocalizations.of(context);
-    final receipts = widget.state.receipts;
-    if (receipts.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.exportEmpty)));
-      return;
-    }
-    setState(() => _busy = true);
-    try {
-      await shareEqJsonl(receipts: receipts, subject: l10n.exportShareSubject);
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.exportFailed)));
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        child: InkWell(
-          onTap: _busy ? null : _export,
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFE4E4E4)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(l10n.integrationExport, style: const TextStyle(fontWeight: FontWeight.w500)),
-                ),
-                if (_busy)
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                else
-                  Icon(Icons.share_outlined, size: 18, color: Colors.grey.shade600),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ExportCsvRow extends StatefulWidget {
-  const _ExportCsvRow({required this.state});
-
-  final AppState state;
-
-  @override
-  State<_ExportCsvRow> createState() => _ExportCsvRowState();
-}
-
-class _ExportCsvRowState extends State<_ExportCsvRow> {
-  bool _busy = false;
-
-  Future<void> _export() async {
-    if (_busy) return;
-    final l10n = AppLocalizations.of(context);
-    final receipts = widget.state.receipts;
-    if (receipts.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.exportEmpty)));
-      return;
-    }
-    setState(() => _busy = true);
-    try {
-      final rows = buildCategoryExport(
-        receipts: receipts,
-        resolver: widget.state.catalog.resolver,
-        categories: widget.state.catalog.categories,
-        merchants: widget.state.merchantList,
-      );
-      await shareCategoryCsv(
-        rows: rows,
-        subject: l10n.exportCsvSubject,
-        categoryName: (key) => key.isEmpty ? l10n.uncategorized : categoryLabel(key, l10n),
-      );
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.exportFailed)));
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        child: InkWell(
-          onTap: _busy ? null : _export,
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFE4E4E4)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(l10n.exportCsv, style: const TextStyle(fontWeight: FontWeight.w500)),
-                ),
-                if (_busy)
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                else
-                  Icon(Icons.table_chart_outlined, size: 18, color: Colors.grey.shade600),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SecretField extends StatefulWidget {
-  const _SecretField({required this.state, required this.field, required this.title});
-
-  final AppState state;
-  final SettingField field;
-  final String title;
-
-  @override
-  State<_SecretField> createState() => _SecretFieldState();
-}
-
-class _SecretFieldState extends State<_SecretField> {
-  late final TextEditingController _controller;
-  bool _obscure = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: widget.state.settings.values[widget.field.key] ?? '');
-  }
-
-  @override
-  void dispose() {
-    _save();
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Future<void> _save() async {
-    await widget.state.setSetting(widget.field.key, _controller.text);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextField(
-        controller: _controller,
-        obscureText: _obscure,
-        autocorrect: false,
-        enableSuggestions: false,
-        decoration: InputDecoration(
-          labelText: widget.title,
-          border: const OutlineInputBorder(),
-          suffixIcon: IconButton(
-            icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
-            onPressed: () => setState(() => _obscure = !_obscure),
-          ),
-        ),
-        onEditingComplete: _save,
-        onTapOutside: (_) => _save(),
-      ),
+    return shareCategoryCsv(
+      rows: rows,
+      subject: l10n.exportCsvSubject,
+      categoryName: (key) => key.isEmpty ? l10n.uncategorized : categoryLabel(key, l10n),
     );
   }
 }

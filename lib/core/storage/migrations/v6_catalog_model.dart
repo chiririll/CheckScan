@@ -1,9 +1,9 @@
 import 'package:sqflite/sqflite.dart';
 
-import '../../catalog/category_seeder.dart';
+import '../../catalog/data/category_seeder.dart';
 import 'migration.dart';
 
-final v6CatalogModel = Migration(version: 6, up: migrateToCatalogModel);
+const v6CatalogModel = Migration(version: 6, up: migrateToCatalogModel);
 
 Future<void> migrateToCatalogModel(DatabaseExecutor db) async {
   if (await tableExists(db, 'category') && await tableExists(db, 'item')) {

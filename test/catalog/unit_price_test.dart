@@ -1,7 +1,7 @@
-import 'package:checkscan/core/catalog/catalog_position.dart';
-import 'package:checkscan/core/catalog/item_unit.dart';
-import 'package:checkscan/core/catalog/reference_pack.dart';
-import 'package:checkscan/core/catalog/unit_price.dart';
+import 'package:checkscan/core/catalog/model/catalog_position.dart';
+import 'package:checkscan/core/catalog/model/item_unit.dart';
+import 'package:checkscan/core/catalog/pricing/reference_pack.dart';
+import 'package:checkscan/core/catalog/pricing/unit_price.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

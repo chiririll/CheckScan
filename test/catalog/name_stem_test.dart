@@ -1,4 +1,4 @@
-import 'package:checkscan/core/catalog/name_stem.dart';
+import 'package:checkscan/core/catalog/text/name_stem.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,6 +1,8 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../storage/database.dart';
+import '../storage/row.dart';
+import '../util/collections.dart';
 import 'merchant.dart';
 
 class MerchantRepository {
@@ -16,46 +18,34 @@ class MerchantRepository {
     final aliasRows = await db.query('merchant_alias');
     final aliases = <String, List<MerchantAlias>>{};
     for (final row in aliasRows) {
-      aliases.putIfAbsent('${row['merchant_id']}', () => []).add(
-        MerchantAlias(
-          id: '${row['id']}',
-          name: row['name'] as String?,
-          taxId: row['tax_id'] as String?,
-        ),
+      aliases.putIfAbsent(row.str('merchant_id'), () => []).add(
+        MerchantAlias(id: row.str('id'), name: row.optStr('name'), taxId: row.optStr('tax_id')),
       );
     }
     return [
       for (final row in rows)
         Merchant(
-          id: '${row['id']}',
-          name: '${row['name']}',
-          parentId: row['parent_id'] == null ? null : '${row['parent_id']}',
-          policy: MerchantPolicy.normalize(row['policy'] as String?),
-          categoryId: row['category_id'] == null ? null : '${row['category_id']}',
-          aliases: aliases['${row['id']}'] ?? const [],
+          id: row.str('id'),
+          name: row.str('name'),
+          parentId: row.optStr('parent_id'),
+          policy: MerchantPolicy.normalize(row.optStr('policy')),
+          categoryId: row.optStr('category_id'),
+          aliases: aliases[row.str('id')] ?? const [],
         ),
     ];
   }
 
-  Future<Merchant?> findById(String id) async {
-    for (final merchant in await listAll()) {
-      if (merchant.id == id) return merchant;
-    }
-    return null;
-  }
+  Future<Merchant?> findById(String id) async => (await listAll()).firstWhereOrNull((merchant) => merchant.id == id);
 
+  /// Merchant id for a receipt: by tax id, then by name, else a new merchant.
   Future<String> resolve({String? name, String? taxId}) async {
-    final db = await _db;
-    return db.transaction((txn) async {
-      final trimmedTax = taxId == null || taxId.trim().isEmpty ? null : taxId.trim();
-      final trimmedName = name == null || name.trim().isEmpty ? null : name.trim();
-      if (trimmedTax != null) {
-        final byTax = await txn.query('merchant_alias', where: 'tax_id = ?', whereArgs: [trimmedTax], limit: 1);
-        if (byTax.isNotEmpty) return '${byTax.first['merchant_id']}';
-      }
-      if (trimmedName != null) {
-        final byName = await txn.query('merchant_alias', where: 'name = ?', whereArgs: [trimmedName], limit: 1);
-        if (byName.isNotEmpty) return '${byName.first['merchant_id']}';
+    final trimmedTax = trimmedOrNull(taxId);
+    final trimmedName = trimmedOrNull(name);
+    return (await _db).transaction((txn) async {
+      for (final (column, value) in [('tax_id', trimmedTax), ('name', trimmedName)]) {
+        if (value == null) continue;
+        final rows = await txn.query('merchant_alias', where: '$column = ?', whereArgs: [value], limit: 1);
+        if (rows.isNotEmpty) return rows.first.str('merchant_id');
       }
       final merchantId = await txn.insert('merchant', {
         'name': trimmedName ?? '—',
@@ -79,31 +69,24 @@ class MerchantRepository {
     String? categoryId,
     bool clearCategory = false,
   }) async {
-    final values = <String, Object?>{};
-    if (name != null) values['name'] = name.trim();
-    if (clearParent) {
-      values['parent_id'] = null;
-    } else if (parentId != null && parentId != id) {
-      values['parent_id'] = int.parse(parentId);
-    }
-    if (policy != null) values['policy'] = MerchantPolicy.normalize(policy);
-    if (clearCategory) {
-      values['category_id'] = null;
-    } else if (categoryId != null) {
-      values['category_id'] = int.parse(categoryId);
-    }
+    final values = <String, Object?>{
+      'name': ?name?.trim(),
+      if (clearParent) 'parent_id': null else if (parentId != null && parentId != id) 'parent_id': dbId(parentId),
+      if (policy != null) 'policy': MerchantPolicy.normalize(policy),
+      if (clearCategory) 'category_id': null else if (categoryId != null) 'category_id': dbId(categoryId),
+    };
     if (values.isEmpty) return;
-    await (await _db).update('merchant', values, where: 'id = ?', whereArgs: [int.parse(id)]);
+    await (await _db).update('merchant', values, where: 'id = ?', whereArgs: [dbId(id)]);
   }
 
   Future<void> addAlias(String merchantId, {String? name, String? taxId}) async {
-    final trimmedName = name == null || name.trim().isEmpty ? null : name.trim();
-    final trimmedTax = taxId == null || taxId.trim().isEmpty ? null : taxId.trim();
+    final trimmedName = trimmedOrNull(name);
+    final trimmedTax = trimmedOrNull(taxId);
     if (trimmedName == null && trimmedTax == null) return;
     await (await _db).insert('merchant_alias', {
       'name': trimmedName,
       'tax_id': trimmedTax,
-      'merchant_id': int.parse(merchantId),
+      'merchant_id': dbId(merchantId),
     }, conflictAlgorithm: ConflictAlgorithm.ignore);
   }
 }

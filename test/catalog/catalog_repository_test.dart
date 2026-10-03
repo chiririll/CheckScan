@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:checkscan/core/catalog/catalog_repository.dart';
-import 'package:checkscan/core/catalog/item_unit.dart';
+import 'package:checkscan/core/catalog/data/catalog_repository.dart';
+import 'package:checkscan/core/catalog/model/item_unit.dart';
 import 'package:checkscan/core/storage/database.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
 import 'package:eq_models/eq_models.dart';

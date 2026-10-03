@@ -1,36 +1,39 @@
 import 'package:flutter/material.dart';
 
-import '../../core/app_state.dart';
-import '../../core/catalog/assist_cluster.dart';
-import '../../core/catalog/catalog_position.dart';
-import '../../core/catalog/category_label.dart';
-import '../../core/catalog/item_unit.dart';
-import '../../core/catalog/unit_parser.dart';
+import '../../app/theme.dart';
+import '../../core/catalog/assist/assist_cluster.dart';
+import '../../core/catalog/model/catalog_position.dart';
+import '../../core/catalog/model/item_unit.dart';
+import '../../core/catalog/text/unit_parser.dart';
+import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
-import '../../theme.dart';
-import 'catalog_dialogs.dart';
+import '../labels/category_label.dart';
+import '../labels/unit_labels.dart';
+import '../widgets/bottom_action.dart';
+import '../widgets/navigation.dart';
+import '../widgets/unit_dropdown.dart';
 import 'catalog_nav.dart';
-import 'catalog_search_field.dart';
 import 'catalog_trail.dart';
 import 'category_picker.dart';
-import 'unit_labels.dart';
+import 'widgets/position_amount.dart';
+import 'widgets/position_picker_sheet.dart';
 
 Future<void> openDraftProduct({
   required BuildContext context,
   required AppState state,
   required List<CatalogPosition> positions,
 }) {
-  return Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => DraftProductPage(
-        state: state,
-        initialPositionIds: [for (final position in positions) position.id],
-        initialName: proposedClusterName(positions),
-      ),
+  return pushPage<void>(
+    context,
+    DraftProductPage(
+      state: state,
+      initialPositionIds: [for (final position in positions) position.id],
+      initialName: proposedClusterName(positions),
     ),
   );
 }
 
+/// New product from a cluster of unassigned positions.
 class DraftProductPage extends StatefulWidget {
   const DraftProductPage({
     super.key,
@@ -48,25 +51,28 @@ class DraftProductPage extends StatefulWidget {
 }
 
 class _DraftProductPageState extends State<DraftProductPage> {
-  late final TextEditingController _name;
+  late final _name = TextEditingController(text: widget.initialName);
   late final Set<String> _ids = {...widget.initialPositionIds};
+  late ItemUnit? _unit = _guessUnit();
   String? _categoryId;
-  ItemUnit? _unit;
   var _saving = false;
 
   @override
   void initState() {
     super.initState();
-    _name = TextEditingController(text: widget.initialName);
-    _unit = _guessUnit();
     _name.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
   }
 
   ItemUnit? _guessUnit() {
     for (final id in widget.initialPositionIds) {
       final position = widget.state.catalog.positionById(id);
-      if (position == null) continue;
-      final parsed = parseItemUnit(position.displayName);
+      final parsed = position == null ? null : parseItemUnit(position.displayName);
       if (parsed != null) return parsed.unit;
     }
     return null;
@@ -75,23 +81,12 @@ class _DraftProductPageState extends State<DraftProductPage> {
   List<CatalogPosition> _selectedPositions() {
     return [
       for (final id in _ids)
-        if (widget.state.catalog.positionById(id) case final position?
-            when position.productId == null)
-          position,
+        if (widget.state.catalog.positionById(id) case final position? when position.productId == null) position,
     ];
   }
 
   List<CatalogPosition> _availablePositions() {
-    return [
-      for (final position in widget.state.catalog.unassigned)
-        if (!_ids.contains(position.id)) position,
-    ];
-  }
-
-  @override
-  void dispose() {
-    _name.dispose();
-    super.dispose();
+    return [for (final position in widget.state.catalog.unassigned) if (!_ids.contains(position.id)) position];
   }
 
   @override
@@ -101,10 +96,11 @@ class _DraftProductPageState extends State<DraftProductPage> {
       listenable: widget.state.catalog,
       builder: (context, _) {
         final positions = _selectedPositions();
-        final canSave = !_saving && _name.text.trim().isNotEmpty && positions.isNotEmpty;
+        final name = _name.text.trim();
+        final canSave = !_saving && name.isNotEmpty && positions.isNotEmpty;
         return Scaffold(
           appBar: CatalogAppBar(
-            title: _name.text.trim().isEmpty ? l10n.newProduct : _name.text.trim(),
+            title: name.isEmpty ? l10n.newProduct : name,
             ancestors: [
               CatalogCrumb(label: l10n.catalogTitle, onTap: () => openCatalog(context, widget.state)),
               CatalogCrumb(label: l10n.catalogUnassigned, onTap: () => Navigator.pop(context)),
@@ -125,33 +121,12 @@ class _DraftProductPageState extends State<DraftProductPage> {
                 subtitle: Text(_categoryLabel(l10n)),
                 onTap: _pickCategory,
               ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(l10n.unitLabel),
-                trailing: DropdownButton<ItemUnit?>(
-                  value: _unit,
-                  underline: const SizedBox.shrink(),
-                  items: [
-                    DropdownMenuItem(value: null, child: Text(l10n.unitNone)),
-                    for (final item in ItemUnit.values)
-                      DropdownMenuItem(value: item, child: Text(unitLabel(item, l10n))),
-                  ],
-                  onChanged: (value) => setState(() => _unit = value),
-                ),
-              ),
+              UnitDropdownTile(value: _unit, onChanged: (value) => setState(() => _unit = value)),
               const SizedBox(height: 8),
-              Text(l10n.positionsSection, style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text(l10n.positionsSection, style: AppText.title),
               const SizedBox(height: 8),
               for (final position in positions)
-                _DraftPositionRow(
-                  state: widget.state,
-                  position: position,
-                  onRemove: () {
-                    final others = [for (final id in _ids) if (id != position.id) id];
-                    setState(() => _ids.remove(position.id));
-                    if (others.isNotEmpty) widget.state.catalog.dismissClusterItem(position.id);
-                  },
-                ),
+                _DraftPositionRow(state: widget.state, position: position, onRemove: () => _remove(position.id)),
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(
@@ -162,18 +137,9 @@ class _DraftProductPageState extends State<DraftProductPage> {
               ),
             ],
           ),
-          bottomNavigationBar: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              child: SizedBox(
-                height: 48,
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: canSave ? () => _save(positions) : null,
-                  child: Text(l10n.draftProductCreate),
-                ),
-              ),
-            ),
+          bottomNavigationBar: BottomAction(
+            label: l10n.draftProductCreate,
+            onPressed: canSave ? () => _save(positions) : null,
           ),
         );
       },
@@ -181,10 +147,15 @@ class _DraftProductPageState extends State<DraftProductPage> {
   }
 
   String _categoryLabel(AppLocalizations l10n) {
-    if (_categoryId == null) return l10n.noCategory;
-    final category = widget.state.catalog.categoryById(_categoryId!);
-    if (category == null) return l10n.noCategory;
-    return categoryTitle(category, l10n);
+    final category = _categoryId == null ? null : widget.state.catalog.categoryById(_categoryId!);
+    return category == null ? l10n.noCategory : categoryTitle(category, l10n);
+  }
+
+  /// Removing a position from a multi-position draft also dismisses it from the cluster.
+  void _remove(String positionId) {
+    final hasOthers = _ids.any((id) => id != positionId);
+    setState(() => _ids.remove(positionId));
+    if (hasOthers) widget.state.catalog.dismissClusterItem(positionId);
   }
 
   Future<void> _pickCategory() async {
@@ -198,11 +169,7 @@ class _DraftProductPageState extends State<DraftProductPage> {
   }
 
   Future<void> _addPosition() async {
-    final picked = await showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => _AddPositionSheet(available: _availablePositions()),
-    );
+    final picked = await showPositionPicker(context, _availablePositions());
     if (picked == null) return;
     setState(() => _ids.add(picked));
   }
@@ -224,11 +191,7 @@ class _DraftProductPageState extends State<DraftProductPage> {
 }
 
 class _DraftPositionRow extends StatelessWidget {
-  const _DraftPositionRow({
-    required this.state,
-    required this.position,
-    required this.onRemove,
-  });
+  const _DraftPositionRow({required this.state, required this.position, required this.onRemove});
 
   final AppState state;
   final CatalogPosition position;
@@ -237,15 +200,12 @@ class _DraftPositionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final meta = formatPositionMeta(position, null, l10n);
+    final meta = formatPositionPack(position, null, l10n);
     return Card(
       elevation: 0,
       color: Colors.white,
       margin: const EdgeInsets.only(bottom: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(color: Color(0xFFE4E4E4)),
-      ),
+      shape: AppShapes.card,
       child: ListTile(
         title: Text(position.displayName),
         subtitle: meta.isEmpty ? null : Text(meta, style: const TextStyle(color: AppColors.primary)),
@@ -255,68 +215,6 @@ class _DraftPositionRow extends StatelessWidget {
           catalog: state.catalog,
           positionId: position.id,
           current: position.unitSize,
-        ),
-      ),
-    );
-  }
-}
-
-class _AddPositionSheet extends StatefulWidget {
-  const _AddPositionSheet({required this.available});
-
-  final List<CatalogPosition> available;
-
-  @override
-  State<_AddPositionSheet> createState() => _AddPositionSheetState();
-}
-
-class _AddPositionSheetState extends State<_AddPositionSheet> {
-  final _query = TextEditingController();
-
-  @override
-  void dispose() {
-    _query.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final needle = _query.text.trim().toLowerCase();
-    final items = [
-      for (final position in widget.available)
-        if (needle.isEmpty || position.displayName.toLowerCase().contains(needle)) position,
-    ];
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-        child: SizedBox(
-          height: 420,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                child: CatalogSearchField(
-                  controller: _query,
-                  hintText: l10n.catalogSearch,
-                  autofocus: true,
-                  onChanged: (_) => setState(() {}),
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    final position = items[index];
-                    return ListTile(
-                      title: Text(position.displayName),
-                      onTap: () => Navigator.pop(context, position.id),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

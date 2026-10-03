@@ -1,20 +1,20 @@
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:uuid/uuid.dart';
-
-import '../catalog/catalog_repository.dart';
 import '../catalog/catalog_store.dart';
+import '../catalog/data/catalog_repository.dart';
 import '../manual/manual_receipt.dart';
-import '../merchant/merchant.dart';
-import '../merchant/merchant_repository.dart';
+import '../merchant/merchant_store.dart';
 import '../models/receipt_record.dart';
 import '../scan/native_adapter.dart';
 import '../scan/scan_outcome.dart';
 import '../scan/scan_session.dart';
+import '../settings/onboarding_store.dart';
 import '../settings/settings_store.dart';
 import '../storage/receipt_repository.dart';
+import '../util/collections.dart';
+import 'tab_request.dart';
 
+/// App-wide state: receipts plus the catalog and merchant stores derived from them.
 class AppState extends ChangeNotifier {
   AppState({
     required ReceiptRepository repository,
@@ -22,14 +22,17 @@ class AppState extends ChangeNotifier {
     SettingsStore? settings,
     ScanSession? session,
     CatalogStore? catalog,
-    MerchantRepository? merchants,
+    MerchantStore? merchants,
+    OnboardingStore? onboarding,
   })  : _repository = repository,
         _adapter = adapter,
         settings = settings ?? SettingsStore(),
         _session = session ?? ScanSession(repository: repository, adapter: adapter),
         catalog = catalog ?? CatalogStore(repository: CatalogRepository(database: repository.database)),
-        merchants = merchants ?? MerchantRepository(database: repository.database) {
+        merchants = merchants ?? MerchantStore(repository: repository.merchants),
+        _onboarding = onboarding ?? OnboardingStore() {
     this.catalog.addListener(notifyListeners);
+    this.merchants.addListener(notifyListeners);
   }
 
   final ReceiptRepository _repository;
@@ -37,28 +40,26 @@ class AppState extends ChangeNotifier {
   final SettingsStore settings;
   final ScanSession _session;
   final CatalogStore catalog;
-  final MerchantRepository merchants;
+  final MerchantStore merchants;
+  final OnboardingStore _onboarding;
 
-  List<Merchant> merchantList = const [];
+  /// Which catalog tab to show next time the catalog is opened.
+  final catalogTab = TabRequest();
 
-  static const _onboardingKey = 'onboarding_done';
-
-  bool onboardingDone = false;
   List<ReceiptRecord> receipts = const [];
   List<SettingField> settingFields = const [];
   bool ready = false;
   String? loadError;
 
+  bool get onboardingDone => _onboarding.done;
+
   Future<void> load() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      onboardingDone = prefs.getBool(_onboardingKey) ?? false;
+      await _onboarding.load();
       await settings.load();
       settingFields = await _adapter.settings();
       _adapter.configure(settings.snapshot());
-      receipts = await _repository.listAll();
-      merchantList = await merchants.listAll();
-      await catalog.ingest(receipts, merchants: merchantList);
+      await reload();
       loadError = null;
     } catch (error) {
       loadError = '$error';
@@ -67,6 +68,16 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  @override
+  void dispose() {
+    catalog.removeListener(notifyListeners);
+    merchants.removeListener(notifyListeners);
+    catalogTab.dispose();
+    super.dispose();
+  }
+
+  // Settings and onboarding.
+
   Future<void> setSetting(String key, String value) async {
     await settings.set(key, value);
     _adapter.configure(settings.snapshot());
@@ -74,49 +85,32 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> completeOnboarding() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_onboardingKey, true);
-    onboardingDone = true;
+    await _onboarding.complete();
     notifyListeners();
   }
 
+  // Receipts.
+
+  /// Re-reads receipts and merchants and re-derives the catalog from them.
   Future<void> reload() async {
     receipts = await _repository.listAll();
-    merchantList = await merchants.listAll();
-    await catalog.ingest(receipts, merchants: merchantList);
+    await merchants.reload();
+    await catalog.ingest(receipts, merchants: merchants.all);
   }
 
-  Merchant? merchantById(String? id) {
-    if (id == null) return null;
-    for (final merchant in merchantList) {
-      if (merchant.id == id) return merchant;
-    }
-    return null;
-  }
-
-  Future<void> reloadMerchants() async {
-    merchantList = await merchants.listAll();
-    notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    catalog.removeListener(notifyListeners);
-    super.dispose();
-  }
-
-  ReceiptRecord? byId(String id) {
-    for (final receipt in receipts) {
-      if (receipt.id == id) return receipt;
-    }
-    return null;
-  }
+  ReceiptRecord? byId(String id) => receipts.firstWhereOrNull((receipt) => receipt.id == id);
 
   Future<void> deleteReceipt(String id) async {
     await _repository.deleteById(id);
     receipts = receipts.where((receipt) => receipt.id != id).toList();
-    await catalog.syncPurchases(receipts, merchants: merchantList);
+    await catalog.syncPurchases(receipts, merchants: merchants.all);
     notifyListeners();
+  }
+
+  /// The policy decides whether a merchant's items enter the catalog, so the catalog is rebuilt.
+  Future<void> setMerchantPolicy(String merchantId, String policy) async {
+    await merchants.update(merchantId, policy: policy);
+    await reload();
   }
 
   Future<ScanOutcome> processScan(String rawQr, {void Function()? onMatched}) async {
@@ -137,24 +131,14 @@ class AppState extends ChangeNotifier {
     return done;
   }
 
+  /// Saves a hand-entered receipt and pins each line to the product it was picked for.
   Future<ReceiptRecord> saveManualReceipt({
     required String merchantName,
     required DateTime issuedAt,
     required List<ManualLine> lines,
     String currency = 'RUB',
   }) async {
-    final items = [for (final line in lines) line.asItem];
-    final wanted = {for (final line in lines) line.description: line.productId};
-    final receipt = withProviderLabel(
-      buildManualReceipt(
-        id: const Uuid().v4(),
-        issuedAt: issuedAt,
-        merchantName: merchantName.trim(),
-        items: items,
-        currency: currency,
-      ),
-      manualProviderId,
-    );
+    final receipt = manualReceiptOf(merchantName: merchantName, issuedAt: issuedAt, lines: lines, currency: currency);
     final saved = await _repository.upsertParsed(
       qrHash: manualStorageKey(receipt),
       adapterId: manualProviderId,
@@ -163,10 +147,11 @@ class AppState extends ChangeNotifier {
       lastStatus: statusOk,
     );
     await reload();
-    for (final entry in wanted.entries) {
-      final hit = catalog.resolver.resolve(entry.key);
-      if (hit == null || hit.position.productId == entry.value) continue;
-      await catalog.assignPosition(hit.position.id, entry.value);
+    final wanted = {for (final line in lines) line.description: line.productId};
+    for (final MapEntry(key: description, value: productId) in wanted.entries) {
+      final hit = catalog.resolver.resolve(description);
+      if (hit == null || hit.position.productId == productId) continue;
+      await catalog.assignPosition(hit.position.id, productId);
     }
     return byId(saved.id) ?? saved;
   }

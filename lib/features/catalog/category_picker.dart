@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../core/catalog/catalog_category.dart';
 import '../../core/catalog/catalog_store.dart';
-import '../../core/catalog/category_label.dart';
+import '../../core/catalog/model/catalog_category.dart';
 import '../../l10n/app_localizations.dart';
+import '../labels/category_label.dart';
 
 /// Picks an assignable category: tops first, then children of that top.
 ///
