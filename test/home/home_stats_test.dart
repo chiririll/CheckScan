@@ -5,6 +5,8 @@ import 'package:checkscan/features/home/home_period.dart';
 import 'package:receipt_model/receipt_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../support/receipt_fixtures.dart';
+
 ReceiptRecord _receipt({
   required String id,
   required String currency,
@@ -14,7 +16,7 @@ ReceiptRecord _receipt({
   String type = 'sale',
   bool itemsUnavailable = false,
 }) {
-  final receipt = Receipt(
+  final receipt = testReceipt(
     id: id,
     issuedAt: issuedAt,
     currency: currency,
@@ -25,20 +27,11 @@ ReceiptRecord _receipt({
     items: itemsUnavailable ? const [] : const [ReceiptItem(name: 'Молоко', quantity: 1, price: 8000, sum: 8000)],
     extensions: itemsUnavailable ? const {itemsUnavailableExtension: true} : const {},
   );
-  return ReceiptRecord(
-    id: id,
+  return testRecord(
+    receipt,
     qrHash: 'h:$id',
-    adapterId: 'eq_payload',
     status: itemsUnavailable ? ReceiptStatus.incomplete : ReceiptStatus.ok,
-    issuedAt: issuedAt,
-    merchantName: 'Магазин',
-    total: total,
-    currency: currency,
-    scale: scale,
-    itemCount: itemsUnavailable ? 0 : 1,
-    payload: receipt.encode(),
     scannedAt: issuedAt,
-    rawQr: '{}',
   );
 }
 

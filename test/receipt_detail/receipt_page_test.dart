@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import '../scan/fake_native_adapter.dart';
+import '../support/receipt_fixtures.dart';
 
 class _FakeRepository extends ReceiptRepository {
   _FakeRepository() : super(resolveDbPath: () async => 'unused.db');
@@ -25,32 +26,9 @@ class _FakeRepository extends ReceiptRepository {
 }
 
 ReceiptRecord _sample({Map<String, dynamic>? extensions}) {
-  final receipt = Receipt(
-    id: 'r1',
-    issuedAt: DateTime(2026, 8, 28, 18, 42),
-    currency: 'RUB',
-    scale: 2,
-    type: 'sale',
-    merchantName: 'Пятёрочка',
-    taxId: '7707083893',
-    total: 124700,
-    items: const [ReceiptItem(name: 'Молоко 1 л', quantity: 2, price: 8900, sum: 17800)],
-    extensions: extensions ?? const {},
-  );
-  return ReceiptRecord(
-    id: 'r1',
+  return testRecord(
+    testReceipt(taxId: '7707083893', items: const [milkItem], extensions: extensions ?? const {}),
     qrHash: 'eq_payload:r1',
-    adapterId: 'eq_payload',
-    status: ReceiptStatus.ok,
-    issuedAt: receipt.issuedAt,
-    merchantName: receipt.merchantName,
-    total: receipt.total,
-    currency: receipt.currency,
-    scale: 2,
-    itemCount: receipt.items.length,
-    payload: receipt.encode(),
-    scannedAt: DateTime(2026, 8, 28, 18, 50),
-    rawQr: '{}',
   );
 }
 

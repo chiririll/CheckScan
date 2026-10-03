@@ -13,6 +13,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'scan/fake_native_adapter.dart';
+import 'support/receipt_fixtures.dart';
 
 AppState _state({bool onboardingDone = false, List<ReceiptRecord> receipts = const []}) {
   final repository = ReceiptRepository(resolveDbPath: () async => 'unused.db');
@@ -26,32 +27,8 @@ AppState _state({bool onboardingDone = false, List<ReceiptRecord> receipts = con
 }
 
 ReceiptRecord _sampleReceipt({DateTime? issuedAt}) {
-  final receipt = Receipt(
-    id: 'r1',
-    issuedAt: issuedAt ?? DateTime(2026, 8, 28, 18, 42),
-    currency: 'RUB',
-    scale: 2,
-    type: 'sale',
-    merchantName: 'Пятёрочка',
-    total: 124700,
-    items: const [ReceiptItem(name: 'Молоко 1 л', quantity: 2, price: 8900, sum: 17800)],
-  );
-  final labeled = withProviderLabel(receipt, 'EQ');
-  return ReceiptRecord(
-    id: 'r1',
-    qrHash: 'eq_payload:r1',
-    adapterId: 'eq_payload',
-    status: ReceiptStatus.ok,
-    issuedAt: receipt.issuedAt,
-    merchantName: receipt.merchantName,
-    total: receipt.total,
-    currency: receipt.currency,
-    scale: 2,
-    itemCount: receipt.items.length,
-    payload: labeled.encode(),
-    scannedAt: DateTime(2026, 8, 28, 18, 50),
-    rawQr: '{}',
-  );
+  final receipt = testReceipt(issuedAt: issuedAt, items: const [milkItem]);
+  return testRecord(receipt, payload: withProviderLabel(receipt, 'EQ').encode());
 }
 
 void main() {

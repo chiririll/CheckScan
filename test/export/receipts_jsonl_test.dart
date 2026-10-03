@@ -4,35 +4,19 @@ import 'dart:io';
 import 'package:checkscan/core/export/receipts_jsonl.dart';
 import 'package:checkscan/core/export/receipts_jsonl_share.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
-import 'package:receipt_model/receipt_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 
+import '../support/receipt_fixtures.dart';
+
 ReceiptRecord _record({required String id, String? payload, int total = 1000}) {
-  final receipt = Receipt(
+  final receipt = testReceipt(
     id: id,
     issuedAt: DateTime.utc(2026, 8, 28, 15, 42),
-    currency: 'RUB',
-    scale: 2,
-    type: 'sale',
     merchantName: 'Магнит',
     total: total,
   );
-  return ReceiptRecord(
-    id: id,
-    qrHash: 'h:$id',
-    adapterId: 'eq_payload',
-    status: ReceiptStatus.ok,
-    issuedAt: receipt.issuedAt,
-    merchantName: receipt.merchantName,
-    total: receipt.total,
-    currency: receipt.currency,
-    scale: 2,
-    itemCount: 0,
-    payload: payload ?? receipt.encode(),
-    scannedAt: receipt.issuedAt,
-    rawQr: '{}',
-  );
+  return testRecord(receipt, qrHash: 'h:$id', payload: payload, scannedAt: receipt.issuedAt);
 }
 
 void main() {

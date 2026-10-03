@@ -1,52 +1,17 @@
-import 'package:checkscan/core/models/receipt_record.dart';
+import 'package:checkscan/core/models/receipt_status.dart';
 import 'package:checkscan/features/receipt_detail/receipt_metadata.dart';
 import 'package:checkscan/l10n/app_localizations_ru.dart';
-import 'package:receipt_model/receipt_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-ReceiptRecord _record(Receipt receipt, {String rawQr = ''}) {
-  return ReceiptRecord(
-    id: 'row-1',
-    qrHash: 'hash',
-    adapterId: 'any',
-    status: ReceiptStatus.ok,
-    issuedAt: receipt.issuedAt,
-    merchantName: receipt.merchantName,
-    total: receipt.total,
-    currency: receipt.currency,
-    scale: 2,
-    itemCount: receipt.items.length,
-    payload: receipt.encode(),
-    scannedAt: DateTime(2026, 8, 28, 18, 50),
-    rawQr: rawQr,
-  );
-}
-
-Receipt _base({
-  String id = 'r1',
-  String type = 'sale',
-  String? taxId,
-  Map<String, dynamic> extensions = const {},
-}) {
-  return Receipt(
-    id: id,
-    issuedAt: DateTime(2026, 8, 28, 18, 42),
-    currency: 'RUB',
-    scale: 2,
-    type: type,
-    taxId: taxId,
-    total: 124700,
-    extensions: extensions,
-  );
-}
+import '../support/receipt_fixtures.dart';
 
 void main() {
   final l10n = AppLocalizationsRu();
 
   test('shows receipt fields, flattens extension maps, hides checkscan internals', () {
     final rows = receiptMetadataRows(
-      _record(
-        _base(
+      testRecord(
+        testReceipt(
           id: 'eq-1',
           taxId: '7707083893',
           extensions: {
@@ -59,6 +24,7 @@ void main() {
             },
           },
         ),
+        rawQr: '',
       ),
       l10n,
     );
@@ -78,8 +44,8 @@ void main() {
 
   test('skips nested lists and falls back to raw QR', () {
     final rows = receiptMetadataRows(
-      _record(
-        _base(
+      testRecord(
+        testReceipt(
           id: 'eq-2',
           type: 'refund',
           extensions: {
