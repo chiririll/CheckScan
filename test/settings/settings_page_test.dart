@@ -23,7 +23,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Экспорт eQ'));
+    await tester.tap(find.text('Экспорт чеков'));
     await tester.pump();
 
     expect(find.text('Нет чеков для экспорта'), findsOneWidget);

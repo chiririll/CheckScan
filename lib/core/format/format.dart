@@ -1,13 +1,21 @@
 import 'package:intl/intl.dart';
+import 'package:receipt_model/receipt_model.dart';
 
-final _money = NumberFormat.decimalPattern('ru');
+final _grouped = NumberFormat.decimalPattern('ru');
 final _dayYear = DateFormat('d MMMM y', 'ru');
 final _monthYear = DateFormat('LLLL y', 'ru');
 final _dateTime = DateFormat('d MMMM y, HH:mm', 'ru');
 
 const _currencySymbols = {'RUB': '₽', 'RSD': 'дин.'};
 
-String formatMoney(double value, [String currency = 'RUB']) => '${_money.format(value)} ${formatCurrencyLabel(currency)}';
+/// [minor] is in the currency's minor units. Whole amounts drop the fraction: "1 247 ₽", "178,50 ₽".
+String formatMoney(int minor, [String currency = 'RUB']) {
+  final parts = splitMinor(minor, minorExponent(currency));
+  final whole = _grouped.format(parts.whole);
+  final hasFraction = parts.fraction.isNotEmpty && int.parse(parts.fraction) != 0;
+  final amount = hasFraction ? '$whole,${parts.fraction}' : whole;
+  return '${parts.negative ? '-' : ''}$amount ${formatCurrencyLabel(currency)}';
+}
 
 String formatCurrencyLabel(String currency) => _currencySymbols[currency] ?? currency;
 

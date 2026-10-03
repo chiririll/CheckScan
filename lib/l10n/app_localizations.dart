@@ -295,7 +295,7 @@ abstract class AppLocalizations {
   /// No description provided for @integrationExport.
   ///
   /// In ru, this message translates to:
-  /// **'Экспорт eQ'**
+  /// **'Экспорт чеков'**
   String get integrationExport;
 
   /// No description provided for @exportEmpty.

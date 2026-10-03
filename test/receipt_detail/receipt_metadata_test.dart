@@ -1,10 +1,10 @@
 import 'package:checkscan/core/models/receipt_record.dart';
 import 'package:checkscan/features/receipt_detail/receipt_metadata.dart';
 import 'package:checkscan/l10n/app_localizations_ru.dart';
-import 'package:eq_models/eq_models.dart';
+import 'package:receipt_model/receipt_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-ReceiptRecord _record(EqReceipt receipt, {String rawQr = ''}) {
+ReceiptRecord _record(Receipt receipt, {String rawQr = ''}) {
   return ReceiptRecord(
     id: 'row-1',
     qrHash: 'hash',
@@ -12,7 +12,7 @@ ReceiptRecord _record(EqReceipt receipt, {String rawQr = ''}) {
     status: ReceiptStatus.ok,
     issuedAt: receipt.issuedAt,
     merchantName: receipt.merchantName,
-    grandTotal: receipt.grandTotal,
+    total: receipt.total,
     currency: receipt.currency,
     itemCount: receipt.items.length,
     payload: receipt.encode(),
@@ -21,19 +21,19 @@ ReceiptRecord _record(EqReceipt receipt, {String rawQr = ''}) {
   );
 }
 
-EqReceipt _base({
+Receipt _base({
   String id = 'r1',
-  String receiptType = 'sale',
+  String type = 'sale',
   String? taxId,
   Map<String, dynamic> extensions = const {},
 }) {
-  return EqReceipt(
+  return Receipt(
     id: id,
     issuedAt: DateTime(2026, 8, 28, 18, 42),
     currency: 'RUB',
-    receiptType: receiptType,
+    type: type,
     taxId: taxId,
-    grandTotal: 1247,
+    total: 124700,
     extensions: extensions,
   );
 }
@@ -41,7 +41,7 @@ EqReceipt _base({
 void main() {
   final l10n = AppLocalizationsRu();
 
-  test('shows eQ fields, flattens extension maps, hides checkscan internals', () {
+  test('shows receipt fields, flattens extension maps, hides checkscan internals', () {
     final rows = receiptMetadataRows(
       _record(
         _base(
@@ -79,7 +79,7 @@ void main() {
       _record(
         _base(
           id: 'eq-2',
-          receiptType: 'refund',
+          type: 'refund',
           extensions: {
             'extra': {
               'note': 'ok',

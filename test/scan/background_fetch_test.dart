@@ -7,7 +7,7 @@ import 'package:checkscan/core/storage/database.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
 import 'package:checkscan/features/receipt_detail/receipt_page.dart';
 import 'package:checkscan/l10n/app_localizations.dart';
-import 'package:eq_models/eq_models.dart';
+import 'package:receipt_model/receipt_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -30,14 +30,14 @@ class _SlowNetworkAdapter extends FakeNativeAdapter {
   }) async {
     if (remote) {
       await network.future;
-      nextReceipt = EqReceipt(
+      nextReceipt = Receipt(
         id: 'ru-rich',
         issuedAt: DateTime(2026, 8, 28, 18, 42),
         currency: 'RUB',
-        receiptType: 'sale',
+        type: 'sale',
         merchantName: 'Пятёрочка',
-        grandTotal: 1247,
-        items: const [EqItem(description: 'Хлеб', quantity: 1, unitPrice: 1247, totalPrice: 1247)],
+        total: 124700,
+        items: const [ReceiptItem(name: 'Хлеб', quantity: 1, price: 124700, sum: 124700)],
       );
     }
     return super.resolve(rawQr, hint: hint, remote: remote, wait: wait, current: current);
@@ -85,7 +85,7 @@ void main() {
 
     expect(state.isFetching(id), isFalse);
     expect(state.byId(id)!.itemCount, 1);
-    expect(state.byId(id)!.receipt.items.single.description, 'Хлеб');
+    expect(state.byId(id)!.receipt.items.single.name, 'Хлеб');
   });
 
   test('a complete receipt is not fetched again', () async {

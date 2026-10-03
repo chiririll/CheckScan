@@ -2,13 +2,13 @@ import 'dart:convert';
 
 import 'package:checkscan/core/models/receipt_status.dart';
 import 'package:checkscan/core/scan/native_adapter.dart';
-import 'package:eq_models/eq_models.dart';
+import 'package:receipt_model/receipt_model.dart';
 
 class FakeNativeAdapter implements NativeAdapter {
   FakeNativeAdapter({this.failResolve = false, this.nextReceipt, this.resolveStatus});
 
   final bool failResolve;
-  EqReceipt? nextReceipt;
+  Receipt? nextReceipt;
   int? resolveStatus;
   Map<String, String> config = {};
 
@@ -84,7 +84,7 @@ class FakeNativeAdapter implements NativeAdapter {
           adapterId: found.adapterId,
           hash: found.hash,
           label: found.label,
-          receipt: EqReceipt.fromJson(decoded is Map<String, dynamic> ? decoded : Map<String, dynamic>.from(decoded as Map)),
+          receipt: Receipt.fromJson(decoded is Map<String, dynamic> ? decoded : Map<String, dynamic>.from(decoded as Map)),
         ),
       );
     }
@@ -95,12 +95,12 @@ class FakeNativeAdapter implements NativeAdapter {
           adapterId: found.adapterId,
           hash: found.hash,
           label: found.label,
-          receipt: EqReceipt(
+          receipt: Receipt(
             id: 'ru-$fnsHash',
             issuedAt: DateTime(2026, 8, 28, 18, 42),
             currency: 'RUB',
-            receiptType: 'sale',
-            grandTotal: 1247,
+            type: 'sale',
+            total: 124700,
           ),
         ),
       );
@@ -111,14 +111,14 @@ class FakeNativeAdapter implements NativeAdapter {
         adapterId: found.adapterId,
         hash: found.hash,
         label: found.label,
-        receipt: EqReceipt(
+        receipt: Receipt(
           id: eqId,
           issuedAt: DateTime(2026, 8, 28, 18, 42),
           currency: 'RUB',
-          receiptType: 'sale',
+          type: 'sale',
           merchantName: 'Пятёрочка',
-          grandTotal: 1247,
-          items: const [EqItem(description: 'Молоко 1 л', quantity: 2, unitPrice: 89, totalPrice: 178)],
+          total: 124700,
+          items: const [ReceiptItem(name: 'Молоко 1 л', quantity: 2, price: 8900, sum: 17800)],
         ),
       ),
     );

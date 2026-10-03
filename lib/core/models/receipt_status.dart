@@ -1,4 +1,4 @@
-import 'package:eq_models/eq_models.dart';
+import 'package:receipt_model/receipt_model.dart';
 
 enum ReceiptStatus { ok, incomplete, error }
 
@@ -27,14 +27,14 @@ bool canRetryStatus(int status) {
   return status == statusIncomplete || statusClass(status) == 5;
 }
 
-EqReceipt withProviderLabel(EqReceipt receipt, String label) {
+Receipt withProviderLabel(Receipt receipt, String label) {
   if (label.isEmpty) return receipt;
   return receipt.copyWith(
     extensions: {...receipt.extensions, providerLabelExtension: label},
   );
 }
 
-bool receiptFlag(EqReceipt receipt, String key) {
+bool receiptFlag(Receipt receipt, String key) {
   final value = receipt.extensions[key];
   return value == true || value == 'true';
 }

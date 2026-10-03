@@ -1,5 +1,5 @@
-import 'package:eq_models/eq_models.dart';
 import 'package:flutter/material.dart';
+import 'package:receipt_model/receipt_model.dart';
 
 import '../../app/theme.dart';
 import '../../core/format/format.dart';
@@ -33,7 +33,7 @@ class ReceiptItemList extends StatelessWidget {
 class _ItemRow extends StatelessWidget {
   const _ItemRow({required this.item, required this.currency});
 
-  final EqItem item;
+  final ReceiptItem item;
   final String currency;
 
   @override
@@ -48,15 +48,15 @@ class _ItemRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.description),
+                Text(item.name),
                 Text(
-                  l10n.qtyPrice(formatQty(item.quantity), formatMoney(item.unitPrice, currency)),
+                  l10n.qtyPrice(formatQty(item.quantity), formatMoney(item.price, currency)),
                   style: const TextStyle(color: AppColors.muted, fontSize: 12),
                 ),
               ],
             ),
           ),
-          Text(formatMoney(item.totalPrice, currency), style: AppText.title),
+          Text(formatMoney(item.sum, currency), style: AppText.title),
         ],
       ),
     );

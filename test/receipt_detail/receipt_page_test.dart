@@ -3,7 +3,7 @@ import 'package:checkscan/core/state/app_state.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
 import 'package:checkscan/features/receipt_detail/receipt_page.dart';
 import 'package:checkscan/l10n/app_localizations.dart';
-import 'package:eq_models/eq_models.dart';
+import 'package:receipt_model/receipt_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -25,15 +25,15 @@ class _FakeRepository extends ReceiptRepository {
 }
 
 ReceiptRecord _sample({Map<String, dynamic>? extensions}) {
-  final receipt = EqReceipt(
+  final receipt = Receipt(
     id: 'r1',
     issuedAt: DateTime(2026, 8, 28, 18, 42),
     currency: 'RUB',
-    receiptType: 'sale',
+    type: 'sale',
     merchantName: 'Пятёрочка',
     taxId: '7707083893',
-    grandTotal: 1247,
-    items: const [EqItem(description: 'Молоко 1 л', quantity: 2, unitPrice: 89, totalPrice: 178)],
+    total: 124700,
+    items: const [ReceiptItem(name: 'Молоко 1 л', quantity: 2, price: 8900, sum: 17800)],
     extensions: extensions ?? const {},
   );
   return ReceiptRecord(
@@ -43,7 +43,7 @@ ReceiptRecord _sample({Map<String, dynamic>? extensions}) {
     status: ReceiptStatus.ok,
     issuedAt: receipt.issuedAt,
     merchantName: receipt.merchantName,
-    grandTotal: receipt.grandTotal,
+    total: receipt.total,
     currency: receipt.currency,
     itemCount: receipt.items.length,
     payload: receipt.encode(),
@@ -142,12 +142,12 @@ void main() {
   });
 
   testWidgets('receipt without items is shown as a successful empty list', (tester) async {
-    final empty = EqReceipt(
+    final empty = Receipt(
       id: 'r1',
       issuedAt: DateTime(2026, 8, 28, 18, 42),
       currency: 'RSD',
-      receiptType: 'sale',
-      grandTotal: 1749,
+      type: 'sale',
+      total: 174900,
       extensions: const {itemsUnavailableExtension: true},
     );
     state.receipts = [
@@ -158,7 +158,7 @@ void main() {
         status: ReceiptStatus.ok,
         issuedAt: empty.issuedAt,
         merchantName: empty.merchantName,
-        grandTotal: empty.grandTotal,
+        total: empty.total,
         currency: empty.currency,
         itemCount: 0,
         payload: empty.encode(),

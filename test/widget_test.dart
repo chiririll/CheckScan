@@ -6,7 +6,7 @@ import 'package:checkscan/core/settings/onboarding_store.dart';
 import 'package:checkscan/core/state/app_state.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
 import 'package:checkscan/features/home/home_period.dart';
-import 'package:eq_models/eq_models.dart';
+import 'package:receipt_model/receipt_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -26,14 +26,14 @@ AppState _state({bool onboardingDone = false, List<ReceiptRecord> receipts = con
 }
 
 ReceiptRecord _sampleReceipt({DateTime? issuedAt}) {
-  final receipt = EqReceipt(
+  final receipt = Receipt(
     id: 'r1',
     issuedAt: issuedAt ?? DateTime(2026, 8, 28, 18, 42),
     currency: 'RUB',
-    receiptType: 'sale',
+    type: 'sale',
     merchantName: 'Пятёрочка',
-    grandTotal: 1247,
-    items: const [EqItem(description: 'Молоко 1 л', quantity: 2, unitPrice: 89, totalPrice: 178)],
+    total: 124700,
+    items: const [ReceiptItem(name: 'Молоко 1 л', quantity: 2, price: 8900, sum: 17800)],
   );
   final labeled = withProviderLabel(receipt, 'EQ');
   return ReceiptRecord(
@@ -43,7 +43,7 @@ ReceiptRecord _sampleReceipt({DateTime? issuedAt}) {
     status: ReceiptStatus.ok,
     issuedAt: receipt.issuedAt,
     merchantName: receipt.merchantName,
-    grandTotal: receipt.grandTotal,
+    total: receipt.total,
     currency: receipt.currency,
     itemCount: receipt.items.length,
     payload: labeled.encode(),
@@ -89,7 +89,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.text('1С'), findsOneWidget);
-    expect(find.text('Экспорт eQ'), findsOneWidget);
+    expect(find.text('Экспорт чеков'), findsOneWidget);
     expect(find.text('Облако'), findsOneWidget);
     expect(find.text('Скоро'), findsNWidgets(2));
     expect(find.byIcon(Icons.share_outlined), findsOneWidget);
@@ -127,14 +127,14 @@ void main() {
     final now = DateTime.now();
     final issued = DateTime(now.year, now.month, 10, 12);
     final rub = _sampleReceipt(issuedAt: issued);
-    final rsdReceipt = EqReceipt(
+    final rsdReceipt = Receipt(
       id: 'r2',
       issuedAt: issued,
       currency: 'RSD',
-      receiptType: 'sale',
+      type: 'sale',
       merchantName: 'Maxi',
-      grandTotal: 500,
-      items: const [EqItem(description: 'Hleb', quantity: 1, unitPrice: 500, totalPrice: 500)],
+      total: 50000,
+      items: const [ReceiptItem(name: 'Hleb', quantity: 1, price: 50000, sum: 50000)],
     );
     final rsd = ReceiptRecord(
       id: 'r2',
@@ -143,7 +143,7 @@ void main() {
       status: ReceiptStatus.ok,
       issuedAt: issued,
       merchantName: rsdReceipt.merchantName,
-      grandTotal: rsdReceipt.grandTotal,
+      total: rsdReceipt.total,
       currency: rsdReceipt.currency,
       itemCount: rsdReceipt.items.length,
       payload: rsdReceipt.encode(),
@@ -156,7 +156,7 @@ void main() {
 
     expect(find.text('₽'), findsOneWidget);
     expect(find.text('дин.'), findsOneWidget);
-    expect(find.text(formatMoney(1247, 'RUB')), findsOneWidget);
+    expect(find.text(formatMoney(124700, 'RUB')), findsOneWidget);
 
     await tester.tap(find.byTooltip('Предыдущий период'));
     await tester.pump();
@@ -174,6 +174,6 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.text(formatMonthYear(HomePeriod.current(now).asDate)), findsOneWidget);
-    expect(find.text(formatMoney(500, 'RSD')), findsWidgets);
+    expect(find.text(formatMoney(50000, 'RSD')), findsWidgets);
   });
 }

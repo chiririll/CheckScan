@@ -1,4 +1,4 @@
-import 'package:eq_models/eq_models.dart';
+import 'package:receipt_model/receipt_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
@@ -38,7 +38,7 @@ class ReceiptRepository {
     required String qrHash,
     required String adapterId,
     required String rawQr,
-    required EqReceipt receipt,
+    required Receipt receipt,
     required int lastStatus,
     DateTime? scannedAt,
   }) async {
@@ -54,7 +54,7 @@ class ReceiptRepository {
       issuedAt: receipt.issuedAt,
       merchantName: receipt.merchantName,
       merchantId: merchantId,
-      grandTotal: receipt.grandTotal,
+      total: receipt.total,
       currency: receipt.currency,
       itemCount: receipt.items.length,
       payload: receipt.encode(),
@@ -89,7 +89,7 @@ class ReceiptRepository {
         'status': record.status.name,
         'issued_at': record.issuedAt?.toIso8601String(),
         'merchant_name': record.merchantName,
-        'grand_total': record.grandTotal,
+        'total': record.total,
         'currency': record.currency,
         'item_count': record.itemCount,
         'payload': record.payload,
@@ -112,7 +112,7 @@ class ReceiptRepository {
       status: status == ReceiptStatus.error ? ReceiptStatus.incomplete : status,
       issuedAt: row.date('issued_at'),
       merchantName: row.optStr('merchant_name'),
-      grandTotal: row.optDouble('grand_total') ?? 0,
+      total: row.optInt('total') ?? 0,
       currency: row.str('currency'),
       itemCount: row.optInt('item_count') ?? 0,
       payload: row.str('payload'),

@@ -47,7 +47,7 @@
   "integrations": "Интеграции",
   "soon": "Скоро",
   "integration1c": "1С",
-  "integrationExport": "Экспорт eQ",
+  "integrationExport": "Экспорт чеков",
   "exportEmpty": "Нет чеков для экспорта",
   "exportFailed": "Не удалось экспортировать",
   "exportShareSubject": "Чеки CheckScan",

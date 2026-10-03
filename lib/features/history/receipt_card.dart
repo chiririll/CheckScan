@@ -50,7 +50,7 @@ class ReceiptCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                     ],
-                    Text(formatMoney(receipt.grandTotal, receipt.currency), style: AppText.title),
+                    Text(formatMoney(receipt.total, receipt.currency), style: AppText.title),
                   ],
                 ),
                 const SizedBox(height: 2),

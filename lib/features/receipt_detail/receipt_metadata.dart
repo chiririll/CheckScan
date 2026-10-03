@@ -26,7 +26,7 @@ List<ReceiptMetaRow> receiptMetadataRows(ReceiptRecord record, AppLocalizations 
   }
 
   add(l10n.metaTaxId, receipt.taxId);
-  add(l10n.metaReceiptType, _receiptTypeLabel(receipt.receiptType, l10n));
+  add(l10n.metaReceiptType, _receiptTypeLabel(receipt.type, l10n));
   add(l10n.metaReceiptId, receipt.id.isNotEmpty ? receipt.id : record.id);
 
   var hasQr = false;

@@ -1,6 +1,4 @@
-import 'dart:convert';
-
-import 'package:eq_models/eq_models.dart';
+import 'package:receipt_model/receipt_model.dart';
 
 import 'receipt_status.dart';
 
@@ -14,7 +12,7 @@ class ReceiptRecord {
     required this.status,
     required this.issuedAt,
     required this.merchantName,
-    required this.grandTotal,
+    required this.total,
     required this.currency,
     required this.itemCount,
     required this.payload,
@@ -30,7 +28,8 @@ class ReceiptRecord {
   final ReceiptStatus status;
   final DateTime? issuedAt;
   final String? merchantName;
-  final double grandTotal;
+  /// Receipt total in the currency's minor units.
+  final int total;
   final String currency;
   final int itemCount;
   final String payload;
@@ -39,7 +38,7 @@ class ReceiptRecord {
   final int lastStatus;
   final String? merchantId;
 
-  EqReceipt? _cached;
+  Receipt? _cached;
 
   /// When the purchase happened: the receipt date, or the scan time without one.
   DateTime get at => issuedAt ?? scannedAt;
@@ -49,26 +48,21 @@ class ReceiptRecord {
     return name == null || name.isEmpty ? fallback : name;
   }
 
-  EqReceipt get receipt {
+  /// Parsed [payload]; a broken payload falls back to the indexed columns.
+  Receipt get receipt {
     final cached = _cached;
     if (cached != null) return cached;
     try {
-      final decoded = jsonDecode(payload);
-      if (decoded is Map<String, dynamic>) {
-        return _cached = EqReceipt.fromJson(decoded);
-      }
-      if (decoded is Map) {
-        return _cached = EqReceipt.fromJson(Map<String, dynamic>.from(decoded));
-      }
-    } catch (_) {}
-    return _cached = EqReceipt(
-      id: id,
-      issuedAt: issuedAt ?? scannedAt,
-      currency: currency.isEmpty ? 'RUB' : currency,
-      receiptType: 'sale',
-      grandTotal: grandTotal,
-      merchantName: merchantName,
-    );
+      return _cached = Receipt.decode(payload);
+    } catch (_) {
+      return _cached = Receipt(
+        id: id,
+        issuedAt: at,
+        currency: currency.isEmpty ? 'RUB' : currency,
+        total: total,
+        merchantName: merchantName,
+      );
+    }
   }
 
   String get providerLabel {

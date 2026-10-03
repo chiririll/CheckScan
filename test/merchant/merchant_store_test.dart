@@ -4,7 +4,7 @@ import 'package:checkscan/core/models/receipt_record.dart';
 import 'package:checkscan/core/state/app_state.dart';
 import 'package:checkscan/core/storage/database.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
-import 'package:eq_models/eq_models.dart';
+import 'package:receipt_model/receipt_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -44,14 +44,14 @@ void main() {
       qrHash: 'shop:1',
       adapterId: 'test',
       rawQr: '{}',
-      receipt: EqReceipt(
+      receipt: Receipt(
         id: 'r1',
         issuedAt: DateTime(2026, 8, 1),
         currency: 'RUB',
-        receiptType: 'sale',
+        type: 'sale',
         merchantName: 'Магнит',
-        grandTotal: 90,
-        items: const [EqItem(description: 'Молоко 1л', quantity: 1, unitPrice: 90, totalPrice: 90)],
+        total: 9000,
+        items: const [ReceiptItem(name: 'Молоко 1л', quantity: 1, price: 9000, sum: 9000)],
       ),
       lastStatus: statusOk,
     );

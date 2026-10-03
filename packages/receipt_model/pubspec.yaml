@@ -1,0 +1,7 @@
+name: receipt_model
+description: CheckScan receipt JSON (format checkscan.receipt, version 1). Money in integer minor units.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"

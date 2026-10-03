@@ -1,23 +1,23 @@
 import 'package:checkscan/core/format/format.dart';
 import 'package:checkscan/core/models/receipt_record.dart';
 import 'package:checkscan/features/home/home_period.dart';
-import 'package:eq_models/eq_models.dart';
+import 'package:receipt_model/receipt_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 ReceiptRecord _receipt({
   required String id,
   required String currency,
   required DateTime issuedAt,
-  required double total,
+  required int total,
 }) {
-  final receipt = EqReceipt(
+  final receipt = Receipt(
     id: id,
     issuedAt: issuedAt,
     currency: currency,
-    receiptType: 'sale',
+    type: 'sale',
     merchantName: 'Магазин',
-    grandTotal: total,
-    items: const [EqItem(description: 'Молоко', quantity: 1, unitPrice: 80, totalPrice: 80)],
+    total: total,
+    items: const [ReceiptItem(name: 'Молоко', quantity: 1, price: 8000, sum: 8000)],
   );
   return ReceiptRecord(
     id: id,
@@ -26,7 +26,7 @@ ReceiptRecord _receipt({
     status: ReceiptStatus.ok,
     issuedAt: issuedAt,
     merchantName: 'Магазин',
-    grandTotal: total,
+    total: total,
     currency: currency,
     itemCount: 1,
     payload: receipt.encode(),
@@ -49,9 +49,9 @@ void main() {
 
   test('listCurrencies prefers RUB then RSD', () {
     final receipts = [
-      _receipt(id: 'eur', currency: 'EUR', issuedAt: DateTime(2026, 8, 1), total: 10),
-      _receipt(id: 'rsd', currency: 'RSD', issuedAt: DateTime(2026, 8, 1), total: 20),
-      _receipt(id: 'rub', currency: 'RUB', issuedAt: DateTime(2026, 8, 1), total: 30),
+      _receipt(id: 'eur', currency: 'EUR', issuedAt: DateTime(2026, 8, 1), total: 1000),
+      _receipt(id: 'rsd', currency: 'RSD', issuedAt: DateTime(2026, 8, 1), total: 2000),
+      _receipt(id: 'rub', currency: 'RUB', issuedAt: DateTime(2026, 8, 1), total: 3000),
     ];
     expect(listCurrencies(receipts), ['RUB', 'RSD', 'EUR']);
   });

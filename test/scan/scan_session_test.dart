@@ -4,7 +4,7 @@ import 'package:checkscan/core/models/receipt_record.dart';
 import 'package:checkscan/core/scan/native_adapter.dart';
 import 'package:checkscan/core/scan/scan_session.dart';
 import 'package:checkscan/core/storage/receipt_repository.dart';
-import 'package:eq_models/eq_models.dart';
+import 'package:receipt_model/receipt_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -53,7 +53,7 @@ void main() {
   test('FNS scan without items is incomplete', () async {
     final result = await session.process(FakeNativeAdapter.fnsQuery);
     expect(result.record!.status, ReceiptStatus.incomplete);
-    expect(result.record!.grandTotal, 1247);
+    expect(result.record!.total, 124700);
     expect(result.record!.lastStatus, statusIncomplete);
   });
 
@@ -101,14 +101,14 @@ void main() {
   test('fetchRemote enriches an incomplete receipt', () async {
     final first = await session.process(FakeNativeAdapter.fnsQuery);
     final adapter = FakeNativeAdapter();
-    adapter.nextReceipt = EqReceipt(
+    adapter.nextReceipt = Receipt(
       id: 'ru-rich',
       issuedAt: DateTime(2026, 8, 28, 18, 42),
       currency: 'RUB',
-      receiptType: 'sale',
+      type: 'sale',
       merchantName: 'Пятёрочка',
-      grandTotal: 1247,
-      items: const [EqItem(description: 'Хлеб', quantity: 1, unitPrice: 1247, totalPrice: 1247)],
+      total: 124700,
+      items: const [ReceiptItem(name: 'Хлеб', quantity: 1, price: 124700, sum: 124700)],
     );
     session = ScanSession(repository: repository, adapter: adapter);
     final fetched = await session.fetchRemote(first.record!);
@@ -121,14 +121,14 @@ void main() {
     final adapter = FakeNativeAdapter();
     session = ScanSession(repository: repository, adapter: adapter);
     final saved = await session.process(FakeNativeAdapter.fnsQuery);
-    adapter.nextReceipt = EqReceipt(
+    adapter.nextReceipt = Receipt(
       id: 'ru-rich',
       issuedAt: DateTime(2026, 8, 28, 18, 42),
       currency: 'RUB',
-      receiptType: 'sale',
+      type: 'sale',
       merchantName: 'Пятёрочка',
-      grandTotal: 1247,
-      items: const [EqItem(description: 'Хлеб', quantity: 1, unitPrice: 1247, totalPrice: 1247)],
+      total: 124700,
+      items: const [ReceiptItem(name: 'Хлеб', quantity: 1, price: 124700, sum: 124700)],
     );
     final updated = await session.refresh(saved.record!);
     expect(updated!.itemCount, 1);
@@ -138,13 +138,13 @@ void main() {
   test('refreshPending walks retryable receipts', () async {
     await session.process(FakeNativeAdapter.fnsQuery);
     final adapter = FakeNativeAdapter();
-    adapter.nextReceipt = EqReceipt(
+    adapter.nextReceipt = Receipt(
       id: 'ru-rich',
       issuedAt: DateTime(2026, 8, 28),
       currency: 'RUB',
-      receiptType: 'sale',
-      grandTotal: 1247,
-      items: const [EqItem(description: 'Хлеб', quantity: 1, unitPrice: 1247, totalPrice: 1247)],
+      type: 'sale',
+      total: 124700,
+      items: const [ReceiptItem(name: 'Хлеб', quantity: 1, price: 124700, sum: 124700)],
     );
     session = ScanSession(repository: repository, adapter: adapter);
     expect(await session.refreshPending(), 1);

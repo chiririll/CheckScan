@@ -36,13 +36,14 @@ class HomeDashboard {
         if (receipt.currency == currency && period.contains(receipt.at)) receipt,
     ];
     return HomeDashboard(
-      spent: scoped.fold<double>(0, (sum, receipt) => sum + receipt.grandTotal),
+      spent: scoped.fold<int>(0, (sum, receipt) => sum + receipt.total),
       receiptCount: scoped.length,
       merchants: MerchantTeaser.of(merchants),
     );
   }
 
-  final double spent;
+  /// Minor units.
+  final int spent;
   final int receiptCount;
   final MerchantTeaser merchants;
 

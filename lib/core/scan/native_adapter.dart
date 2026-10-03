@@ -1,4 +1,4 @@
-import 'package:eq_models/eq_models.dart';
+import 'package:receipt_model/receipt_model.dart';
 import 'package:providers_native/providers_native.dart' as native;
 
 class SettingField {
@@ -30,7 +30,7 @@ class AdapterResolve {
   final String adapterId;
   final String hash;
   final String label;
-  final EqReceipt receipt;
+  final Receipt receipt;
 }
 
 class AdapterResult<T> {
@@ -101,7 +101,7 @@ class IsolatedNativeAdapter implements NativeAdapter {
               adapterId: data.adapterId,
               hash: data.hash,
               label: data.label,
-              receipt: EqReceipt.fromJson(data.receipt),
+              receipt: Receipt.fromJson(data.receipt),
             ),
     );
   }

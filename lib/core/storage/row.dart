@@ -6,8 +6,6 @@ extension RowRead on Map<String, Object?> {
 
   int? optInt(String key) => (this[key] as num?)?.toInt();
 
-  double? optDouble(String key) => (this[key] as num?)?.toDouble();
-
   DateTime? date(String key) => DateTime.tryParse('${this[key]}');
 }
 

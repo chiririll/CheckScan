@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme.dart';
-import '../../core/export/eq_jsonl_share.dart';
+import '../../core/export/receipts_jsonl_share.dart';
 import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
 import '../merchant/merchants_page.dart';
@@ -50,7 +50,7 @@ class SettingsPage extends StatelessWidget {
                 title: l10n.integrationExport,
                 icon: Icons.share_outlined,
                 state: state,
-                export: () => shareEqJsonl(receipts: state.receipts, subject: l10n.exportShareSubject),
+                export: () => shareReceiptsJsonl(receipts: state.receipts, subject: l10n.exportShareSubject),
               ),
               SettingsRow(title: l10n.integrationCloud, trailing: _soon(l10n)),
             ],

@@ -105,7 +105,7 @@ class _ReceiptPageState extends State<ReceiptPage> {
                 Text(formatDateTime(when), style: AppText.muted),
                 const SizedBox(height: 8),
                 Text(
-                  formatMoney(record.grandTotal, record.currency),
+                  formatMoney(record.total, record.currency),
                   maxLines: 1,
                   softWrap: false,
                   overflow: TextOverflow.fade,

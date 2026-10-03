@@ -127,7 +127,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get integration1c => '1С';
 
   @override
-  String get integrationExport => 'Экспорт eQ';
+  String get integrationExport => 'Экспорт чеков';
 
   @override
   String get exportEmpty => 'Нет чеков для экспорта';

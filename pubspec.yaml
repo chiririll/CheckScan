@@ -13,13 +13,13 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   crypto: ^3.0.7
-  eq_models:
-    path: packages/eq_models
+  receipt_model:
+    path: packages/receipt_model
   providers_native:
     git:
       url: git@github.com:chiririll/CheckScanProviders.git
       path: adapters/flutter
-      ref: v0.2.4
+      ref: v0.3.0
   image_picker: ^1.2.3
   intl: ^0.20.2
   mobile_scanner: ^7.4.0
