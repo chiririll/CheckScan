@@ -81,7 +81,7 @@ class _ReceiptPageState extends State<ReceiptPage> {
                   if (record.isEditable) PopupMenuItem(value: 'edit', child: Text(l10n.editReceipt)),
                   PopupMenuItem(
                     value: 'delete',
-                    child: Text(l10n.deleteReceipt, style: AppText.danger),
+                    child: Text(l10n.deleteReceipt, style: AppText.danger(context)),
                   ),
                 ],
               ),
@@ -107,7 +107,7 @@ class _ReceiptPageState extends State<ReceiptPage> {
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(formatDateTime(when), style: AppText.muted),
+                Text(formatDateTime(when), style: AppText.muted(context)),
                 const SizedBox(height: 8),
                 Text(
                   formatMoney(record.total, scale: record.scale, currency: record.currency, plus: record.isRefund),
@@ -121,14 +121,14 @@ class _ReceiptPageState extends State<ReceiptPage> {
                   _FetchingRow(label: l10n.progressLoading),
                 ] else if (record.status == ReceiptStatus.error) ...[
                   const SizedBox(height: 12),
-                  Text(l10n.parseErrorBody, style: TextStyle(color: Colors.grey.shade700)),
+                  Text(l10n.parseErrorBody, style: TextStyle(color: context.palette.muted)),
                 ] else if (receipt.items.isEmpty) ...[
                   const SizedBox(height: 12),
                   Text(
                     record.itemsUnavailable || record.status == ReceiptStatus.ok
                         ? l10n.noItemsBanner
                         : l10n.missingItemsHint,
-                    style: TextStyle(color: Colors.grey.shade700),
+                    style: TextStyle(color: context.palette.muted),
                   ),
                 ],
                 if (receipt.items.isNotEmpty) ReceiptItemList(record: record),
@@ -151,7 +151,7 @@ class _ReceiptCrumbs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const muted = TextStyle(color: AppColors.muted, fontSize: 16, fontWeight: FontWeight.w400);
+    final muted = TextStyle(color: context.palette.muted, fontSize: 16, fontWeight: FontWeight.w400);
     return Row(
       children: [
         Flexible(
@@ -162,7 +162,7 @@ class _ReceiptCrumbs extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: Icon(Icons.chevron_right, size: 18, color: Colors.grey.shade500),
+          child: Icon(Icons.chevron_right, size: 18, color: context.palette.muted),
         ),
         Flexible(
           child: Text(l10n.receiptTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -185,7 +185,7 @@ class _FetchingRow extends StatelessWidget {
       children: [
         const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
         const SizedBox(width: 10),
-        Expanded(child: Text(label, style: AppText.muted)),
+        Expanded(child: Text(label, style: AppText.muted(context))),
       ],
     );
   }
@@ -200,10 +200,10 @@ class _Chip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: AppColors.primarySoft,
+        color: context.palette.primarySoft,
         borderRadius: BorderRadius.circular(99),
       ),
-      child: Text(label, style: const TextStyle(fontSize: 12, color: AppColors.primary)),
+      child: Text(label, style: TextStyle(fontSize: 12, color: context.palette.primary)),
     );
   }
 }

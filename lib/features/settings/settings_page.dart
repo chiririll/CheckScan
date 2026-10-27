@@ -30,9 +30,9 @@ class SettingsPage extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             children: [
               if (state.settingFields.isNotEmpty) ...[
-                Text(l10n.providerSecrets, style: AppText.muted),
+                Text(l10n.providerSecrets, style: AppText.muted(context)),
                 const SizedBox(height: 8),
-                Text(l10n.providerTokenHint, style: AppText.mutedSmall),
+                Text(l10n.providerTokenHint, style: AppText.mutedSmall(context)),
                 const SizedBox(height: 12),
                 for (final field in state.settingFields)
                   SecretField(state: state, field: field, title: l10n.providerToken(field.label)),
@@ -40,25 +40,25 @@ class SettingsPage extends StatelessWidget {
               ],
               SettingsRow(
                 title: l10n.merchantsTitle,
-                trailing: const Icon(Icons.chevron_right, size: 18, color: AppColors.muted),
+                trailing: Icon(Icons.chevron_right, size: 18, color: context.palette.muted),
                 onTap: () => pushPage<void>(context, MerchantsPage(state: state)),
               ),
               SettingsRow(
                 title: l10n.currenciesTitle,
-                trailing: const Icon(Icons.chevron_right, size: 18, color: AppColors.muted),
+                trailing: Icon(Icons.chevron_right, size: 18, color: context.palette.muted),
                 onTap: () => pushPage<void>(context, CurrenciesPage(state: state)),
               ),
               const SizedBox(height: 16),
-              Text(l10n.integrations, style: AppText.muted),
+              Text(l10n.integrations, style: AppText.muted(context)),
               const SizedBox(height: 8),
-              SettingsRow(title: l10n.integration1c, trailing: _soon(l10n)),
+              SettingsRow(title: l10n.integration1c, trailing: _soon(context, l10n)),
               ExportRow(
                 title: l10n.integrationExport,
                 icon: Icons.share_outlined,
                 state: state,
                 export: () => shareReceiptsJsonl(receipts: state.receipts, subject: l10n.exportShareSubject),
               ),
-              SettingsRow(title: l10n.integrationCloud, trailing: _soon(l10n)),
+              SettingsRow(title: l10n.integrationCloud, trailing: _soon(context, l10n)),
             ],
           );
         },
@@ -66,5 +66,6 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _soon(AppLocalizations l10n) => Text(l10n.soon, style: const TextStyle(color: AppColors.muted, fontSize: 12));
+  Widget _soon(BuildContext context, AppLocalizations l10n) =>
+      Text(l10n.soon, style: TextStyle(color: context.palette.muted, fontSize: 12));
 }

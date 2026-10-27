@@ -20,10 +20,10 @@ class ReceiptCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Material(
-        color: Colors.white,
-        shape: AppShapes.card,
+        color: context.palette.surface,
+        shape: context.palette.cardShape,
         child: InkWell(
-          borderRadius: AppShapes.radius,
+          borderRadius: context.palette.radius,
           onTap: () => pushPage<void>(context, ReceiptPage(state: state, receiptId: receipt.id)),
           child: Padding(
             padding: const EdgeInsets.all(12),
@@ -46,7 +46,7 @@ class ReceiptCard extends StatelessWidget {
                     ] else if (receipt.missingRemoteItems) ...[
                       Tooltip(
                         message: l10n.missingItemsHint,
-                        child: const Icon(Icons.cloud_off, size: 16, color: AppColors.muted),
+                        child: Icon(Icons.cloud_off, size: 16, color: context.palette.muted),
                       ),
                       const SizedBox(width: 6),
                     ],
@@ -54,7 +54,7 @@ class ReceiptCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(l10n.itemsCount(receipt.itemCount), style: AppText.mutedSmall),
+                Text(l10n.itemsCount(receipt.itemCount), style: AppText.mutedSmall(context)),
               ],
             ),
           ),

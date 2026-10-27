@@ -83,7 +83,7 @@ class ReceiptMetadataTile extends StatelessWidget {
                     width: 128,
                     child: Text(
                       row.label,
-                      style: AppText.mutedSmall,
+                      style: AppText.mutedSmall(context),
                     ),
                   ),
                   Expanded(

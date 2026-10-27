@@ -53,7 +53,7 @@ class _ItemRow extends StatelessWidget {
                 Text(item.name),
                 Text(
                   l10n.qtyPrice(formatQty(item.quantity), _money(item.price)),
-                  style: const TextStyle(color: AppColors.muted, fontSize: 12),
+                  style: TextStyle(color: context.palette.muted, fontSize: 12),
                 ),
               ],
             ),

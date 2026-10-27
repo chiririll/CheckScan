@@ -36,7 +36,7 @@ class _EmptyHintState extends State<EmptyHint> with SingleTickerProviderStateMix
         builder: (context, child) => Transform.translate(offset: Offset(0, _controller.value * 10), child: child),
         child: CustomPaint(
           size: const Size(32, 168),
-          painter: _ArrowPainter(color: AppColors.primary),
+          painter: _ArrowPainter(color: context.palette.primary),
         ),
       ),
     );

@@ -21,7 +21,7 @@ class CenteredMessage extends StatelessWidget {
           children: [
             Text(title, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
             const SizedBox(height: 8),
-            Text(body, textAlign: TextAlign.center, style: AppText.muted),
+            Text(body, textAlign: TextAlign.center, style: AppText.muted(context)),
             if (footer != null) ...[const SizedBox(height: 12), footer],
           ],
         ),

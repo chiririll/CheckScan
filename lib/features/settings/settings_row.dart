@@ -18,11 +18,11 @@ class SettingsRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
-        color: Colors.white,
-        shape: AppShapes.card,
+        color: context.palette.surface,
+        shape: context.palette.cardShape,
         child: InkWell(
           onTap: onTap,
-          borderRadius: AppShapes.radius,
+          borderRadius: context.palette.radius,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
             child: Row(
@@ -78,7 +78,7 @@ class _ExportRowState extends State<ExportRow> {
       onTap: _busy ? null : _run,
       trailing: _busy
           ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-          : Icon(widget.icon, size: 18, color: AppColors.muted),
+          : Icon(widget.icon, size: 18, color: context.palette.muted),
     );
   }
 }

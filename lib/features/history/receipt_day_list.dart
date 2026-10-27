@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/motion.dart';
 import '../../app/theme.dart';
 import '../../core/export/export_file.dart';
 import '../../core/format/format.dart';
@@ -18,15 +19,16 @@ class ReceiptDayList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final days = receipts.groupBy((receipt) => isoDate(receipt.at));
+    var index = 0;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       children: [
         for (final dayReceipts in days.values) ...[
           Padding(
             padding: const EdgeInsets.only(bottom: 6, top: 8),
-            child: Text(formatDayHeader(dayReceipts.first.at), style: AppText.mutedSmall),
+            child: Text(formatDayHeader(dayReceipts.first.at), style: AppText.mutedSmall(context)),
           ),
-          for (final receipt in dayReceipts) ReceiptCard(receipt: receipt, state: state),
+          for (final receipt in dayReceipts) FadeSlideIn(index: index++, child: ReceiptCard(receipt: receipt, state: state)),
         ],
       ],
     );

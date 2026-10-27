@@ -38,7 +38,7 @@ Future<bool> confirmAction(
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, true),
-          style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+          style: TextButton.styleFrom(foregroundColor: context.palette.danger),
           child: Text(confirm),
         ),
         TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),

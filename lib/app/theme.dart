@@ -1,55 +1,92 @@
 import 'package:flutter/material.dart';
 
-class AppColors {
-  static const primary = Color(0xFF0B7A6E);
-  static const primarySoft = Color(0xFFE4EEEC);
-  static const background = Color(0xFFF4F6F5);
-  static const text = Color(0xFF1B1B1B);
-  static const muted = Color(0xFF757575);
-  static const border = Color(0xFFE4E4E4);
-  static const divider = Color(0xFFE8E8E8);
-  static const danger = Color(0xFFC62828);
-}
+import 'palette.dart';
 
-class AppShapes {
-  static const radius = BorderRadius.all(Radius.circular(10));
+export 'palette.dart';
 
-  /// White outlined card used by list rows across the app.
-  static const card = RoundedRectangleBorder(borderRadius: radius, side: BorderSide(color: AppColors.border));
-}
-
+/// Text styles that follow the active palette.
 class AppText {
   static const title = TextStyle(fontWeight: FontWeight.w600);
-  static const muted = TextStyle(color: AppColors.muted);
-  static const mutedSmall = TextStyle(color: AppColors.muted, fontSize: 13);
-  static const danger = TextStyle(color: AppColors.danger);
+
+  static TextStyle muted(BuildContext context) => TextStyle(color: context.palette.muted);
+  static TextStyle mutedSmall(BuildContext context) => TextStyle(color: context.palette.muted, fontSize: 13);
+  static TextStyle danger(BuildContext context) => TextStyle(color: context.palette.danger);
 }
 
-ThemeData buildAppTheme() {
+ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
+  final palette = brightness == Brightness.dark ? AppPalette.dark : AppPalette.light;
+  final scheme = ColorScheme.fromSeed(
+    seedColor: AppPalette.light.primary,
+    brightness: brightness,
+  ).copyWith(
+    primary: palette.primary,
+    onPrimary: palette.onPrimary,
+    surface: palette.surface,
+    onSurface: palette.text,
+    error: palette.danger,
+    outlineVariant: palette.border,
+  );
   final base = ThemeData(
     useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      primary: AppColors.primary,
-      surface: Colors.white,
-    ),
-    scaffoldBackgroundColor: AppColors.background,
+    brightness: brightness,
+    colorScheme: scheme,
+    scaffoldBackgroundColor: palette.background,
     fontFamily: 'Roboto',
+    splashFactory: InkSparkle.splashFactory,
+    extensions: [palette],
+  );
+  const transitions = PageTransitionsTheme(
+    builders: {
+      TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+      TargetPlatform.iOS: FadeForwardsPageTransitionsBuilder(),
+    },
   );
   return base.copyWith(
-    appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.background,
-      foregroundColor: AppColors.text,
+    pageTransitionsTheme: transitions,
+    dividerTheme: DividerThemeData(color: palette.divider, space: 1),
+    appBarTheme: AppBarTheme(
+      backgroundColor: palette.background,
+      foregroundColor: palette.text,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
       elevation: 0,
       centerTitle: false,
+      titleTextStyle: base.textTheme.titleLarge?.copyWith(color: palette.text, fontWeight: FontWeight.w700),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        minimumSize: const Size.fromHeight(48),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: palette.primary,
+        foregroundColor: palette.onPrimary,
+        minimumSize: const Size.fromHeight(52),
+        textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     ),
+    textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: palette.primary)),
+    tabBarTheme: TabBarThemeData(
+      labelColor: palette.primary,
+      unselectedLabelColor: palette.muted,
+      indicatorColor: palette.primary,
+      dividerColor: palette.divider,
+    ),
+    dialogTheme: DialogThemeData(
+      backgroundColor: palette.surface,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: palette.surface,
+      border: OutlineInputBorder(borderRadius: palette.radius, borderSide: BorderSide(color: palette.border)),
+      enabledBorder: OutlineInputBorder(borderRadius: palette.radius, borderSide: BorderSide(color: palette.border)),
+      focusedBorder: OutlineInputBorder(borderRadius: palette.radius, borderSide: BorderSide(color: palette.primary, width: 1.6)),
+    ),
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: palette.text,
+      contentTextStyle: TextStyle(color: palette.background),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    ),
+    progressIndicatorTheme: ProgressIndicatorThemeData(color: palette.primary),
   );
 }

@@ -60,18 +60,18 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          width: 88,
-                          height: 88,
+                          width: 104,
+                          height: 104,
                           decoration: BoxDecoration(
-                            color: AppColors.primarySoft,
-                            borderRadius: BorderRadius.circular(12),
+                            color: context.palette.primarySoft,
+                            borderRadius: BorderRadius.circular(32),
                           ),
-                          child: Icon(page.$3, size: 40, color: AppColors.primary),
+                          child: Icon(page.$3, size: 48, color: context.palette.primary),
                         ),
                         const SizedBox(height: 24),
                         Text(page.$1, textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 12),
-                        Text(page.$2, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey.shade700, height: 1.4)),
+                        Text(page.$2, textAlign: TextAlign.center, style: TextStyle(color: context.palette.muted, height: 1.4)),
                       ],
                     );
                   },
@@ -80,13 +80,16 @@ class _OnboardingPageState extends State<OnboardingPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(pages.length, (i) {
-                  return Container(
-                    width: 7,
+                  final active = i == _page;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOutCubic,
+                    width: active ? 22 : 7,
                     height: 7,
                     margin: const EdgeInsets.symmetric(horizontal: 3),
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: i == _page ? AppColors.primary : Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(4),
+                      color: active ? context.palette.primary : context.palette.border,
                     ),
                   );
                 }),

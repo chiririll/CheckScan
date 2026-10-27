@@ -20,9 +20,9 @@ class HomeBlock extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: const Border.fromBorderSide(BorderSide(color: AppColors.border)),
+        color: context.palette.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.fromBorderSide(BorderSide(color: context.palette.border)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,7 +38,7 @@ class HomeBlock extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: card,
       ),
     );
@@ -52,7 +52,7 @@ class HomeBlockHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(text, style: AppText.mutedSmall);
+    return Text(text, style: AppText.mutedSmall(context));
   }
 }
 
@@ -64,13 +64,36 @@ class HomeMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.primary)),
-        const SizedBox(height: 2),
-        Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
-      ],
+    final palette = context.palette;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      decoration: BoxDecoration(color: palette.primarySoft, borderRadius: BorderRadius.circular(16)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween(begin: const Offset(0, 0.3), end: Offset.zero).animate(animation),
+                  child: child,
+                ),
+              ),
+              child: Text(
+                value,
+                key: ValueKey(value),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: palette.primary),
+              ),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(label, style: TextStyle(color: palette.muted, fontSize: 12)),
+        ],
+      ),
     );
   }
 }

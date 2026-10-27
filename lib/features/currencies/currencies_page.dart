@@ -45,7 +45,7 @@ class CurrenciesPage extends StatelessWidget {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              Text(l10n.currenciesHint, style: AppText.mutedSmall),
+              Text(l10n.currenciesHint, style: AppText.mutedSmall(context)),
               const SizedBox(height: 12),
               ReorderableListView(
                 shrinkWrap: true,
@@ -73,7 +73,7 @@ class CurrenciesPage extends StatelessWidget {
               ),
               if (suggestions.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                Text(l10n.currenciesFromReceipts, style: AppText.muted),
+                Text(l10n.currenciesFromReceipts, style: AppText.muted(context)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,

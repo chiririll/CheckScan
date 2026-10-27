@@ -3,7 +3,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../../app/theme.dart';
 import '../../core/models/receipt_status.dart';
 import '../../core/state/app_state.dart';
 import '../../l10n/app_localizations.dart';
@@ -195,7 +194,7 @@ class _ScanPageState extends State<ScanPage> {
                             child: SizedBox(
                               width: 52,
                               height: 52,
-                              child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3),
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
                             ),
                           )
                         : null,

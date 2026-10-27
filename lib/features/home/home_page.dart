@@ -79,9 +79,6 @@ class _HomeBodyState extends State<_HomeBody> {
           if (multi)
             TabBar(
               tabs: [for (final currency in currencies) Tab(text: formatCurrencyLabel(currency))],
-              labelColor: AppColors.primary,
-              unselectedLabelColor: Colors.grey,
-              indicatorColor: AppColors.primary,
             ),
           Expanded(
             child: multi
@@ -122,7 +119,7 @@ class _PeriodBar extends StatelessWidget {
             child: Text(
               formatMonthYear(period.asDate),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.muted, fontWeight: FontWeight.w500),
+              style: TextStyle(color: context.palette.muted, fontWeight: FontWeight.w500),
             ),
           ),
           IconButton(

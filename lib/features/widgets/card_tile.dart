@@ -15,8 +15,8 @@ class CardTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final subtitle = this.subtitle;
     return ListTile(
-      tileColor: Colors.white,
-      shape: AppShapes.card,
+      tileColor: context.palette.surface,
+      shape: context.palette.cardShape,
       title: Text(title),
       subtitle: subtitle == null || subtitle.isEmpty ? null : Text(subtitle),
       trailing: trailing,
