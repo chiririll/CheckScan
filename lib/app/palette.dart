@@ -29,28 +29,28 @@ class AppPalette extends ThemeExtension<AppPalette> {
   final Color danger;
 
   static const light = AppPalette(
-    primary: Color(0xFF0B7A6E),
+    primary: Color(0xFF4353D8),
     onPrimary: Colors.white,
-    primarySoft: Color(0xFFE0F0ED),
-    background: Color(0xFFF3F6F5),
+    primarySoft: Color(0xFFE6E9FB),
+    background: Color(0xFFF4F5FA),
     surface: Colors.white,
-    text: Color(0xFF16201E),
-    muted: Color(0xFF6B7774),
-    border: Color(0xFFE3E9E7),
-    divider: Color(0xFFE8EDEB),
+    text: Color(0xFF1A1C2A),
+    muted: Color(0xFF6E7288),
+    border: Color(0xFFE4E6F0),
+    divider: Color(0xFFE9EBF3),
     danger: Color(0xFFC62828),
   );
 
   static const dark = AppPalette(
-    primary: Color(0xFF4FD1BE),
-    onPrimary: Color(0xFF00201C),
-    primarySoft: Color(0xFF1B3834),
-    background: Color(0xFF0E1413),
-    surface: Color(0xFF172120),
-    text: Color(0xFFE5ECEA),
-    muted: Color(0xFF93A19E),
-    border: Color(0xFF263230),
-    divider: Color(0xFF212C2A),
+    primary: Color(0xFF9FA8FF),
+    onPrimary: Color(0xFF10154A),
+    primarySoft: Color(0xFF262C5C),
+    background: Color(0xFF0F1118),
+    surface: Color(0xFF181B26),
+    text: Color(0xFFE6E8F2),
+    muted: Color(0xFF9A9FB5),
+    border: Color(0xFF272B3A),
+    divider: Color(0xFF222634),
     danger: Color(0xFFFF8A80),
   );
 
