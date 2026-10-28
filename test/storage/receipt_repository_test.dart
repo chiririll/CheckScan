@@ -54,6 +54,25 @@ void main() {
     expect(found.receipt.items.single.name, 'Хлеб');
   });
 
+  test('dates are stored as UTC and come back as the same moment in local time', () async {
+    final issued = DateTime(2026, 10, 25, 2, 30);
+    await repository.upsertParsed(
+      qrHash: 'm:1',
+      adapterId: 'manual',
+      rawQr: '',
+      receipt: Receipt(id: 'm1', issuedAt: issued, currency: 'RSD', scale: 2, total: 100),
+      lastStatus: statusOk,
+    );
+
+    final rows = await (await repository.database.database).query('receipts');
+    expect(rows.single['issued_at'], issued.toUtc().toIso8601String());
+    expect('${rows.single['scanned_at']}', endsWith('Z'));
+
+    final record = (await repository.listAll()).single;
+    expect(record.at, issued);
+    expect(record.at.isUtc, isFalse);
+  });
+
   test('listAll is newest first', () async {
     await repository.upsertParsed(
       qrHash: 'a:1',

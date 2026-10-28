@@ -46,7 +46,8 @@ class ReceiptRecord {
   Receipt? _cached;
 
   /// When the purchase happened: the receipt date, or the scan time without one.
-  DateTime get at => issuedAt ?? scannedAt;
+  /// Stored in UTC; this is local time, for showing and for grouping by day.
+  DateTime get at => (issuedAt ?? scannedAt).toLocal();
 
   String displayMerchant(String fallback) {
     final name = merchantName;
